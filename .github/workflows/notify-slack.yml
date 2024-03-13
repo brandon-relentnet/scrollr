@@ -1,0 +1,36 @@
+name: Notify Deployment
+
+on:
+  workflow_run:
+    workflows: ["Deploy to Production"]
+    types:
+      - completed
+
+jobs:
+  notify:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: repo,commit,author,action,eventName,ref,workflow,took
+          custom_payload: |
+            {
+              "text": "Deployment to Production succeeded :tada:",
+              "attachments": [{
+                "color": "#36a64f",
+                "fields": [{
+                    "title": "Project",
+                    "value": "${{ github.repository }}",
+                    "short": true
+                }, {
+                    "title": "Environment",
+                    "value": "Production",
+                    "short": true
+                }]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
