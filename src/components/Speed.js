@@ -36,6 +36,7 @@ const Speed = () => {
               checked={selectedSpeed === `${index + 1}`}
               onChange={handleSpeedChange}
             />
+            <span></span>
             {speed}
           </label>
         ))}
@@ -47,6 +48,7 @@ const Speed = () => {
             checked={selectedSpeed === 'custom'}
             onChange={handleCustomSpeedSelect}
           />
+          <span></span>
           Custom
           <input
             type="number"

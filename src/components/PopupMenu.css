@@ -49,8 +49,7 @@
   }
   
   .favorites, .support {
-    padding: 10px;
-    padding-left: 14px;
+    padding: 10px 14px 20px 18px;
   }
   
   .favorites h3, .support h3 {
