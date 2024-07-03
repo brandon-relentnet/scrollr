@@ -14,10 +14,6 @@ const Favorites = () => {
     const top = rect.top + window.scrollY + rect.height / 2;
     const left = rect.left + window.scrollX + rect.width / 2;
 
-    console.log('Button Rect:', rect);
-    console.log('Window ScrollY:', window.scrollY);
-    console.log('Window ScrollX:', window.scrollX);
-
     setCurrentFavorite(favorite);
     setPopupPosition({
       top: top,
@@ -36,15 +32,18 @@ const Favorites = () => {
 
   return (
     <div className="favorites">
-      {['Baseball', 'Stocks', 'Football', 'Crypto'].map((favorite) => (
-        <button
-          key={favorite}
-          onClick={(e) => handleFavoriteClick(e, favorite)}
-          className={selectedFavorite[favorite] ? 'selected' : ''}
-        >
-          {favorite} {selectedFavorite[favorite] ? `(${selectedFavorite[favorite]})` : ''}
-        </button>
-      ))}
+      <h3>Favorites</h3>
+      <div className="favorites-grid">
+        {['Baseball', 'Stocks', 'Football', 'Crypto'].map((favorite) => (
+          <button
+            key={favorite}
+            onClick={(e) => handleFavoriteClick(e, favorite)}
+            className={selectedFavorite[favorite] ? 'selected' : ''}
+          >
+            {favorite} {selectedFavorite[favorite] ? `(${selectedFavorite[favorite]})` : ''}
+          </button>
+        ))}
+      </div>
       {showPopup && (
         <PopupBubble favorite={currentFavorite} onSelect={handleSelect} position={popupPosition} />
       )}

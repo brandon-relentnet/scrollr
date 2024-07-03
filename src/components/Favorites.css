@@ -1,24 +1,32 @@
 /* src/components/Favorites.css */
 .favorites {
-    position: relative; /* Ensure the popup bubble is positioned correctly */
-    display: flex;
-    flex-wrap: wrap;
+    text-align: center;
+  }
+  
+  .favorites h3 {
+    margin-bottom: 10px;
+  }
+  
+  .favorites-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
   
-  .favorites button {
-    background-color: #333;
+  .favorites-grid button {
+    background-color: #444;
     color: #fff;
     border: none;
     padding: 10px;
     border-radius: 5px;
     cursor: pointer;
-    box-sizing: border-box; /* Ensure padding is included in the total width */
-    transition: box-shadow 0.3s ease;
   }
   
-  .favorites button.selected {
-    background-color: #61dafb;
-    box-shadow: 0 0 10px #61dafb;
+  .favorites-grid button.selected {
+    box-shadow: 0 0 10px 2px #4caf50;
+  }
+  
+  .favorites-grid button:hover {
+    background-color: #555;
   }
   

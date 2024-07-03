@@ -4,7 +4,7 @@ import Information from './Information';
 import Speed from './Speed';
 import Favorites from './Favorites';
 import Support from './Support';
-import PowerButton from './PowerButton'; // Ensure this import
+import PowerButton from './PowerButton'; // Import PowerButton
 import './PopupMenu.css';
 
 const PopupMenu = () => {
@@ -17,7 +17,7 @@ const PopupMenu = () => {
       if (chrome.runtime.lastError) {
         console.error("Error retrieving chrome.storage:", chrome.runtime.lastError);
       } else {
-        if (result && result.isActive !== undefined) {
+        if (result.isActive !== undefined) {
           setIsActive(result.isActive);
         }
       }
@@ -47,23 +47,24 @@ const PopupMenu = () => {
           <i className="fab fa-facebook"></i>
         </div>
         <div className="title">Scrollr</div>
-        <PowerButton isActive={isActive} handleToggle={handleToggle} />
+        <PowerButton isActive={isActive} handleToggle={handleToggle} /> {/* Use PowerButton */}
         <div className="user-icon">
           <i className="fas fa-user"></i>
         </div>
       </div>
-      <div className="menu-sections">
-        <div className="menu-section">
-          <h3>Speed</h3>
+      <div className="menu-content">
+        <div className="menu-left">
           <Speed />
         </div>
-        <div className="menu-section">
-          <h3>Favorites</h3>
-          <Favorites />
-        </div>
-        <div className="menu-section">
-          <h3>Support</h3>
-          <Support />
+        <div className="menu-right">
+          <div className="favorites-support">
+            <div className="favorites">
+              <Favorites />
+            </div>
+            <div className="support">
+              <Support />
+            </div>
+          </div>
         </div>
       </div>
     </div>

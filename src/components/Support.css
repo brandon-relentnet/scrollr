@@ -1,29 +1,28 @@
 /* src/components/Support.css */
-.menu-section {
-    margin-bottom: 20px;
+.support {
+    text-align: center;
   }
   
-  .menu-section h3 {
+  .support h3 {
     margin-bottom: 10px;
   }
   
-  .menu-section .support {
-    display: flex;
-    flex-direction: column;
+  .support-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
   
-  .menu-section button {
-    background-color: #333;
+  .support-grid button {
+    background-color: #444;
     color: #fff;
     border: none;
     padding: 10px;
     border-radius: 5px;
-    margin-bottom: 5px;
-    text-align: left;
     cursor: pointer;
   }
   
-  .menu-section button:last-child {
-    margin-right: 0;
+  .support-grid button:hover {
+    background-color: #555;
   }
   

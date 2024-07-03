@@ -4,8 +4,9 @@ import './Support.css';
 
 const Support = () => {
   return (
-    <div className="menu-section">
-      <div className="support">
+    <div className="support">
+      <h3>Support</h3>
+      <div className="support-grid">
         <button>Contact us</button>
         <button>Donate</button>
       </div>

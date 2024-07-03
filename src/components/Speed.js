@@ -5,6 +5,7 @@ import './Speed.css';
 const Speed = () => {
   return (
     <div className="menu-section">
+        <h3>Speed</h3>
       <ul>
         <li>Slowest</li>
         <li>Slow</li>
