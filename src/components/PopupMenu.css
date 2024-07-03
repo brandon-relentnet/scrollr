@@ -1,20 +1,24 @@
 /* src/components/PopupMenu.css */
 .popup-menu {
-    width: 300px;
+    width: 800px;
+    height: 600px;
     background-color: #1e1e2f;
     color: #fff;
-    padding: 10px;
+    padding: 20px;
     border-radius: 10px;
     font-family: 'Arial', sans-serif;
     box-sizing: border-box; /* Ensure padding is included in the total width */
+    overflow: hidden; /* Prevent scrollbars from appearing */
+    display: flex;
+    flex-direction: column;
   }
   
   .menu-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    padding: 0 10px; /* Ensure padding is consistent */
+    margin-bottom: 20px;
+    padding: 0 20px; /* Ensure padding is consistent */
   }
   
   .icons i, .user-icon i {
@@ -28,8 +32,14 @@
     font-size: 24px;
   }
   
+  .menu-sections {
+    display: flex;
+    flex-grow: 1;
+  }
+  
   .menu-section {
-    margin-bottom: 20px;
+    flex: 1;
+    margin: 0 10px;
   }
   
   .menu-section h3 {
@@ -39,6 +49,7 @@
   .menu-section ul {
     list-style: none;
     padding: 0;
+    margin: 0; /* Remove margin to avoid overflow */
   }
   
   .menu-section ul li {
@@ -56,9 +67,10 @@
     border: none;
     padding: 10px;
     border-radius: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     text-align: left;
     cursor: pointer;
+    box-sizing: border-box; /* Ensure padding is included in the total width */
   }
   
   .menu-section button.selected {
@@ -73,6 +85,7 @@
     border-radius: 5px;
     padding: 5px;
     margin-left: 10px;
+    box-sizing: border-box; /* Ensure padding is included in the total width */
   }
   
   .dropdown-menu {
@@ -83,6 +96,7 @@
     border-radius: 5px;
     margin-top: 5px;
     padding: 10px;
+    box-sizing: border-box; /* Ensure padding is included in the total width */
   }
   
   .dropdown-menu button {
@@ -93,19 +107,5 @@
   
   .dropdown-menu button:last-child {
     margin-bottom: 0;
-  }
-  
-  .bottom-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 250px;
-    background-color: #1e1e2f;
-    color: white;
-    text-align: center;
-    line-height: 250px;
-    display: none;
-    z-index: 1000;
   }
   

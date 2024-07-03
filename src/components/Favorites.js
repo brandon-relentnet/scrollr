@@ -1,86 +1,69 @@
 // src/components/Favorites.js
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import PopupBubble from './PopupBubble';
 import './Favorites.css';
 
 const Favorites = () => {
-  const [selectedFavorites, setSelectedFavorites] = useState({
-    baseball: '',
-    football: '',
-    stocks: '',
-    crypto: '',
-  });
-  
-  const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [selectedFavorite, setSelectedFavorite] = useState({});
+  const [showPopup, setShowPopup] = useState(false);
+  const [currentFavorite, setCurrentFavorite] = useState('');
+  const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
+  const popupRef = useRef(null);
 
-  const toggleFavorite = (category, option) => {
-    setSelectedFavorites((prevFavorites) => ({
-      ...prevFavorites,
-      [category]: option,
-    }));
-    setDropdownOpen(null); // Close the dropdown menu
+  const handleFavoriteClick = (event, favorite) => {
+    const rect = event.target.getBoundingClientRect();
+    const top = rect.top + window.scrollY;
+    const left = rect.left + window.scrollX;
+    const bottomSpace = window.innerHeight - rect.bottom;
+    const bubbleHeight = 200; // Adjust this height based on the actual height of the popup bubble
+
+    console.log('Button Rect:', rect);
+    console.log('Window ScrollY:', window.scrollY);
+    console.log('Window ScrollX:', window.scrollX);
+
+    setCurrentFavorite(favorite);
+    setPopupPosition({
+      top: bottomSpace > bubbleHeight ? top + rect.height : top - bubbleHeight,
+      left
+    });
+    setShowPopup(true);
   };
 
-  const toggleDropdown = (category) => {
-    setDropdownOpen(dropdownOpen === category ? null : category);
+  useEffect(() => {
+    if (showPopup && popupRef.current) {
+      console.log('Popup Position:', popupPosition);
+      popupRef.current.style.top = `${popupPosition.top}px`;
+      popupRef.current.style.left = `${popupPosition.left}px`;
+    }
+  }, [popupPosition, showPopup]);
+
+  const handleSelect = (option) => {
+    setSelectedFavorite((prev) => ({
+      ...prev,
+      [currentFavorite]: option === 'None' ? '' : option
+    }));
+    setShowPopup(false);
   };
 
   return (
-    <div className="menu-section">
-      <h3>Favorites</h3>
-      <div className="favorites">
+    <div className="favorites">
+      {['Baseball', 'Stocks', 'Football', 'Crypto'].map((favorite) => (
         <button
-          className={selectedFavorites.baseball ? 'selected' : ''}
-          onClick={() => toggleDropdown('baseball')}
+          key={favorite}
+          onClick={(e) => handleFavoriteClick(e, favorite)}
+          className={selectedFavorite[favorite] ? 'selected' : ''}
         >
-          Baseball {selectedFavorites.baseball && `- ${selectedFavorites.baseball}`}
+          {favorite} {selectedFavorite[favorite] ? `(${selectedFavorite[favorite]})` : ''}
         </button>
-        {dropdownOpen === 'baseball' && (
-          <div className="dropdown-menu">
-            <button onClick={() => toggleFavorite('baseball', 'MLB')}>MLB</button>
-            <button onClick={() => toggleFavorite('baseball', 'Minor League')}>Minor League</button>
-            <button onClick={() => toggleFavorite('baseball', 'College Baseball')}>College Baseball</button>
-          </div>
-        )}
-        <button
-          className={selectedFavorites.football ? 'selected' : ''}
-          onClick={() => toggleDropdown('football')}
+      ))}
+      {showPopup && (
+        <div
+          ref={popupRef}
+          style={{ position: 'absolute' }}
         >
-          Football {selectedFavorites.football && `- ${selectedFavorites.football}`}
-        </button>
-        {dropdownOpen === 'football' && (
-          <div className="dropdown-menu">
-            <button onClick={() => toggleFavorite('football', 'NFL')}>NFL</button>
-            <button onClick={() => toggleFavorite('football', 'College Football')}>College Football</button>
-            <button onClick={() => toggleFavorite('football', 'Arena Football')}>Arena Football</button>
-          </div>
-        )}
-        <button
-          className={selectedFavorites.stocks ? 'selected' : ''}
-          onClick={() => toggleDropdown('stocks')}
-        >
-          Stocks {selectedFavorites.stocks && `- ${selectedFavorites.stocks}`}
-        </button>
-        {dropdownOpen === 'stocks' && (
-          <div className="dropdown-menu">
-            <button onClick={() => toggleFavorite('stocks', 'Tech')}>Tech</button>
-            <button onClick={() => toggleFavorite('stocks', 'Healthcare')}>Healthcare</button>
-            <button onClick={() => toggleFavorite('stocks', 'Finance')}>Finance</button>
-          </div>
-        )}
-        <button
-          className={selectedFavorites.crypto ? 'selected' : ''}
-          onClick={() => toggleDropdown('crypto')}
-        >
-          Crypto {selectedFavorites.crypto && `- ${selectedFavorites.crypto}`}
-        </button>
-        {dropdownOpen === 'crypto' && (
-          <div className="dropdown-menu">
-            <button onClick={() => toggleFavorite('crypto', 'Bitcoin')}>Bitcoin</button>
-            <button onClick={() => toggleFavorite('crypto', 'Ethereum')}>Ethereum</button>
-            <button onClick={() => toggleFavorite('crypto', 'Altcoins')}>Altcoins</button>
-          </div>
-        )}
-      </div>
+          <PopupBubble favorite={currentFavorite} onSelect={handleSelect} />
+        </div>
+      )}
     </div>
   );
 };

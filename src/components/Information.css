@@ -1,9 +1,10 @@
 /* src/components/Information.css */
 .menu-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    padding: 0 10px;
+    padding: 0 10px; /* Ensure padding is consistent */
+    width: 100%;
   }
   
   .icons {
@@ -20,12 +21,6 @@
     flex-grow: 1;
     text-align: center;
     font-size: 24px;
-    line-height: 24px; /* Ensure vertical alignment with icons */
-  }
-  
-  .toggle-switch {
-    display: flex;
-    align-items: center;
   }
   
   .user-icon {
