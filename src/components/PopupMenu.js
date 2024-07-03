@@ -7,7 +7,7 @@ import Support from './Support';
 import './PopupMenu.css';
 
 const PopupMenu = () => {
-  const [isOn, setIsOn] = useState(false);
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     // Retrieve the stored state when the popup is loaded
@@ -16,27 +16,23 @@ const PopupMenu = () => {
         console.error("Error retrieving chrome.storage:", chrome.runtime.lastError);
       } else {
         if (result.isActive !== undefined) {
-          setIsOn(result.isActive);
+          setIsActive(result.isActive);
         }
       }
     });
   }, []);
 
   const handleToggle = () => {
-    const newIsOn = !isOn;
-    setIsOn(newIsOn);
+    const newIsActive = !isActive;
+    setIsActive(newIsActive);
     chrome.runtime.sendMessage({ message: "toggleOverlay" }, (response) => {
-      if (chrome.runtime.lastError) {
-        console.error("Error sending message:", chrome.runtime.lastError);
-      } else {
-        console.log(response.status);
-      }
+      console.log(response.status);
     });
   };
 
   return (
     <div className="popup-menu">
-      <Information isOn={isOn} handleToggle={handleToggle} />
+      <Information isActive={isActive} handleToggle={handleToggle} />
       <Speed />
       <Favorites />
       <Support />

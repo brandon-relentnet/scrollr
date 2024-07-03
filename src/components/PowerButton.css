@@ -1,0 +1,22 @@
+/* src/components/PowerButton.css */
+.power-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #666; /* Default background color */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .power-button.active {
+    background-color: #4caf50; /* Background color when active */
+  }
+  
+  .power-button i {
+    font-size: 20px;
+  }
+  

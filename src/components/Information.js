@@ -1,9 +1,9 @@
 // src/components/Information.js
 import React from 'react';
-import ToggleSwitch from './ToggleSwitch';
+import PowerButton from './PowerButton';
 import './Information.css';
 
-const Information = ({ isOn, handleToggle }) => {
+const Information = ({ isActive, handleToggle }) => {
   return (
     <div className="menu-header">
       <div className="icons">
@@ -11,7 +11,7 @@ const Information = ({ isOn, handleToggle }) => {
         <i className="fab fa-facebook"></i>
       </div>
       <div className="title">Scrollr</div>
-      <ToggleSwitch isOn={isOn} handleToggle={handleToggle} />
+      <PowerButton isActive={isActive} handleToggle={handleToggle} />
       <div className="user-icon">
         <i className="fas fa-user"></i>
       </div>
