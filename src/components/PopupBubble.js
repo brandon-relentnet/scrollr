@@ -1,5 +1,6 @@
 // src/components/PopupBubble.js
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import './PopupBubble.css';
 
 const leagueOptions = {
@@ -9,10 +10,23 @@ const leagueOptions = {
   Crypto: ["Bitcoin", "Ethereum", "Altcoins", "None"]
 };
 
-const PopupBubble = ({ favorite, onSelect }) => {
+const PopupBubble = ({ favorite, onSelect, position }) => {
+  const popupRef = useRef(null);
+
+  useEffect(() => {
+    if (popupRef.current) {
+      const popupWidth = popupRef.current.offsetWidth;
+      const popupHeight = popupRef.current.offsetHeight;
+      const adjustedLeft = position.left - popupWidth / 2;
+      const adjustedTop = position.top - popupHeight / 2;
+      popupRef.current.style.left = `${adjustedLeft}px`;
+      popupRef.current.style.top = `${adjustedTop}px`;
+    }
+  }, [position]);
+
   const options = leagueOptions[favorite] || [];
-  return (
-    <div className="popup-bubble">
+  const popupContent = (
+    <div className="popup-bubble" ref={popupRef}>
       {options.map((option) => (
         <button key={option} onClick={() => onSelect(option)}>
           {option}
@@ -20,6 +34,8 @@ const PopupBubble = ({ favorite, onSelect }) => {
       ))}
     </div>
   );
+
+  return createPortal(popupContent, document.body);
 };
 
 export default PopupBubble;
