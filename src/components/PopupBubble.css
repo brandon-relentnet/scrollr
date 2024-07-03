@@ -1,16 +1,18 @@
 /* src/components/PopupBubble.css */
 .popup-bubble {
     position: absolute;
-    background-color: #2c2c3e;
-    border: 1px solid #444;
+    background-color: rgb(24, 24, 37);
     border-radius: 5px;
     padding: 10px;
+    padding-left: 14px;
     display: flex;
     flex-direction: column;
     z-index: 1000;
     transform: scale(0);
     transform-origin: center; /* Adjusted to center */
     animation: zoomIn 0.3s forwards ease-out;
+    gap: 10px;
+    box-shadow: rgba(0, 0, 0, 0.25) -1.95px 1.95px 2.6px, rgba(137, 220, 235) -6px 6px;
   }
   
   @keyframes zoomIn {
@@ -23,11 +25,10 @@
   }
   
   .popup-bubble button {
-    background-color: #444;
+    background-color: #313244;
     color: #fff;
     border: none;
     padding: 10px;
-    margin-bottom: 5px;
     border-radius: 5px;
     cursor: pointer;
   }
@@ -37,6 +38,6 @@
   }
   
   .popup-bubble button:hover {
-    background-color: #555;
+    background-color: #45475a;
   }
   

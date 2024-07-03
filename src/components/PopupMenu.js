@@ -57,13 +57,9 @@ const PopupMenu = () => {
           <Speed />
         </div>
         <div className="menu-right">
-          <div className="favorites-support">
-            <div className="favorites">
-              <Favorites />
-            </div>
-            <div className="support">
-              <Support />
-            </div>
+          <div className="favorites-support">           
+              <Favorites />                       
+              <Support />       
           </div>
         </div>
       </div>

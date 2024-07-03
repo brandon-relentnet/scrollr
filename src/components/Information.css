@@ -3,8 +3,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 10px; /* Ensure padding is consistent */
     width: 100%;
+    border-bottom: 1px solid #313244;
   }
   
   .icons {

@@ -12,7 +12,7 @@
   }
   
   .power-button.active {
-    background-color: rgba(76, 175, 80, 0.7); /* Green background when active */
+    background-color: rgb(166, 227, 161); /* Green background when active */
   }
   
   .power-button i {

@@ -1,19 +1,61 @@
 // src/components/Speed.js
-import React from 'react';
+import React, { useState } from 'react';
 import './Speed.css';
 
 const Speed = () => {
+  const [selectedSpeed, setSelectedSpeed] = useState('');
+  const [customSpeed, setCustomSpeed] = useState('');
+
+  const handleSpeedChange = (event) => {
+    const { value } = event.target;
+    setSelectedSpeed(value);
+    if (value !== 'custom') {
+      console.log(value);
+    }
+  };
+
+  const handleCustomSpeedChange = (event) => {
+    setCustomSpeed(event.target.value);
+  };
+
+  const handleCustomSpeedSelect = () => {
+    setSelectedSpeed('custom');
+    console.log(customSpeed);
+  };
+
   return (
-    <div className="menu-section">
-        <h3>Speed</h3>
-      <ul>
-        <li>Slowest</li>
-        <li>Slow</li>
-        <li>Normal</li>
-        <li>Fast</li>
-        <li>Fastest</li>
-        <li>Custom <input type="number" min="0" step="0.1" /></li>
-      </ul>
+    <div className="speed">
+      <h3>Speed</h3>
+      <div className="speed-options">
+        {['Slowest', 'Slow', 'Normal', 'Fast', 'Fastest'].map((speed, index) => (
+          <label key={speed}>
+            <input
+              type="radio"
+              name="speed"
+              value={index + 1}
+              checked={selectedSpeed === `${index + 1}`}
+              onChange={handleSpeedChange}
+            />
+            {speed}
+          </label>
+        ))}
+        <label>
+          <input
+            type="checkbox"
+            name="speed"
+            value="custom"
+            checked={selectedSpeed === 'custom'}
+            onChange={handleCustomSpeedSelect}
+          />
+          Custom
+          <input
+            type="number"
+            value={customSpeed}
+            onChange={handleCustomSpeedChange}
+            disabled={selectedSpeed !== 'custom'}
+          />
+        </label>
+      </div>
     </div>
   );
 };
