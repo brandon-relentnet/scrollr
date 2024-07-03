@@ -1,0 +1,58 @@
+/* src/components/ToggleSwitch.css */
+.toggle-switch {
+    position: relative;
+    width: 50px; /* Adjust width for better visibility */
+    height: 24px; /* Adjust height for better visibility */
+    display: inline-block;
+    text-align: left;
+  }
+  
+  .toggle-switch-checkbox {
+    display: none;
+  }
+  
+  .toggle-switch-label {
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid #999999;
+    border-radius: 20px;
+    background-color: #ddd; /* Default background color */
+  }
+  
+  .toggle-switch-inner {
+    display: block;
+    width: 200%;
+    margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+    background-color: #bbb; /* Inner background color */
+  }
+  
+  .toggle-switch-switch {
+    display: block;
+    width: 20px; /* Adjust width for better visibility */
+    margin: 2px; /* Adjust margin for better alignment */
+    background: #ffffff;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 28px; /* Adjust right position for better alignment */
+    border: 2px solid #999999;
+    border-radius: 20px;
+    transition: all 0.3s ease-in 0s;
+  }
+  
+  .toggle-switch-checkbox:checked + .toggle-switch-label {
+    background-color: #4caf50; /* Background color when checked */
+  }
+  
+  .toggle-switch-checkbox:checked + .toggle-switch-label .toggle-switch-inner {
+    background-color: #4caf50; /* Inner background color when checked */
+    margin-left: 0;
+  }
+  
+  .toggle-switch-checkbox:checked + .toggle-switch-label .toggle-switch-switch {
+    right: 0px;
+    background: #fff; /* Ensure the switch is always white */
+  }
+  

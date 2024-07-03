@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+  "name": "My React Extension",
+  "version": "1.0",
+  "description": "A Chrome extension using React.",
+  "browser_action": {
+    "default_popup": "index.html",
+    "default_icon": "icon.png"
+  },
+  "permissions": ["activeTab", "storage"],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"]
+    }
+  ]
+}
