@@ -17,7 +17,7 @@
     cursor: pointer;
     border: 2px solid #999999;
     border-radius: 20px;
-    background-color: #ddd; /* Default background color */
+    background-color: #666; /* Default background color for visibility */
   }
   
   .toggle-switch-inner {
@@ -25,7 +25,7 @@
     width: 200%;
     margin-left: -100%;
     transition: margin 0.3s ease-in 0s;
-    background-color: #bbb; /* Inner background color */
+    background-color: #666; /* Inner background color for visibility */
   }
   
   .toggle-switch-switch {
