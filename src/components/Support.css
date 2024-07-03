@@ -10,12 +10,11 @@
   .support-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 14px;
   }
   
   .support-grid button {
     background-color: #313244;
-    color: #cdd6f4;
     border: none;
     padding: 10px;
     border-radius: 5px;

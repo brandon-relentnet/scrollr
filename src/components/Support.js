@@ -5,10 +5,10 @@ import './Support.css';
 const Support = () => {
   return (
     <div className="support">
-      <h3>Support</h3>
+      <h2>Support</h2>
       <div className="support-grid">
-        <button>Contact us</button>
-        <button>Donate</button>
+        <button><h3>Contact us</h3></button>
+        <button><h3>Donate</h3></button>
       </div>
     </div>
   );

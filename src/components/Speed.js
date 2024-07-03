@@ -25,7 +25,7 @@ const Speed = () => {
 
   return (
     <div className="speed">
-      <h3>Speed</h3>
+      <h2>Speed</h2>
       <div className="speed-options">
         {['Slowest', 'Slow', 'Normal', 'Fast', 'Fastest'].map((speed, index) => (
           <label key={speed}>
@@ -37,7 +37,7 @@ const Speed = () => {
               onChange={handleSpeedChange}
             />
             <span></span>
-            {speed}
+            <h3>{speed}</h3>
           </label>
         ))}
         <label>
@@ -49,7 +49,6 @@ const Speed = () => {
             onChange={handleCustomSpeedSelect}
           />
           <span></span>
-          Custom
           <input
             type="number"
             value={customSpeed}

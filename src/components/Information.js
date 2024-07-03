@@ -10,7 +10,9 @@ const Information = ({ isActive, handleToggle }) => {
         <i className="fab fa-reddit"></i>
         <i className="fab fa-facebook"></i>
       </div>
-      <div className="title">Scrollr</div>
+      <div className="title">
+        <h2>Scrollr</h2>
+      </div>
       <PowerButton isActive={isActive} handleToggle={handleToggle} />
       <div className="user-icon">
         <i className="fas fa-user"></i>

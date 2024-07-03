@@ -32,16 +32,18 @@ const Favorites = () => {
 
   return (
     <div className="favorites">
-      <h3>Favorites</h3>
+      <h2>Favorites</h2>
       <div className="favorites-grid">
         {['Baseball', 'Stocks', 'Football', 'Crypto'].map((favorite) => (
-          <button
-            key={favorite}
-            onClick={(e) => handleFavoriteClick(e, favorite)}
-            className={selectedFavorite[favorite] ? 'selected' : ''}
-          >
-            {favorite} {selectedFavorite[favorite] ? `(${selectedFavorite[favorite]})` : ''}
-          </button>
+          
+            <button
+                key={favorite}
+                onClick={(e) => handleFavoriteClick(e, favorite)}
+                className={selectedFavorite[favorite] ? 'selected' : ''}
+            >
+                <h3> {favorite} {selectedFavorite[favorite] ? `(${selectedFavorite[favorite]})` : ''} </h3>
+            </button>
+          
         ))}
       </div>
       {showPopup && (
