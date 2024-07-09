@@ -1,57 +1,61 @@
 /* src/components/Speed.css */
 .speed {
-    padding: 10px;
-  }
-  
-  .speed h3 {
-    margin: 0px;
-  }
-  
-  .speed-options {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .speed-options label {
-    margin-bottom: 5px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .speed-options input[type="radio"],
-  .speed-options input[type="checkbox"] {
-    display: none;
-  }
-  
-  .speed-options input[type="radio"] + span,
-  .speed-options input[type="checkbox"] + span {
-    width: 20px;
-    height: 20px;
-    background-color: #313244;
-    border-radius: 5px;
-    display: inline-block;
-    margin-right: 10px;
-    cursor: pointer;
-    position: relative;
-  }
-  
-  .speed-options input[type="radio"]:checked + span::after,
-  .speed-options input[type="checkbox"]:checked + span::after {
-    content: '';
-    width: 12px;
-    height: 12px;
-    background-color: rgb(137, 220, 235);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 2px;
-  }
-  
-  .speed-options input[type="number"] {
-    width: 25px;
-  }
+  padding: 10px;
+}
+
+.speed h3 {
+  margin: 0px;
+}
+
+.speed-options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.speed-options label {
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.speed-options input[type="radio"],
+.speed-options input[type="checkbox"] {
+  display: none;
+}
+
+.speed-options input[type="radio"] + span,
+.speed-options input[type="checkbox"] + span {
+  width: 20px;
+  height: 20px;
+  background-color: #313244;
+  border-radius: 5px;
+  display: inline-block;
+  margin-right: 10px;
+  cursor: pointer;
+  position: relative;
+}
+
+.speed-options input[type="radio"]:checked + span::after,
+.speed-options input[type="checkbox"]:checked + span::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  background-color: rgb(137, 220, 235);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+}
+
+.speed-options input[type="number"] {
+  width: 36px;
+  margin-top: 2px;
+}
+
+#root > div > div > div.menu-content > div.menu-left > div > div > label:nth-child(6) {
+  height: 27px;
+}
 
 
-  

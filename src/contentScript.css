@@ -1,0 +1,50 @@
+.overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 250px;
+  background-color: #1e1e2e;
+  border-top: 1px solid #313244;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.overlay-tabs {
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid #313244;
+}
+
+.overlay-tab {
+  background-color: #313244;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  color: #cdd6f4;
+  font-family: 'Poppins', sans-serif;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.overlay-tab.active {
+  background-color: #4caf50;
+}
+
+.overlay-tab:hover {
+  background-color: #45475a;
+}
+
+.overlay-content-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #cdd6f4;
+  font-family: 'Poppins', sans-serif;
+}
+
+.overlay-content {
+  text-align: center;
+}

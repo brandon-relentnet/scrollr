@@ -29,8 +29,9 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         { from: 'manifest.json', to: '' },
-        { from: 'background.js', to: '' },
-        { from: 'contentScript.js', to: '' }
+        { from: 'src/background.js', to: '' },
+        { from: 'src/contentScript.js', to: '' },
+        { from: 'src/contentScript.css', to: '' }  // Ensure CSS is copied
       ]
     })
   ],
