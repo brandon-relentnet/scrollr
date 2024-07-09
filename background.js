@@ -1,25 +1,27 @@
-let isActive = false;
-
-// Retrieve the initial state from chrome.storage when the background script loads
-chrome.storage.local.get(['isActive'], function(result) {
-  if (result.isActive !== undefined) {
-    isActive = result.isActive;
-  }
+// background.js
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.local.set({ isActive: false });
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === "toggleOverlay") {
-    isActive = !isActive;
-    chrome.storage.local.set({ isActive: isActive }); // Store the new state
-    chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-      chrome.tabs.sendMessage(tabs[0].id, {message: "toggleOverlay", isActive: isActive}, (response) => {
-        if (chrome.runtime.lastError) {
-          console.error(chrome.runtime.lastError.message);
-        } else {
-          console.log('Response from content script:', response.status);
-        }
+    chrome.storage.local.set({ isActive: request.isActive }, () => {
+      chrome.tabs.query({}, (tabs) => {
+        tabs.forEach((tab) => {
+          chrome.tabs.sendMessage(tab.id, { message: "updateOverlay", isActive: request.isActive });
+        });
       });
     });
+    sendResponse({ status: "Overlay toggled" });
   }
-  sendResponse({status: "done"});
+});
+
+chrome.tabs.onActivated.addListener(() => {
+  chrome.storage.local.get("isActive", (result) => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      tabs.forEach((tab) => {
+        chrome.tabs.sendMessage(tab.id, { message: "updateOverlay", isActive: result.isActive });
+      });
+    });
+  });
 });

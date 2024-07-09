@@ -4,7 +4,7 @@ import Information from './Information';
 import Speed from './Speed';
 import Favorites from './Favorites';
 import Support from './Support';
-import PowerButton from './PowerButton'; // Import PowerButton
+import PowerButton from './PowerButton';
 import './PopupMenu.css';
 
 const PopupMenu = () => {
@@ -34,7 +34,7 @@ const PopupMenu = () => {
   const handleToggle = () => {
     const newIsActive = !isActive;
     setIsActive(newIsActive);
-    chrome.runtime.sendMessage({ message: "toggleOverlay" }, (response) => {
+    chrome.runtime.sendMessage({ message: "toggleOverlay", isActive: newIsActive }, (response) => {
       console.log(response.status);
     });
   };
@@ -47,7 +47,7 @@ const PopupMenu = () => {
           <i className="fab fa-facebook"></i>
         </div>
         <div className="title">Scrollr</div>
-        <PowerButton isActive={isActive} handleToggle={handleToggle} /> {/* Use PowerButton */}
+        <PowerButton isActive={isActive} handleToggle={handleToggle} />
         <div className="user-icon">
           <i className="fas fa-user"></i>
         </div>
@@ -57,9 +57,13 @@ const PopupMenu = () => {
           <Speed />
         </div>
         <div className="menu-right">
-          <div className="favorites-support">           
-              <Favorites />                       
-              <Support />       
+          <div className="favorites-support">
+            <div className="favorites">
+              <Favorites />
+            </div>
+            <div className="support">
+              <Support />
+            </div>
           </div>
         </div>
       </div>

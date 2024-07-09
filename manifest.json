@@ -1,15 +1,15 @@
 {
-  "manifest_version": 3,
-  "name": "My React Extension",
-  "version": "1.0",
-  "description": "A Chrome extension using React.",
+    "manifest_version": 3,
+    "name": "Scrollr",
+    "version": "1.0",
+    "description": "A browser extension to control scrolling speed.",
+    "permissions": ["storage", "activeTab", "tabs"],
+    "background": {
+      "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "index.html",
     "default_icon": "icon.png"
-  },
-  "permissions": ["activeTab", "storage"],
-  "background": {
-    "service_worker": "background.js"
   },
   "content_scripts": [
     {
