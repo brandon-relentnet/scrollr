@@ -50,11 +50,7 @@
   }
   
   .speed-options input[type="number"] {
-    width: 36px;
-  }
-
-  #root > div > div > div.menu-content > div.menu-left > div > div > label:nth-child(6) {
-    height: 27px;
+    width: 25px;
   }
 
 
