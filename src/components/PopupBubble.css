@@ -1,43 +1,24 @@
-/* src/components/PopupBubble.css */
 .popup-bubble {
-    position: absolute;
-    background-color: rgb(24, 24, 37);
-    border-radius: 5px;
-    padding: 10px;
-    padding-left: 14px;
-    display: flex;
-    flex-direction: column;
-    z-index: 1000;
-    transform: scale(0);
-    transform-origin: center; /* Adjusted to center */
-    animation: zoomIn 0.3s forwards ease-out;
-    gap: 10px;
-    box-shadow: rgba(0, 0, 0, 0.25) -1.95px 1.95px 2.6px, rgba(137, 220, 235) -6px 6px;
-  }
-  
-  @keyframes zoomIn {
-    0% {
-      transform: scale(0);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-  
-  .popup-bubble button {
-    background-color: #313244;
-    color: #fff;
-    border: none;
-    padding: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .popup-bubble button:last-child {
-    margin-bottom: 0;
-  }
-  
-  .popup-bubble button:hover {
-    background-color: #45475a;
-  }
-  
+  position: absolute;
+  background-color: #1e1e2e;
+  border: 1px solid #313244;
+  border-radius: 5px;
+  box-shadow: rgba(0, 0, 0, 0.25) -1.95px 1.95px 2.6px, rgba(108, 112, 134) -5px 5px;
+  padding: 10px;
+  z-index: 1000;
+}
+
+.popup-bubble button {
+  display: block;
+  background-color: #313244;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 5px;
+  text-align: center;
+}
+
+.popup-bubble button:hover {
+  background-color: #45475a;
+}

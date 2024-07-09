@@ -1,41 +1,25 @@
 // src/components/PopupBubble.js
-import React, { useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import React from 'react';
 import './PopupBubble.css';
 
-const leagueOptions = {
-  Baseball: ["MLB", "Minor League", "College Baseball", "None"],
-  Football: ["NFL", "College Football", "Arena Football", "None"],
-  Stocks: ["NYSE", "NASDAQ", "OTC", "None"],
-  Crypto: ["Bitcoin", "Ethereum", "Altcoins", "None"]
+const options = {
+  Baseball: ['MLB', 'Minor League', 'College'],
+  Stocks: ['NASDAQ', 'NYSE', 'Dow Jones'],
+  Football: ['NFL', 'College', 'CFL'],
+  Crypto: ['Bitcoin', 'Ethereum', 'Dogecoin'],
 };
 
-const PopupBubble = ({ favorite, onSelect, position }) => {
-  const popupRef = useRef(null);
-
-  useEffect(() => {
-    if (popupRef.current) {
-      const popupWidth = popupRef.current.offsetWidth;
-      const popupHeight = popupRef.current.offsetHeight;
-      const adjustedLeft = position.left - popupWidth / 2;
-      const adjustedTop = position.top - popupHeight / 2;
-      popupRef.current.style.left = `${adjustedLeft}px`;
-      popupRef.current.style.top = `${adjustedTop}px`;
-    }
-  }, [position]);
-
-  const options = leagueOptions[favorite] || [];
-  const popupContent = (
-    <div className="popup-bubble" ref={popupRef}>
-      {options.map((option) => (
+const PopupBubble = ({ preset, onSelect, position }) => {
+  return (
+    <div className="popup-bubble" style={{ top: position.top, left: position.left }}>
+      {options[preset].map((option) => (
         <button key={option} onClick={() => onSelect(option)}>
           {option}
         </button>
       ))}
+      <button onClick={() => onSelect('None')}>None</button>
     </div>
   );
-
-  return createPortal(popupContent, document.body);
 };
 
 export default PopupBubble;

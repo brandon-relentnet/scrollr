@@ -1,8 +1,7 @@
-// src/components/PopupMenu.js
 import React, { useState, useEffect, useRef } from 'react';
 import Information from './Information';
 import Speed from './Speed';
-import Favorites from './Favorites';
+import Presets from './Presets';
 import Support from './Support';
 import PowerButton from './PowerButton';
 import './PopupMenu.css';
@@ -70,10 +69,10 @@ const PopupMenu = () => {
           <Speed />
         </div>
         <div className="menu-right">
-          <div className="favorites-support">
-            <div className="favorites">
+          <div className="presets-support">
+            <div className="presets">
               <h2>Presets</h2>
-              <Favorites />
+              <Presets />
             </div>
             <div className="support">
               <h2>Support</h2>
