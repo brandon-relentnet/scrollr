@@ -1,5 +1,5 @@
 // src/components/PowerButton.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './PowerButton.css';
 
 const PowerButton = ({ isActive, handleToggle }) => {
