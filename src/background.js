@@ -1,4 +1,3 @@
-// background.js
 function isSpecialPage(url) {
   return url.startsWith('chrome://') || url.startsWith('chrome-extension://');
 }

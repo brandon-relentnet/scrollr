@@ -1,4 +1,6 @@
-// contentScript.js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Overlay from './components/Overlay';
 
 function isSpecialPage(url) {
   return url.startsWith('chrome://') || url.startsWith('chrome-extension://');
@@ -19,24 +21,15 @@ function toggleOverlay(isActive) {
   overlay.style.height = '250px';
   overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
   overlay.style.zIndex = '9999';
-  
+
   if (isActive) {
-    // Load the React component dynamically
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('overlay.bundle.js');
-    script.onload = () => {
-      const { createElement } = React;
-      const { render } = ReactDOM;
-      const Overlay = window.Overlay.default;
-      render(createElement(Overlay), overlay);
-    };
-    document.body.appendChild(script);
+    ReactDOM.render(<Overlay />, overlay);
   } else {
-    overlay.innerHTML = ''; // Clear the overlay content when deactivated
+    ReactDOM.unmountComponentAtNode(overlay);
   }
 }
 
-// Initialize overlay based on stored state if not on a special page
+// Listen for messages from the background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === "updateOverlay") {
     toggleOverlay(request.isActive);
@@ -44,6 +37,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
+// Check initial state and initialize overlay if not on a special page
 chrome.storage.local.get("isActive", (result) => {
   chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
     const activeTab = tabs[0];

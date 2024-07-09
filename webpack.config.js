@@ -3,10 +3,14 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  entry: './src/index.js',
+  entry: {
+    main: './src/index.js',
+    contentScript: './src/contentScriptIndex.js',
+    overlay: './src/components/Overlay.js'
+  },
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: 'bundle.js'
+    filename: '[name].bundle.js'
   },
   module: {
     rules: [
@@ -24,14 +28,18 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: './public/index.html',
-      filename: 'index.html'
+      filename: 'index.html',
+      chunks: ['main']
+    }),
+    new HtmlWebpackPlugin({
+      template: './public/contentScript.html',
+      filename: 'contentScript.html',
+      chunks: ['contentScript']
     }),
     new CopyWebpackPlugin({
       patterns: [
         { from: 'manifest.json', to: '' },
-        { from: 'src/background.js', to: '' },
-        { from: 'src/contentScript.js', to: '' },
-        { from: 'src/contentScript.css', to: '' }  // Ensure CSS is copied
+        { from: 'src/background.js', to: '' }
       ]
     })
   ],
