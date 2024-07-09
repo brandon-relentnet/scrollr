@@ -1,10 +1,7 @@
 // contentScript.js
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.message === "updateOverlay") {
-    toggleOverlay(request.isActive);
-    sendResponse({ status: "Overlay updated" });
-  }
-});
+function isSpecialPage(url) {
+  return url.startsWith('chrome://') || url.startsWith('chrome-extension://');
+}
 
 function toggleOverlay(isActive) {
   let overlay = document.getElementById('scrollr-overlay');
@@ -23,7 +20,19 @@ function toggleOverlay(isActive) {
   overlay.style.zIndex = '9999';
 }
 
-// Initialize overlay based on stored state
+// Initialize overlay based on stored state if not on a special page
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.message === "updateOverlay") {
+    toggleOverlay(request.isActive);
+    sendResponse({ status: "Overlay updated" });
+  }
+});
+
 chrome.storage.local.get("isActive", (result) => {
-  toggleOverlay(result.isActive);
+  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+    const activeTab = tabs[0];
+    if (activeTab && !isSpecialPage(activeTab.url)) {
+      toggleOverlay(result.isActive);
+    }
+  });
 });

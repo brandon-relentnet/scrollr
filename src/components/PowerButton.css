@@ -29,6 +29,8 @@
   cursor: not-allowed;
 }
 
+#root > div > div > div.menu-header > div.title-container > div > div.power-button.active > i
+
 .power-button-disabled-overlay {
   position: absolute;
   top: 0;
