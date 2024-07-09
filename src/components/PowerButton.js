@@ -1,11 +1,15 @@
 // src/components/PowerButton.js
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import './PowerButton.css';
 
-const PowerButton = ({ isActive, handleToggle }) => {
+const PowerButton = ({ isActive, handleToggle, isDisabled }) => {
   return (
-    <div className={`power-button ${isActive ? 'active' : ''}`} onClick={handleToggle}>
+    <div
+      className={`power-button ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
+      onClick={!isDisabled ? handleToggle : null}
+    >
       <i className="fas fa-power-off"></i>
+      {isDisabled && <div className="power-button-disabled-overlay"></div>}
     </div>
   );
 };

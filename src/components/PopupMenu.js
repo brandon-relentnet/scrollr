@@ -9,6 +9,7 @@ import './PopupMenu.css';
 
 const PopupMenu = () => {
   const [isActive, setIsActive] = useState(false);
+  const [isNewTab, setIsNewTab] = useState(false);
   const popupRef = useRef(null);
 
   useEffect(() => {
@@ -20,6 +21,13 @@ const PopupMenu = () => {
         if (result.isActive !== undefined) {
           setIsActive(result.isActive);
         }
+      }
+    });
+
+    // Check if the current tab is the new tab page
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      if (tabs[0].url === 'chrome://newtab/') {
+        setIsNewTab(true);
       }
     });
 
@@ -46,8 +54,13 @@ const PopupMenu = () => {
           <i className="fab fa-reddit"></i>
           <i className="fab fa-facebook"></i>
         </div>
-        <div className="title">Scrollr</div>
-        <PowerButton isActive={isActive} handleToggle={handleToggle} />
+        <div className="title-container">
+          <div className="title-and-button">
+            <div className="title">Scrollr</div>
+            <PowerButton isActive={isActive} handleToggle={handleToggle} isDisabled={isNewTab} />
+          </div>
+          {isNewTab && <div className="new-tab-warning">The overlay does not work on the new tab page.</div>}
+        </div>
         <div className="user-icon">
           <i className="fas fa-user"></i>
         </div>
@@ -59,9 +72,11 @@ const PopupMenu = () => {
         <div className="menu-right">
           <div className="favorites-support">
             <div className="favorites">
+              <h2>Presets</h2>
               <Favorites />
             </div>
             <div className="support">
+              <h2>Support</h2>
               <Support />
             </div>
           </div>
