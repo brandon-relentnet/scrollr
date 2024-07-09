@@ -1,18 +1,51 @@
 .overlay-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 150px;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
+  align-items: flex-start; /* Align items to the start */
+  color: #cdd6f4;
+}
+
+.tab-container {
+  display: flex;
 }
 
 .tab {
-  flex: 1;
-  padding: 10px;
+  padding: 4px 12px 4px 12px;
+  margin: 2px;
+  border-radius: 5px;
   cursor: pointer;
+  user-select: none;
+  color: #a6adc8; 
+  background-color: #6c7086;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.tab:hover {
+  background-color: #45475a;
+}
+
+.tab-active {
+  background-color: #1e1e2e;
+  color: #cdd6f4;
+  box-sizing: border-box;
+  margin-bottom: 0px;
+  border-radius: 5px 5px 0px 0px;
+  transform: scale(1.05); /* Slightly scale the active tab */
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3); /* Add a subtle shadow for depth */
 }
 
 .content {
-  flex: 4;
-  padding: 20px;
+  text-align: center;
+  height: 110px;
+  width: 100%;
+  background-color: #1e1e2e;
+  padding: 15px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px -1px 6px;
+  transition: opacity 0.3s ease; /* Smooth transition for content visibility */
 }

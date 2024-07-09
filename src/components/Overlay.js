@@ -1,54 +1,53 @@
 import React, { useState, useEffect } from 'react';
+import './Overlay.css';
 
 const Overlay = () => {
-  const [activeTab, setActiveTab] = useState('');
-  const [selectedPreset, setSelectedPreset] = useState({});
+  const [activeTab, setActiveTab] = useState('Baseball');
+  const [preset, setPreset] = useState({});
 
   useEffect(() => {
-    // Fetch the selected preset from storage
-    chrome.storage.local.get('selectedPreset', (result) => {
-      if (result.selectedPreset) {
-        setSelectedPreset(result.selectedPreset);
+    // Retrieve the stored active tab and selected preset from Chrome local storage
+    chrome.storage.local.get(['activeTab', 'selectedPreset'], function (result) {
+      if (result.activeTab) {
+        setActiveTab(result.activeTab);
       }
-    });
-
-    // Listen for updates to the selected preset
-    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      if (request.message === "presetUpdated") {
-        setSelectedPreset(request.selectedPreset);
+      if (result.selectedPreset) {
+        setPreset(result.selectedPreset);
       }
     });
   }, []);
 
-  const renderContent = () => {
-    if (!selectedPreset[activeTab]) {
-      return `Please select a ${activeTab.toLowerCase()} preset from the popup menu.`;
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+    // Store the active tab in Chrome local storage
+    chrome.storage.local.set({ activeTab: tab });
+  };
+
+  const getContent = () => {
+    if (!preset[activeTab]) {
+      return `Select a ${activeTab.toLowerCase()} preset`;
     }
-    return `${selectedPreset[activeTab]} preset displayed here.`;
+    return `${activeTab} preset: ${preset[activeTab]} displayed here`;
   };
 
   return (
-    <div style={{ padding: '10px', color: 'white' }}>
-      <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center' }}>
-        <div onClick={() => setActiveTab('Baseball')} style={tabStyle(activeTab === 'Baseball')}>B</div>
-        <div onClick={() => setActiveTab('Football')} style={tabStyle(activeTab === 'Football')}>F</div>
-        <div onClick={() => setActiveTab('Stocks')} style={tabStyle(activeTab === 'Stocks')}>S</div>
-        <div onClick={() => setActiveTab('Crypto')} style={tabStyle(activeTab === 'Crypto')}>C</div>
+    <div className="overlay-container">
+      <div className="tab-container">
+        {['Baseball', 'Stocks', 'Football', 'Crypto'].map((tab) => (
+          <div
+            key={tab}
+            className={`tab ${activeTab === tab ? 'tab-active' : ''}`}
+            onClick={() => handleTabClick(tab)}
+          >
+            {tab.charAt(0)}
+          </div>
+        ))}
       </div>
-      <div id="content" style={{ textAlign: 'center', marginTop: '10px' }}>
-        {activeTab ? renderContent() : 'Select a tab to display its preset.'}
+      <div className="content">
+        {getContent()}
       </div>
     </div>
   );
 };
-
-const tabStyle = (isActive) => ({
-  padding: '10px',
-  margin: '0 5px',
-  backgroundColor: isActive ? '#4caf50' : '#1e1e2e',
-  borderRadius: '5px',
-  cursor: 'pointer',
-  userSelect: 'none'
-});
 
 export default Overlay;
