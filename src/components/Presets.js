@@ -38,7 +38,10 @@ const Presets = () => {
     setSelectedPreset(newSelectedPreset);
     setShowPopup(false);
     // Store the new selected presets in Chrome local storage
-    chrome.storage.local.set({ selectedPreset: newSelectedPreset });
+    chrome.storage.local.set({ selectedPreset: newSelectedPreset }, () => {
+      // Notify overlay of the update
+      chrome.runtime.sendMessage({ message: "presetUpdated", selectedPreset: newSelectedPreset });
+    });
   };
 
   return (

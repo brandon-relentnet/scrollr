@@ -1,13 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Overlay = () => {
   const [activeTab, setActiveTab] = useState('');
+  const [selectedPreset, setSelectedPreset] = useState({});
+
+  useEffect(() => {
+    // Fetch the selected preset from storage
+    chrome.storage.local.get('selectedPreset', (result) => {
+      if (result.selectedPreset) {
+        setSelectedPreset(result.selectedPreset);
+      }
+    });
+
+    // Listen for updates to the selected preset
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.message === "presetUpdated") {
+        setSelectedPreset(request.selectedPreset);
+      }
+    });
+  }, []);
 
   const renderContent = () => {
-    if (activeTab === '') {
-      return 'Select a preset to display its content here.';
+    if (!selectedPreset[activeTab]) {
+      return `Please select a ${activeTab.toLowerCase()} preset from the popup menu.`;
     }
-    return `Displaying content for ${activeTab}`;
+    return `${selectedPreset[activeTab]} preset displayed here.`;
   };
 
   return (
@@ -19,7 +36,7 @@ const Overlay = () => {
         <div onClick={() => setActiveTab('Crypto')} style={tabStyle(activeTab === 'Crypto')}>C</div>
       </div>
       <div id="content" style={{ textAlign: 'center', marginTop: '10px' }}>
-        {renderContent()}
+        {activeTab ? renderContent() : 'Select a tab to display its preset.'}
       </div>
     </div>
   );
