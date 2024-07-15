@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import Overlay from './components/Overlay';
 
 function isSpecialPage(url) {
-  return window.location.href.startsWith('chrome://') || window.location.href.startsWith('chrome-extension://');
+  return url.startsWith('chrome://') || url.startsWith('chrome-extension://');
 }
 
 function toggleOverlay(isActive, activeOverlayTab) {
@@ -26,7 +26,7 @@ function toggleOverlay(isActive, activeOverlayTab) {
 }
 
 // Listen for messages from the background script
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sendResponse) => {
   if (request.message === "updateOverlay") {
     toggleOverlay(request.isActive, request.activeOverlayTab);
     sendResponse({ status: "Overlay updated" });
