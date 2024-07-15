@@ -26,7 +26,7 @@ function toggleOverlay(isActive, activeOverlayTab) {
 }
 
 // Listen for messages from the background script
-chrome.runtime.onMessage.addListener((request, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === "updateOverlay") {
     toggleOverlay(request.isActive, request.activeOverlayTab);
     sendResponse({ status: "Overlay updated" });
@@ -36,6 +36,10 @@ chrome.runtime.onMessage.addListener((request, sendResponse) => {
 // Check initial state and initialize overlay if not on a special page
 if (!isSpecialPage(window.location.href)) {
   chrome.storage.local.get(["isActive", "activeOverlayTab"], (result) => {
+    if (chrome.runtime.lastError) {
+      console.error("Error retrieving storage data:", chrome.runtime.lastError);
+      return;
+    }
     toggleOverlay(result.isActive, result.activeOverlayTab);
   });
 }

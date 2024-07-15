@@ -36,6 +36,14 @@ const PopupMenu = () => {
       document.documentElement.style.height = `${popupHeight}px`;
       document.body.style.height = `${popupHeight}px`;
     }
+
+    // Listen for preset updates
+    chrome.runtime.onMessage.addListener((request) => {
+      if (request.message === 'presetUpdated') {
+        // Force re-render by updating state
+        setIsActive((prev) => !prev);
+      }
+    });
   }, []);
 
   const handleToggle = () => {
@@ -72,7 +80,7 @@ const PopupMenu = () => {
           <div className="presets-support">
             <div className="presets">
               <h2>Presets</h2>
-              <Presets />
+              <Presets context="popup" />
             </div>
             <div className="support">
               <h2>Support</h2>

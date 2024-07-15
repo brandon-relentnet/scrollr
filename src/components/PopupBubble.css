@@ -6,6 +6,9 @@
   box-shadow: rgba(0, 0, 0, 0.25) -1.95px 1.95px 2.6px, rgba(108, 112, 134) -5px 5px;
   padding: 10px;
   z-index: 1000;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  transform: translate(-50%, -50%); /* Center the bubble horizontally */
 }
 
 .popup-bubble button {
@@ -16,6 +19,7 @@
   border-radius: 5px;
   cursor: pointer;
   margin-bottom: 5px;
+  margin-left: 5px;
   text-align: center;
 }
 
