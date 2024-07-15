@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import './Overlay.css';
 
 const Overlay = () => {
-  const [activeTab, setActiveTab] = useState('Baseball');
+  const [activeOverlayTab, setActiveOverlayTab] = useState('Baseball');
   const [preset, setPreset] = useState({});
 
   useEffect(() => {
     // Retrieve the stored active tab and selected preset from Chrome local storage
-    chrome.storage.local.get(['activeTab', 'selectedPreset'], function (result) {
-      if (result.activeTab) {
-        setActiveTab(result.activeTab);
+    chrome.storage.local.get(['activeOverlayTab', 'selectedPreset'], function (result) {
+      if (result.activeOverlayTab) {
+        setActiveOverlayTab(result.activeOverlayTab);
       }
       if (result.selectedPreset) {
         setPreset(result.selectedPreset);
@@ -17,29 +17,29 @@ const Overlay = () => {
     });
   }, []);
 
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
+  const handleTabClick = (overlayTabs) => {
+    setActiveOverlayTab(overlayTabs);
     // Store the active tab in Chrome local storage
-    chrome.storage.local.set({ activeTab: tab });
+    chrome.storage.local.set({ activeOverlayTab: overlayTabs });
   };
 
   const getContent = () => {
-    if (!preset[activeTab]) {
-      return `Select a ${activeTab.toLowerCase()} preset`;
+    if (!preset[activeOverlayTab]) {
+      return `Select a ${activeOverlayTab.toLowerCase()} preset`;
     }
-    return `${activeTab} preset: ${preset[activeTab]} displayed here`;
+    return `${activeOverlayTab} preset: ${preset[activeOverlayTab]} displayed here`;
   };
 
   return (
     <div className="overlay-container">
-      <div className="tab-container">
-        {['Baseball', 'Stocks', 'Football', 'Crypto'].map((tab) => (
+      <div className="overlayTabs-container">
+        {['Baseball', 'Stocks', 'Football', 'Crypto'].map((overlayTabs) => (
           <div
-            key={tab}
-            className={`tab ${activeTab === tab ? 'tab-active' : ''}`}
-            onClick={() => handleTabClick(tab)}
+            key={overlayTabs}
+            className={`tab ${activeOverlayTab === overlayTabs ? 'overlayTab-active' : ''}`}
+            onClick={() => handleTabClick(overlayTabs)}
           >
-            {tab.charAt(0)}
+            {overlayTabs.charAt(0)}
           </div>
         ))}
       </div>

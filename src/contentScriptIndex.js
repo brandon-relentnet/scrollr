@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom';
 import Overlay from './components/Overlay';
 
 function isSpecialPage(url) {
-  return url.startsWith('chrome://') || url.startsWith('chrome-extension://');
+  return window.location.href.startsWith('chrome://') || window.location.href.startsWith('chrome-extension://');
 }
 
-function toggleOverlay(isActive, activeTab) {
+function toggleOverlay(isActive, activeOverlayTab) {
   let overlay = document.getElementById('scrollr-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -22,23 +22,20 @@ function toggleOverlay(isActive, activeTab) {
   overlay.style.height = 'auto';
   overlay.style.zIndex = '9999';
 
-  ReactDOM.render(<Overlay initialTab={activeTab} />, overlay);
+  ReactDOM.render(<Overlay initialTab={activeOverlayTab} />, overlay);
 }
 
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.message === "updateOverlay") {
-    toggleOverlay(request.isActive, request.activeTab);  // Pass activeTab here
+    toggleOverlay(request.isActive, request.activeOverlayTab);
     sendResponse({ status: "Overlay updated" });
   }
 });
 
 // Check initial state and initialize overlay if not on a special page
-chrome.storage.local.get(["isActive", "activeTab"], (result) => {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    const activeTab = tabs[0];
-    if (activeTab && !isSpecialPage(activeTab.url)) {
-      toggleOverlay(result.isActive, result.activeTab);  // Pass activeTab here
-    }
+if (!isSpecialPage(window.location.href)) {
+  chrome.storage.local.get(["isActive", "activeOverlayTab"], (result) => {
+    toggleOverlay(result.isActive, result.activeOverlayTab);
   });
-});
+}
