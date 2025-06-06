@@ -9,6 +9,7 @@ export default function SettingsTab() {
             </label>
             <div className="tab-content bg-base-100 border-base-300 p-6">
                 <div className="flex items-center justify-center">
+                    TEST
                 </div>
             </div>
         </>

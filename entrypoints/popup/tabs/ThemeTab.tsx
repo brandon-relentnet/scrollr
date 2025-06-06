@@ -45,9 +45,9 @@ export default function ThemeTab() {
                 <input type="radio" name="my_tabs_3" className="tab" aria-label="Tab 1"/>
                 <SwatchIcon className="size-8"/>
             </label>
-            <div className="tab-content bg-base-100 border-base-300 p-6 overflow-hidden max-h-120">
-                <div className="overflow-y-auto h-110">
-                    <div className="flex-none w-full join join-vertical pr-2">
+            <div className="tab-content bg-base-100 border-base-300 p-2 overflow-hidden max-h-120">
+                <div className="overflow-y-auto p-2 h-110">
+                    <div className="flex-none w-full join join-vertical">
                         {themes.map(({label, value}, index) => (
                             <input
                                 key={index}
