@@ -1,52 +1,153 @@
-import { useState } from "react";
-import reactLogo from "@/assets/react.svg";
-import wxtLogo from "/wxt.svg";
-import "./App.css";
+"use client";
+import { useEffect, useState } from "react";
+import { themeChange } from "theme-change";
+import {
+  UserCircleIcon,
+  SwatchIcon as SwatchIconSolid,
+  PowerIcon,
+    BoltIcon,
+    BoltSlashIcon,
+    ClockIcon,
+  ViewColumnsIcon,
+    ArrowsPointingOutIcon,
+    ArrowsPointingInIcon
+} from "@heroicons/react/24/solid";
 
-function App() {
-  const [count, setCount] = useState(0);
+export default function Popup() {
+  const [power, setPower] = useState(false);
+  const [layout, setLayout] = useState(false);
+
+  useEffect(() => {
+    themeChange(false);
+  }, []);
+
+  const themes = [
+    { label: "Light", value: "light" },
+    { label: "Dark", value: "dark" },
+    { label: "Cupcake", value: "cupcake" },
+    { label: "Bumblebee", value: "bumblebee" },
+    { label: "Emerald", value: "emerald" },
+    { label: "Corporate", value: "corporate" },
+    { label: "Synthwave", value: "synthwave" },
+    { label: "Retro", value: "retro" },
+    { label: "Cyberpunk", value: "cyberpunk" },
+    { label: "Valentine", value: "valentine" },
+    { label: "Halloween", value: "halloween" },
+    { label: "Garden", value: "garden" },
+    { label: "Forest", value: "forest" },
+    { label: "Aqua", value: "aqua" },
+    { label: "Lofi", value: "lofi" },
+    { label: "Pastel", value: "pastel" },
+    { label: "Fantasy", value: "fantasy" },
+    { label: "Wireframe", value: "wireframe" },
+    { label: "Black", value: "black" },
+    { label: "Luxury", value: "luxury" },
+    { label: "Dracula", value: "dracula" },
+    { label: "CMYK", value: "cmyk" },
+    { label: "Autumn", value: "autumn" },
+    { label: "Business", value: "business" },
+    { label: "Acid", value: "acid" },
+    { label: "Lemonade", value: "lemonade" },
+    { label: "Night", value: "night" },
+    { label: "Coffee", value: "coffee" },
+    { label: "Winter", value: "winter" },
+    { label: "Dim", value: "dim" },
+    { label: "Nord", value: "nord" },
+    { label: "Sunset", value: "sunset" },
+    { label: "Caramellatte", value: "caramellatte" },
+    { label: "Abyss", value: "abyss" },
+    { label: "Silk", value: "silk" },
+  ];
 
   return (
-    <>
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <header className="flex items-center justify-between w-full max-w-4xl p-4 bg-white shadow-md">
-          <img src={wxtLogo} className="h-8" alt="WXT Logo" />
-          <img src={reactLogo} className="h-8" alt="React Logo" />
-          <h1 className="text-2xl font-bold">WXT + React</h1>
-        </header>
-        <main className="flex flex-col items-center justify-center flex-1 p-4">
-          <h2 className="text-xl font-semibold mb-4">
-            Welcome to WXT with React!
-          </h2>
-          <p className="mb-4">Click the button to increment the count:</p>
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={() => setCount(count + 1)}
-          >
-            Count: {count}
-          </button>
-          <p className="mt-4 text-gray-600">
-            Edit <code>App.tsx</code> to see changes.
-          </p>
-        </main>
-        <footer className="w-full max-w-4xl p-4 text-center text-gray-500">
-          <p className="text-sm">
-            Powered by{" "}
-            <a href="https://wxt.dev" className="text-blue-500 hover:underline">
-              WXT
-            </a>{" "}
-            and{" "}
-            <a
-              href="https://reactjs.org"
-              className="text-blue-500 hover:underline"
-            >
-              React
-            </a>
-          </p>
-        </footer>
-      </div>
-    </>
-  );
-}
+      <div className="card !outline-[0px] bg-base-100 overflow-x-hidden relative">
+        <div className="tabs tabs-lift p-2">
+          <label className="tab">
+            <input type="radio" name="my_tabs_3" className="tab" aria-label="Tab 1"/>
+            <PowerIcon className="size-7"/>
+          </label>
+          <div className="tab-content bg-base-100 border-base-300 p-6">
+            <div className="flex flex-col items-center justify-center">
+              <button onClick={() => setPower(!power)} className="btn btn-ghost btn-circle p-6 size-50">
+                {!power ?
+                    <BoltIcon/> : <BoltSlashIcon/>
+                }
+              </button>
+              <ul className="menu menu-horizontal bg-base-200 rounded-box mt-6">
+                <li>
+                  <a className="tooltip" data-tip="Speed">
+                    <ClockIcon className="size-8"/>
+                  </a>
+                </li>
+                <li>
+                  <a className="tooltip" data-tip="Change View">
+                    <ViewColumnsIcon className="size-8"/>
+                  </a>
+                </li>
+                <li>
 
-export default App;
+                    <button onClick={() => setLayout(!layout)} className="tooltip" data-tip={!layout ? "Comfort" : "Compact"}>
+                      {!layout ?
+                          <ArrowsPointingOutIcon className="size-8"/> : <ArrowsPointingInIcon className="size-8"/>
+                      }
+                    </button>
+
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <input type="radio" name="my_tabs_3" className="tab" aria-label="Tab 2" defaultChecked/>
+          <div className="tab-content bg-base-100 border-base-300 p-6">Tab content 2</div>
+
+          <label className="tab">
+            <input type="radio" name="my_tabs_3" className="tab" aria-label="Tab 3"/>
+            <SwatchIconSolid className="size-7"/>
+          </label>
+          <div className="tab-content bg-base-100 border-base-300 p-6">
+            <div className="flex items-center justify-center">
+              <div className="flex-none w-full join join-vertical">
+                {themes.map(({label, value}, index) => (
+                    <input
+                        key={index}
+                        type="radio"
+                        name="theme-buttons"
+                        className="btn theme-controller join-item"
+                        aria-label={label}
+                        value={value}
+                        data-set-theme={value}
+                    />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <label className="tab">
+            <input type="radio" name="my_tabs_3" className="tab" aria-label="Tab 4"/>
+            <UserCircleIcon className="size-7"/>
+          </label>
+          <div className="tab-content bg-base-100 border-base-300 p-6">
+            <div className="flex items-center justify-center">
+              <ul
+                  tabIndex={0}
+                  className="menu menu-sm bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+              >
+                <li>
+                  <a className="justify-between">
+                    Profile
+                    <span className="badge">New</span>
+                  </a>
+                </li>
+                <li>
+                  <a>Settings</a>
+                </li>
+                <li>
+                  <a>Logout</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          </div>
+        </div>
+        );
+        }
