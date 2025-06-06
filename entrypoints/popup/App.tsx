@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { themeChange } from "theme-change";
 import DisplayTab from '@/entrypoints/popup/tabs/DisplayTab.tsx'
@@ -16,21 +17,25 @@ export default function Popup() {
   }, []);
 
   return (
-      <div className="tabs tabs-lift p-2">
+      <div className="tabs tabs-lift p-2 overflow-hidden relative">
+
+          {/* CENTER THE TABS */}
+          <span className="tab w-[calc((100vw-200px)/5)]">&nbsp;</span>
+
           {/* TAB #1 THEMES */}
-          <ThemeTab />
+          <ThemeTab/>
 
           {/* TAB #2 VIEWS */}
-          <DisplayTab />
+          <DisplayTab/>
 
           {/* TAB #3 POWER */}
-          <PowerTab power={power} setPower={setPower} layout={layout} setLayout={setLayout} />
+          <PowerTab power={power} setPower={setPower} layout={layout} setLayout={setLayout}/>
 
           {/* TAB #4 ACCOUNTS */}
-          <AccountsTab />
+          <AccountsTab/>
 
           {/* TAB #5 SETTINGS */}
-          <SettingsTab />
-        </div>
+          <SettingsTab/>
+      </div>
   );
 }
