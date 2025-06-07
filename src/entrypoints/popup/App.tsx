@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { themeChange } from "theme-change";
-import DisplayTab from '@/entrypoints/popup/tabs/DisplayTab.tsx'
-import PowerTab from '@/entrypoints/popup/tabs/PowerTab.tsx';
-import ThemeTab from "@/entrypoints/popup/tabs/ThemeTab.tsx";
-import AccountsTab from "@/entrypoints/popup/tabs/AccountsTab.tsx";
-import SettingsTab from "@/entrypoints/popup/tabs/SettingsTab.tsx";
+import DisplayTab from './tabs/DisplayTab.tsx'
+import PowerTab from './tabs/PowerTab.tsx';
+import ThemeTab from "./tabs/ThemeTab.tsx";
+import AccountsTab from "./tabs/AccountsTab.tsx";
+import SettingsTab from "./tabs/SettingsTab.tsx";
 
 export default function Popup() {
   const [power, setPower] = useState(false);
