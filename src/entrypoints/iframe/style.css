@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/*noinspection ALL*/
+@plugin "daisyui" {
+  themes: all;
+  exclude: rootscrollgutter;
+}
+
+html {
+  --scrollbar-width: thin;
+  --scrollbar-width-legacy: 10px;
+  overflow: hidden;
+  background-color: var(--color-base-200);
+}
+
+/* Modern browsers with `scrollbar-*` support */
+@supports (scrollbar-width: auto) {
+  html {
+    scrollbar-width: var(--scrollbar-width);
+  }
+}
+
+/* Legacy browsers with `::-webkit-scrollbar-*` support */
+@supports selector(::-webkit-scrollbar) {
+  html::-webkit-scrollbar {
+    max-width: var(--scrollbar-width-legacy);
+    max-height: var(--scrollbar-width-legacy);
+  }
+}
