@@ -1,5 +1,8 @@
 import { configureStore, type EnhancedStore } from '@reduxjs/toolkit';
+import { storage } from '#imports';
 import rootReducer from '@/entrypoints/store/rootReducer.js';
+// @ts-ignore
+import { browser } from 'wxt/browser';
 
 // Get the RootState type from your root reducer
 type RootState = ReturnType<typeof rootReducer>;
@@ -7,26 +10,31 @@ type AppStore = EnhancedStore<RootState>;
 
 let store: AppStore | undefined;
 
-export default defineBackground(() => {
+export default defineBackground(async () => {
   console.log('Hello background!', { id: browser.runtime.id });
 
-  // Initialize the store by loading from chrome.storage
-  chrome.storage.local.get(['appState'], (result) => {
-    const preloadedState = result.appState || undefined;
+  try {
+    // Initialize the store by loading from WXT storage
+    const preloadedState = await storage.getItem('local:appState');
     store = configureStore({ reducer: rootReducer, preloadedState });
 
-    // Persist to chrome.storage on every store update
-    store.subscribe(() => {
-      const state = store!.getState();
-      // Handle the Promise properly
-      chrome.storage.local.set({ appState: state }).catch((error) => {
+    // Persist to WXT storage on every store update
+    store.subscribe(async () => {
+      try {
+        const state = store!.getState();
+        await storage.setItem('local:appState', state);
+      } catch (error) {
         console.error('Failed to save state to storage:', error);
-      });
+      }
     });
-  });
+  } catch (error) {
+    console.error('Failed to initialize store:', error);
+    // Create store with default state if loading fails
+    store = configureStore({ reducer: rootReducer });
+  }
 
   // Listen for messages from popup/content scripts
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  browser.runtime.onMessage.addListener((message: { type: string; action: any; }, sender: any, sendResponse: (arg0: { error?: string; state?: { theme: { mode: string; }; }; }) => void) => {
     if (!store) {
       sendResponse({ error: 'Store not ready' });
       return true;

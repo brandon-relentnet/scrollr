@@ -1,7 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import loadState, { saveState } from './extensionStorage.js';
 
-// Import all reducers
 import themeReducer from '@/entrypoints/store/themeSlice.js';
 
 // Create store with default state first
@@ -26,28 +25,24 @@ const initializePersistedState = async () => {
     }
 };
 
-// Initialize persisted state when in browser environment
-if (typeof window !== 'undefined') {
-    // Handle the promise to avoid the warning
-    initializePersistedState().catch(error => {
-        console.error('Failed to initialize persisted state:', error);
-    });
-}
+// Initialize persisted state
+// Note: In WXT extensions, window is always available, so the check is optional
+initializePersistedState().catch(error => {
+    console.error('Failed to initialize persisted state:', error);
+});
 
 // Save state to extension storage whenever the store updates
 // Debounce saves to avoid too frequent storage writes
 let saveTimeout;
-if (typeof window !== 'undefined') {
-    store.subscribe(() => {
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(async () => {
-            try {
-                await saveState(store.getState());
-            } catch (error) {
-                console.error('Failed to save state:', error);
-            }
-        }, 500); // Save 500ms after last change
-    });
-}
+store.subscribe(() => {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(async () => {
+        try {
+            await saveState(store.getState());
+        } catch (error) {
+            console.error('Failed to save state:', error);
+        }
+    }, 500); // Save 500ms after last change
+});
 
 export default store;

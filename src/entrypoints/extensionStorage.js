@@ -1,28 +1,20 @@
+import { storage } from '#imports';
+
 const loadState = async () => {
     try {
-        // Check if we're in an extension environment
-        if (typeof chrome === 'undefined' || !chrome.storage) {
-            return undefined;
-        }
-
-        const result = await chrome.storage.local.get(['state']);
-        return result.state || undefined;
+        const state = await storage.getItem('local:state');
+        return state || undefined;
     } catch (err) {
-        console.error('Could not load state from extension storage:', err);
+        console.error('Could not load state from storage:', err);
         return undefined;
     }
 };
 
 export const saveState = async (state) => {
     try {
-        // Check if we're in an extension environment
-        if (typeof chrome === 'undefined' || !chrome.storage) {
-            return;
-        }
-
-        await chrome.storage.local.set({ state });
+        await storage.setItem('local:state', state);
     } catch (err) {
-        console.error('Could not save state to extension storage:', err);
+        console.error('Could not save state to storage:', err);
     }
 };
 

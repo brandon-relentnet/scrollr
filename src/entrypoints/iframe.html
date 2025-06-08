@@ -3,20 +3,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Extension Iframe</title>
+    <title>Scrollr Iframe</title>
 </head>
 <body>
 <div id="root_iframe"></div>
 <script type="module" src="iframe/main.tsx"></script>
-<script>
-    console.log('Extension iframe loaded!');
-
-    // Listen for messages from content script
-    window.addEventListener('message', (event) => {
-        if (event.data.type === 'THEME_UPDATE') {
-            console.log('Iframe received theme update:', event.data.theme);
-        }
-    });
-</script>
 </body>
 </html>
