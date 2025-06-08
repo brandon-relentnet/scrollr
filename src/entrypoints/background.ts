@@ -15,8 +15,16 @@ export default defineBackground(async () => {
 
   try {
     // Initialize the store by loading from WXT storage
-    const preloadedState = await storage.getItem('local:appState');
-    store = configureStore({ reducer: rootReducer, preloadedState });
+    const savedState = await storage.getItem('local:appState');
+
+    // Only use savedState as preloadedState if it's not null/undefined
+    // Redux expects undefined (not null) to use default state
+    const preloadedState = savedState || undefined;
+
+    store = configureStore({
+      reducer: rootReducer,
+      preloadedState
+    });
 
     // Persist to WXT storage on every store update
     store.subscribe(async () => {
