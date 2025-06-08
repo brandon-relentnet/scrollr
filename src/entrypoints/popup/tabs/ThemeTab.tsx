@@ -1,6 +1,9 @@
 import {SwatchIcon} from "@heroicons/react/24/solid";
+import { useDispatch } from 'react-redux';
+import { setTheme } from '@/entrypoints/store/themeSlice';
 
 export default function ThemeTab() {
+    const dispatch = useDispatch();
     const themes = [
         { label: "Light", value: "light" },
         { label: "Dark", value: "dark" },
@@ -39,6 +42,11 @@ export default function ThemeTab() {
         { label: "Silk", value: "silk" },
     ];
 
+    function themeChange(theme: string) {
+        console.log('Selected theme:', theme)
+        dispatch(setTheme(theme));
+    }
+
     return (
         <>
             <label className="tab">
@@ -57,6 +65,7 @@ export default function ThemeTab() {
                                 aria-label={label}
                                 value={value}
                                 data-set-theme={value}
+                                onClick={() => {themeChange(value)}}
                             />
                         ))}
                     </div>

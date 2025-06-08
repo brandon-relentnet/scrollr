@@ -13,7 +13,9 @@
 
     // Listen for messages from content script
     window.addEventListener('message', (event) => {
-        console.log('Iframe received message:', event.data);
+        if (event.data.type === 'THEME_UPDATE') {
+            console.log('Iframe received theme update:', event.data.theme);
+        }
     });
 </script>
 </body>
