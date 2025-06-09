@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { themeChange } from "theme-change";
 import { useSelector } from "react-redux";
+import {Carousel} from "@/entrypoints/iframe/Carousel";
 
 export default function App() {
     const currentTheme = useSelector((state: { theme: string }) => state.theme);
@@ -17,8 +18,8 @@ export default function App() {
     }, [currentTheme]);
 
     return (
-        <div className="bg-base-100 w-full h-[150px]">
-            testiframe
+        <div className="bg-base-200 w-full h-[150px] px-2">
+            <Carousel />
         </div>
     );
 }
