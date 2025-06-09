@@ -18,7 +18,7 @@ export default function App() {
     }, [currentTheme]);
 
     return (
-        <div className="bg-base-200 w-full overflow-auto h-screen px-2">
+        <div className="bg-base-200 w-full h-32 px-2">
             <Carousel />
         </div>
     );
