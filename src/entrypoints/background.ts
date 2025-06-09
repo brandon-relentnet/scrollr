@@ -10,9 +10,32 @@ type AppStore = EnhancedStore<RootState>;
 
 let store: AppStore | undefined;
 
-export default defineBackground(async () => {
+export default defineBackground(() => {
   console.log('Hello background!', { id: browser.runtime.id });
 
+  // Initialize store asynchronously but don't make the main function async
+  void initializeStore();
+
+  // Listen for messages from popup/content scripts
+  browser.runtime.onMessage.addListener((message: { type: string; action: any; }, sender: any, sendResponse: (arg0: { error?: string; state?: any; }) => void) => {
+    if (!store) {
+      sendResponse({ error: 'Store not ready' });
+      return true;
+    }
+
+    if (message.type === 'GET_STATE') {
+      sendResponse({ state: store.getState() });
+    } else if (message.type === 'DISPATCH_ACTION') {
+      store.dispatch(message.action);
+      // Respond with the updated state
+      sendResponse({ state: store.getState() });
+    }
+
+    return true;
+  });
+});
+
+async function initializeStore() {
   try {
     // Initialize the store by loading from WXT storage
     const savedState = await storage.getItem('local:appState');
@@ -35,27 +58,11 @@ export default defineBackground(async () => {
         console.error('Failed to save state to storage:', error);
       }
     });
+
+    console.log('Store initialized successfully');
   } catch (error) {
     console.error('Failed to initialize store:', error);
     // Create store with default state if loading fails
     store = configureStore({ reducer: rootReducer });
   }
-
-  // Listen for messages from popup/content scripts
-  browser.runtime.onMessage.addListener((message: { type: string; action: any; }, sender: any, sendResponse: (arg0: { error?: string; state?: { theme: { mode: string; }; }; }) => void) => {
-    if (!store) {
-      sendResponse({ error: 'Store not ready' });
-      return true;
-    }
-
-    if (message.type === 'GET_STATE') {
-      sendResponse({ state: store.getState() });
-    } else if (message.type === 'DISPATCH_ACTION') {
-      store.dispatch(message.action);
-      // Respond with the updated state
-      sendResponse({ state: store.getState() });
-    }
-
-    return true;
-  });
-});
+}

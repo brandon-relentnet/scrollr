@@ -1,4 +1,4 @@
-import { storage } from '#imports';
+import {storage} from '#imports';
 
 let currentState = null;
 let listeners = [];
@@ -25,23 +25,17 @@ async function safeGetItem(key) {
 }
 
 // Helper function to safely send browser messages
-function safeSendMessage(message) {
-    return new Promise((resolve) => {
+async function safeSendMessage(message) {
+    try {
         if (isBrowserRuntimeAvailable()) {
-            try {
-                // Store the function reference to avoid TypeScript UMD global variable error
-                const sendMessage = browser.runtime.sendMessage;
-                sendMessage.call(browser.runtime, message, (response) => {
-                    resolve(response);
-                });
-            } catch (error) {
-                console.error('Browser message failed:', error);
-                resolve(null);
-            }
-        } else {
-            resolve(null);
+            // Use the promise-based approach which is standard for modern browser extensions
+            return await browser.runtime.sendMessage(message);
         }
-    });
+        return null;
+    } catch (error) {
+        console.error('Browser message failed:', error);
+        return null;
+    }
 }
 
 async function loadInitialState() {
