@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { themeChange } from "theme-change";
-import DisplayTab from './tabs/DisplayTab.tsx'
+import DisplayTab from './tabs/DisplayTab.jsx'
 import PowerTab from './tabs/PowerTab.tsx';
 import ThemeTab from "./tabs/ThemeTab.tsx";
 import AccountsTab from "./tabs/AccountsTab.tsx";

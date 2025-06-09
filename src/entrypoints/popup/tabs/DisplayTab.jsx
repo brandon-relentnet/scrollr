@@ -1,37 +1,12 @@
 import { ComputerDesktopIcon } from "@heroicons/react/24/solid/index.js";
-import { useState, useReducer } from "react";
-import { SPORTS_OPTIONS, STOCK_OPTIONS, STOCK_PRESETS, CRYPTO_PRESETS, CRYPTO_OPTIONS } from "./data.tsx";
-
-type FinanceType = 'stocks' | 'crypto';
-type SportsKeys = 'nfl' | 'nba' | 'mlb' | 'nhl';
-
-// Consolidated finance state type
-type FinanceState = {
-    stocks: {
-        enabled: boolean;
-        activePreset: string | null;
-        customSelections: Record<string, boolean>;
-        searchTerm: string;
-    };
-    crypto: {
-        enabled: boolean;
-        activePreset: string | null;
-        customSelections: Record<string, boolean>;
-        searchTerm: string;
-    };
-};
-
-// Finance actions
-type FinanceAction =
-    | { type: 'TOGGLE_CATEGORY'; financeType: FinanceType }
-    | { type: 'SELECT_PRESET'; financeType: FinanceType; preset: string }
-    | { type: 'TOGGLE_SELECTION'; financeType: FinanceType; key: string }
-    | { type: 'SET_SEARCH'; financeType: FinanceType; term: string }
-    | { type: 'RESET_SELECTIONS'; financeType: FinanceType }
-    | { type: 'TOGGLE_ALL_SELECTIONS'; financeType: FinanceType; selectAll: boolean };
+import { useState, useReducer, useEffect } from "react";
+import { SPORTS_OPTIONS, STOCK_OPTIONS, STOCK_PRESETS, CRYPTO_PRESETS, CRYPTO_OPTIONS } from "./data.jsx";
+import { useDispatch } from 'react-redux';
+import { setToggles } from '@/entrypoints/store/togglesSlice';
+import { setFinance } from '@/entrypoints/store/financeSlice.js';
 
 // Finance reducer
-function financeReducer(state: FinanceState, action: FinanceAction): FinanceState {
+function financeReducer(state, action) {
     const { financeType } = action;
 
     switch (action.type) {
@@ -102,7 +77,7 @@ function financeReducer(state: FinanceState, action: FinanceAction): FinanceStat
 }
 
 // Initial finance state
-const initialFinanceState: FinanceState = {
+const initialFinanceState = {
     stocks: {
         enabled: false,
         activePreset: null,
@@ -118,21 +93,27 @@ const initialFinanceState: FinanceState = {
 };
 
 export default function DisplayTab() {
+    const dispatch = useDispatch();
     // Simplified sports state - using a single object
-    const [selectedSports, setSelectedSports] = useState<Record<SportsKeys, boolean>>({
+    const [selectedSports, setSelectedSports] = useState({
         nfl: true, nba: false, mlb: true, nhl: false
     });
 
     // Consolidated finance state with reducer
     const [financeState, dispatchFinance] = useReducer(financeReducer, initialFinanceState);
 
+    // Sync finance state with Redux whenever it changes
+    useEffect(() => {
+        dispatch(setFinance(financeState));
+    }, [financeState, dispatch]);
+
     // Simplified helper functions
-    const getSelected = (type: FinanceType) =>
+    const getSelected = (type) =>
         Object.entries(financeState[type].customSelections)
             .filter(([, enabled]) => enabled)
             .map(([key]) => key);
 
-    const getFilteredOptions = (type: FinanceType) => {
+    const getFilteredOptions = (type) => {
         const options = type === 'stocks' ? STOCK_OPTIONS : CRYPTO_OPTIONS;
         const term = financeState[type].searchTerm.toLowerCase();
         return options.filter(opt =>
@@ -140,19 +121,23 @@ export default function DisplayTab() {
         );
     };
 
-    const openModal = (type: FinanceType) => {
+    const openModal = (type) => {
         dispatchFinance({ type: 'SELECT_PRESET', financeType: type, preset: 'custom' });
-        const dialog = document.getElementById(`my_modal_${type}`) as HTMLDialogElement;
+        const dialog = document.getElementById(`my_modal_${type}`);
         dialog?.showModal();
     };
 
     // Simplified sports toggle
-    const toggleSport = (key: SportsKeys) => {
-        setSelectedSports(prev => ({ ...prev, [key]: !prev[key] }));
+    const toggleSport = (key) => {
+        const newSelectedSports = { ...selectedSports, [key]: !selectedSports[key] };
+
+        setSelectedSports(newSelectedSports);
+        console.log(newSelectedSports);
+        dispatch(setToggles(newSelectedSports));
     };
 
     // Render finance preset options
-    const renderPresetOptions = (type: FinanceType) => {
+    const renderPresetOptions = (type) => {
         const presets = type === 'stocks' ? STOCK_PRESETS : CRYPTO_PRESETS;
         const icon = type === 'stocks' ? '📈' : '₿';
         const label = type === 'stocks' ? 'Stocks' : 'Crypto';
@@ -202,7 +187,7 @@ export default function DisplayTab() {
     };
 
     // Render modal for custom selection
-    const renderModal = (type: FinanceType) => {
+    const renderModal = (type) => {
         const options = type === 'stocks' ? STOCK_OPTIONS : CRYPTO_OPTIONS;
         const filtered = getFilteredOptions(type);
         const title = type === 'stocks' ? 'Stock' : 'Crypto';
@@ -284,13 +269,13 @@ export default function DisplayTab() {
                         <legend className="fieldset-legend text-lg">Sports</legend>
                         <div className="grid grid-cols-2 gap-4">
                             {SPORTS_OPTIONS.map(sport => (
-                                <label key={sport.key} className={`${!selectedSports[sport.key as SportsKeys] ? 'text-base-content/50' : 'text-base-content'} .label btn btn-ghost justify-between flex items-center`}>
+                                <label key={sport.key} className={`${!selectedSports[sport.key] ? 'text-base-content/50' : 'text-base-content'} .label btn btn-ghost justify-between flex items-center`}>
                                     {sport.icon} {sport.label}
                                     <input
                                         type="checkbox"
                                         className="toggle"
-                                        checked={selectedSports[sport.key as SportsKeys]}
-                                        onChange={() => toggleSport(sport.key as SportsKeys)}
+                                        checked={selectedSports[sport.key]}
+                                        onChange={() => toggleSport(sport.key)}
                                     />
                                 </label>
                             ))}

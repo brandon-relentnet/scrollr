@@ -2,6 +2,7 @@ import React from 'react';
 import { Autoplay } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
+import { useSelector } from 'react-redux';
 
 const breakpointsArray = {};
 const startBreakpoint = 0;
@@ -17,6 +18,10 @@ const SLIDE_COUNT = 15
 const SLIDES = [...Array(SLIDE_COUNT)].map((_, i) => i)
 
 export function Carousel() {
+    const theme = useSelector((state) => state.theme);
+    const toggles = useSelector((state) => state.toggles);
+    const finance = useSelector((state) => state.finance);
+
     return (
         <div className="flex-grow h-full overflow-hidden">
             <Swiper
@@ -35,7 +40,9 @@ export function Carousel() {
                         <SwiperSlide key={i} className='h-full py-2'>
                             <div className="card bg-base-100 shadow-sm h-full">
                                 <div className="card-body">
-
+                                    {JSON.stringify(theme, null, 2)} <br/>
+                                    {JSON.stringify(toggles, null, 2)} <br/>
+                                    {JSON.stringify(finance, null, 2)}
                                 </div>
                             </div>
                         </SwiperSlide>
