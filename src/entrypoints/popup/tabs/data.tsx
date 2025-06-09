@@ -1,8 +1,8 @@
 export const SPORTS_OPTIONS = [
-    { key: 'nfl' as const, label: 'NFL', icon: "🏈" },
-    { key: 'nba' as const, label: 'NBA', icon: "🏀" },
-    { key: 'mlb' as const, label: 'MLB', icon: "⚾" },
-    { key: 'nhl' as const, label: 'NHL', icon: "🏒" }
+    { key: 'NFL' as const, label: 'NFL', icon: "🏈" },
+    { key: 'NBA' as const, label: 'NBA', icon: "🏀" },
+    { key: 'MLB' as const, label: 'MLB', icon: "⚾" },
+    { key: 'NHL' as const, label: 'NHL', icon: "🏒" }
 ];
 
 export const STOCK_PRESETS = [

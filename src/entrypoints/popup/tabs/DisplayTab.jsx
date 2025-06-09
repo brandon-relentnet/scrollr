@@ -1,7 +1,7 @@
 import { ComputerDesktopIcon } from "@heroicons/react/24/solid/index.js";
 import { useState, useReducer, useEffect } from "react";
 import { SPORTS_OPTIONS, STOCK_OPTIONS, STOCK_PRESETS, CRYPTO_PRESETS, CRYPTO_OPTIONS } from "./data.jsx";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setToggles } from '@/entrypoints/store/togglesSlice';
 import { setFinance } from '@/entrypoints/store/financeSlice.js';
 
@@ -71,13 +71,16 @@ function financeReducer(state, action) {
             };
         }
 
+        case 'INIT_FROM_REDUX':
+            return action.state;
+
         default:
             return state;
     }
 }
 
-// Initial finance state
-const initialFinanceState = {
+// Default finance state (fallback)
+const getDefaultFinanceState = () => ({
     stocks: {
         enabled: false,
         activePreset: null,
@@ -90,22 +93,57 @@ const initialFinanceState = {
         customSelections: CRYPTO_OPTIONS.reduce((acc, opt) => ({ ...acc, [opt.key]: opt.enabled }), {}),
         searchTerm: ''
     }
-};
+});
+
+// Default sports state (fallback)
+const getDefaultSportsState = () => ({
+    NFL: false,
+    NBA: false,
+    MLB: false,
+    NHL: false
+});
 
 export default function DisplayTab() {
     const dispatch = useDispatch();
-    // Simplified sports state - using a single object
-    const [selectedSports, setSelectedSports] = useState({
-        nfl: true, nba: false, mlb: true, nhl: false
+
+    // Get current state from Redux store
+    const reduxToggles = useSelector((state) => state.toggles);
+    const reduxFinance = useSelector((state) => state.finance);
+
+    // Initialize sports state from Redux store or default
+    const [selectedSports, setSelectedSports] = useState(() => {
+        // If Redux store has toggles, use them, otherwise use defaults
+        return reduxToggles && Object.keys(reduxToggles).length > 0
+            ? reduxToggles
+            : getDefaultSportsState();
     });
 
-    // Consolidated finance state with reducer
-    const [financeState, dispatchFinance] = useReducer(financeReducer, initialFinanceState);
+    // Initialize finance state from Redux store or default
+    const [financeState, dispatchFinance] = useReducer(financeReducer,
+        reduxFinance && Object.keys(reduxFinance).length > 0
+            ? reduxFinance
+            : getDefaultFinanceState()
+    );
+
+    // Sync with Redux store on mount if Redux has different values
+    useEffect(() => {
+        if (reduxToggles && Object.keys(reduxToggles).length > 0) {
+            setSelectedSports(reduxToggles);
+        }
+        if (reduxFinance && Object.keys(reduxFinance).length > 0) {
+            dispatchFinance({ type: 'INIT_FROM_REDUX', state: reduxFinance });
+        }
+    }, []); // Only run on mount
 
     // Sync finance state with Redux whenever it changes
     useEffect(() => {
         dispatch(setFinance(financeState));
     }, [financeState, dispatch]);
+
+    // Sync sports state with Redux whenever it changes
+    useEffect(() => {
+        dispatch(setToggles(selectedSports));
+    }, [selectedSports, dispatch]);
 
     // Simplified helper functions
     const getSelected = (type) =>
@@ -130,10 +168,7 @@ export default function DisplayTab() {
     // Simplified sports toggle
     const toggleSport = (key) => {
         const newSelectedSports = { ...selectedSports, [key]: !selectedSports[key] };
-
         setSelectedSports(newSelectedSports);
-        console.log(newSelectedSports);
-        dispatch(setToggles(newSelectedSports));
     };
 
     // Render finance preset options
@@ -274,7 +309,7 @@ export default function DisplayTab() {
                                     <input
                                         type="checkbox"
                                         className="toggle"
-                                        checked={selectedSports[sport.key]}
+                                        checked={selectedSports[sport.key] || false}
                                         onChange={() => toggleSport(sport.key)}
                                     />
                                 </label>
