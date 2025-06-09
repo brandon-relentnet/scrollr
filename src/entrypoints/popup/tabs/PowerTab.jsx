@@ -8,17 +8,19 @@ import {
     ViewColumnsIcon
 } from "@heroicons/react/24/solid";
 import { useSelector, useDispatch } from "react-redux";
-import { setPower } from '@/entrypoints/store/powerSlice';
-import { useEffect } from "react";
+import { setLayout } from "@/entrypoints/store/layoutSlice";
 
-export default function PowerTab({ power, setPower, layout, setLayout }) {
+export default function PowerTab({ power, setPower }) {
     const dispatch = useDispatch();
-    const currentPower = useSelector((state) => state.power.mode);
+    const layout = useSelector((state) => {
+        return state.layout?.mode || 'compact';
+    });
 
-    useEffect(() => {
-        // Update the power state in the Redux store
-        dispatch(setPower(power));
-    }, [power, dispatch]);
+    const handleLayoutChange = () => {
+        // Toggle between 'compact' and 'comfort' modes
+        const newLayout = layout === 'compact' ? 'comfort' : 'compact';
+        dispatch(setLayout(newLayout));
+    }
 
     return (
         <>
@@ -43,8 +45,15 @@ export default function PowerTab({ power, setPower, layout, setLayout }) {
                             </a>
                         </li>
                         <li>
-                            <button onClick={() => setLayout(!layout)} className="tooltip" data-tip={!layout ? "Comfort" : "Compact"}>
-                                {!layout ? <ArrowsPointingOutIcon className="size-8" /> : <ArrowsPointingInIcon className="size-8" />}
+                            <button
+                                onClick={handleLayoutChange}
+                                className="tooltip"
+                                data-tip={layout === 'compact' ? "Comfort" : "Compact"}
+                            >
+                                {layout === 'compact' ?
+                                    <ArrowsPointingOutIcon className="size-8" /> :
+                                    <ArrowsPointingInIcon className="size-8" />
+                                }
                             </button>
                         </li>
                     </ul>
