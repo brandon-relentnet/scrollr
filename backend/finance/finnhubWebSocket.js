@@ -1,4 +1,4 @@
-// finnhubWebSocket.js
+// finnhubWebSocket.js - Performance optimized version
 const WebSocket = require('ws');
 const fetch = require('node-fetch');
 const cron = require('node-cron');
@@ -7,14 +7,23 @@ require('dotenv').config();
 
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 const SUBSCRIPTIONS = require('./subscriptions.json');
+
+// OPTIMIZATION: Enhanced throttling and batching
 let lastLogTime = 0;
-const LOG_THROTTLE_INTERVAL = 1000;
+const LOG_THROTTLE_INTERVAL = 5000; // Reduced logging frequency
+const UPDATE_BATCH_SIZE = 10;
+const UPDATE_BATCH_TIMEOUT = 1000; // Process batches every second
 
 class FinnhubWebSocket {
     constructor() {
         this.socket = null;
         this.reconnectInterval = 5000;
         this.shouldReconnect = true;
+
+        // OPTIMIZATION: Batch processing for trade updates
+        this.updateQueue = new Map(); // Symbol -> latest trade data
+        this.batchTimer = null;
+        this.isProcessingBatch = false;
 
         // Save the cron job instance for later cleanup
         this.dailyJob = cron.schedule(
@@ -43,31 +52,53 @@ class FinnhubWebSocket {
 
     async initializeSymbols() {
         console.log('[FinnhubWS] Initializing symbols in DB...');
-        for (const symbol of SUBSCRIPTIONS) {
-            try {
-                await tradeService.insertSymbol(symbol);
-            } catch (error) {
-                console.error(`[FinnhubWS] Init failed for ${symbol}:`, error.message);
+
+        // OPTIMIZATION: Process symbols in batches to avoid overwhelming the DB
+        const batchSize = 5;
+        for (let i = 0; i < SUBSCRIPTIONS.length; i += batchSize) {
+            const batch = SUBSCRIPTIONS.slice(i, i + batchSize);
+            const promises = batch.map(symbol =>
+                tradeService.insertSymbol(symbol).catch(error =>
+                    console.error(`[FinnhubWS] Init failed for ${symbol}:`, error.message)
+                )
+            );
+
+            await Promise.all(promises);
+
+            // Small delay between batches
+            if (i + batchSize < SUBSCRIPTIONS.length) {
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
     }
 
     async updateAllPreviousCloses() {
         console.log('[FinnhubWS] Updating previous closes...');
-        for (const symbol of SUBSCRIPTIONS) {
-            try {
-                const previousClose = await this.fetchPreviousClose(symbol);
-                if (!previousClose) {
-                    console.warn(`[FinnhubWS] No previous close found for ${symbol}`);
-                    continue;
-                }
-                await tradeService.updatePreviousClose(symbol, previousClose);
 
-                console.log(`[FinnhubWS] ${symbol} previous close updated: $${previousClose}`);
-                // Rate-limit: wait 1 second between calls
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            } catch (error) {
-                console.error(`[FinnhubWS] Failed updating PC for ${symbol}:`, error.message);
+        // OPTIMIZATION: Process in smaller batches with better error handling
+        const batchSize = 3; // Reduced to respect API rate limits
+        for (let i = 0; i < SUBSCRIPTIONS.length; i += batchSize) {
+            const batch = SUBSCRIPTIONS.slice(i, i + batchSize);
+
+            const promises = batch.map(async (symbol) => {
+                try {
+                    const previousClose = await this.fetchPreviousClose(symbol);
+                    if (previousClose && previousClose > 0) {
+                        await tradeService.updatePreviousClose(symbol, previousClose);
+                        console.log(`[FinnhubWS] ${symbol} previous close updated: $${previousClose}`);
+                    } else {
+                        console.warn(`[FinnhubWS] Invalid previous close for ${symbol}: ${previousClose}`);
+                    }
+                } catch (error) {
+                    console.error(`[FinnhubWS] Failed updating PC for ${symbol}:`, error.message);
+                }
+            });
+
+            await Promise.all(promises);
+
+            // Rate-limit: wait between batches
+            if (i + batchSize < SUBSCRIPTIONS.length) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
             }
         }
         console.log('[FinnhubWS] Previous closes update completed');
@@ -85,8 +116,8 @@ class FinnhubWebSocket {
         this.socket.on('message', (data) => {
             try {
                 const message = JSON.parse(data);
-                if (message.type === 'trade') {
-                    this.handleTradeUpdate(message.data);
+                if (message.type === 'trade' && message.data) {
+                    this.handleTradeUpdateBatch(message.data);
                 }
             } catch (error) {
                 console.error('[FinnhubWS] WS message parse error:', error);
@@ -109,12 +140,18 @@ class FinnhubWebSocket {
     async fetchPreviousClose(symbol) {
         try {
             const response = await fetch(
-                `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`
+                `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`,
+                { timeout: 10000 } // 10 second timeout
             );
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
             const data = await response.json();
             return data.pc; // previous close
         } catch (error) {
-            console.error(`[FinnhubWS] fetchPreviousClose error for ${symbol}:`, error);
+            console.error(`[FinnhubWS] fetchPreviousClose error for ${symbol}:`, error.message);
             return null;
         }
     }
@@ -126,40 +163,133 @@ class FinnhubWebSocket {
         });
     }
 
-    async handleTradeUpdate(trades) {
-        for (const trade of trades) {
-            const { s: symbol, p: price } = trade;
+    /**
+     * OPTIMIZATION: Batch trade updates to reduce database load
+     */
+    handleTradeUpdateBatch(trades) {
+        if (!Array.isArray(trades) || trades.length === 0) return;
 
-            try {
-                // Retrieve previous close from DB via your service
-                const result = await tradeService.getTrades(); // Alternatively, create a dedicated method for fetching a single symbol's previous close.
-                const tradeRecord = result.find(r => r.symbol === symbol);
-
-                if (!tradeRecord || !tradeRecord.previous_close) {
-                    console.warn(`[FinnhubWS] Skipping ${symbol}, no previous_close in DB`);
-                    continue;
+        // Add trades to the queue (latest trade for each symbol)
+        trades.forEach(trade => {
+            const { s: symbol, p: price, t: timestamp } = trade;
+            if (symbol && price && timestamp) {
+                // Only keep the latest trade for each symbol
+                if (!this.updateQueue.has(symbol) ||
+                    this.updateQueue.get(symbol).t < timestamp) {
+                    this.updateQueue.set(symbol, trade);
                 }
-
-                const previousClose = tradeRecord.previous_close;
-                const priceChange = price - previousClose;
-                const percentageChange = (priceChange / previousClose) * 100;
-                const direction = priceChange >= 0 ? 'up' : 'down';
-
-                await tradeService.updateTrade(symbol, price, priceChange, percentageChange, direction);
-
-                const now = Date.now();
-                if (now - lastLogTime >= LOG_THROTTLE_INTERVAL) {
-                    lastLogTime = now;
-                    console.log(`[FinnhubWS] ${symbol} price updated: $${price}`);
-                }
-            } catch (error) {
-                console.error(`[FinnhubWS] Error processing ${symbol}:`, error.message);
             }
+        });
+
+        // Schedule batch processing
+        this.scheduleBatchProcessing();
+    }
+
+    /**
+     * OPTIMIZATION: Schedule batch processing with debouncing
+     */
+    scheduleBatchProcessing() {
+        if (this.batchTimer) {
+            clearTimeout(this.batchTimer);
+        }
+
+        this.batchTimer = setTimeout(() => {
+            this.processBatch();
+        }, this.updateQueue.size >= UPDATE_BATCH_SIZE ? 500 : UPDATE_BATCH_TIMEOUT);
+    }
+
+    /**
+     * OPTIMIZATION: Process batched updates efficiently
+     */
+    async processBatch() {
+        if (this.isProcessingBatch || this.updateQueue.size === 0) {
+            return;
+        }
+
+        this.isProcessingBatch = true;
+        const trades = Array.from(this.updateQueue.values());
+        this.updateQueue.clear();
+
+        try {
+            // OPTIMIZATION: Get all trades data once for the entire batch
+            const allTrades = await tradeService.getTrades();
+            const tradesMap = new Map(allTrades.map(t => [t.symbol, t]));
+
+            // Process trades in parallel but with limited concurrency
+            const batchSize = 5;
+            for (let i = 0; i < trades.length; i += batchSize) {
+                const batch = trades.slice(i, i + batchSize);
+
+                const promises = batch.map(trade =>
+                    this.processSingleTrade(trade, tradesMap)
+                );
+
+                await Promise.all(promises);
+            }
+
+            // Throttled logging
+            const now = Date.now();
+            if (now - lastLogTime >= LOG_THROTTLE_INTERVAL) {
+                lastLogTime = now;
+                console.log(`[FinnhubWS] Processed ${trades.length} trade updates`);
+            }
+
+        } catch (error) {
+            console.error('[FinnhubWS] Batch processing error:', error);
+        } finally {
+            this.isProcessingBatch = false;
+
+            // If more trades came in while processing, schedule another batch
+            if (this.updateQueue.size > 0) {
+                this.scheduleBatchProcessing();
+            }
+        }
+    }
+
+    /**
+     * OPTIMIZATION: Process individual trade with cached data
+     */
+    async processSingleTrade(trade, tradesMap) {
+        const { s: symbol, p: price } = trade;
+
+        try {
+            const tradeRecord = tradesMap.get(symbol);
+
+            if (!tradeRecord || !tradeRecord.previous_close) {
+                console.warn(`[FinnhubWS] Skipping ${symbol}, no previous_close in DB`);
+                return;
+            }
+
+            const previousClose = parseFloat(tradeRecord.previous_close);
+            const currentPrice = parseFloat(price);
+
+            if (isNaN(previousClose) || isNaN(currentPrice)) {
+                console.warn(`[FinnhubWS] Invalid prices for ${symbol}: current=${price}, previous=${previousClose}`);
+                return;
+            }
+
+            const priceChange = currentPrice - previousClose;
+            const percentageChange = (priceChange / previousClose) * 100;
+            const direction = priceChange >= 0 ? 'up' : 'down';
+
+            await tradeService.updateTrade(symbol, currentPrice, priceChange, percentageChange, direction);
+
+        } catch (error) {
+            console.error(`[FinnhubWS] Error processing ${symbol}:`, error.message);
         }
     }
 
     disconnect() {
         this.shouldReconnect = false;
+
+        // Clear any pending batch processing
+        if (this.batchTimer) {
+            clearTimeout(this.batchTimer);
+            this.batchTimer = null;
+        }
+
+        this.updateQueue.clear();
+
         if (this.socket) {
             this.socket.close();
         }
@@ -170,6 +300,17 @@ class FinnhubWebSocket {
             this.dailyJob.stop();
             console.log('[FinnhubWS] Cron job stopped.');
         }
+    }
+
+    /**
+     * Get queue statistics for monitoring
+     */
+    getStats() {
+        return {
+            queueSize: this.updateQueue.size,
+            isProcessing: this.isProcessingBatch,
+            hasPendingBatch: !!this.batchTimer
+        };
     }
 }
 

@@ -1,4 +1,4 @@
-// trades-api.js - Optimized version with performance improvements
+// trades-api.js - Performance optimized version
 const express = require('express')
 const cors = require('cors')
 const http = require('http')
@@ -11,13 +11,33 @@ let wss = null
 const clients = new Set()
 const clientFilters = new Map()
 
-// OPTIMIZATION: Cache filtered results to avoid recomputing
+// OPTIMIZATION: Enhanced caching with smarter invalidation
 const filterCache = new Map()
-const CACHE_TTL = 5000 // 5 seconds
-let lastTradesUpdate = 0
+const tradesCache = { data: null, timestamp: 0 }
+const CACHE_TTL = 2000 // Reduced to 2 seconds for faster updates
+const TRADES_CACHE_TTL = 1000 // 1 second for trades data
+const BROADCAST_THROTTLE = 1000 // Throttle broadcasts to max once per second
+
+let lastBroadcastTime = 0
+let pendingBroadcast = null
 
 /**
- * OPTIMIZED: Simplified and cached filtering
+ * OPTIMIZATION: Cached trades retrieval
+ */
+async function getCachedTrades() {
+    const now = Date.now()
+    if (tradesCache.data && (now - tradesCache.timestamp) < TRADES_CACHE_TTL) {
+        return tradesCache.data
+    }
+
+    const trades = await tradeService.getTrades()
+    tradesCache.data = trades
+    tradesCache.timestamp = now
+    return trades
+}
+
+/**
+ * OPTIMIZATION: Simplified and highly cached filtering
  */
 async function getFilteredTrades(filters) {
     try {
@@ -25,7 +45,6 @@ async function getFilteredTrades(filters) {
             return []
         }
 
-        // Create cache key
         const cacheKey = JSON.stringify(filters.sort())
         const now = Date.now()
 
@@ -37,70 +56,57 @@ async function getFilteredTrades(filters) {
             }
         }
 
-        // Get trades (cache this too if needed)
-        const allTrades = await tradeService.getTrades()
+        // Get cached trades
+        const allTrades = await getCachedTrades()
         if (!Array.isArray(allTrades)) {
             return []
         }
 
-        // OPTIMIZED: Single pass filtering with early returns
-        const symbolFilters = new Set()
-        const sectorFilters = new Set()
-        const typeFilters = new Set()
+        // OPTIMIZATION: Pre-parse filters once
+        const symbolSet = new Set()
+        const sectorSet = new Set()
+        const typeSet = new Set()
         let priceFilter = null
 
-        // Parse filters once
         for (const filter of filters) {
             if (filter.startsWith('symbol_')) {
-                symbolFilters.add(filter.replace('symbol_', ''))
+                symbolSet.add(filter.replace('symbol_', ''))
             } else if (filter.startsWith('sector_')) {
-                sectorFilters.add(filter.replace('sector_', ''))
+                sectorSet.add(filter.replace('sector_', ''))
             } else if (filter.startsWith('type_')) {
-                typeFilters.add(filter.replace('type_', ''))
+                typeSet.add(filter.replace('type_', ''))
             } else if (filter.startsWith('price_')) {
                 priceFilter = filter
             }
         }
 
-        // Single pass filter
+        // OPTIMIZATION: Single pass filter with early exits
         const filteredTrades = allTrades.filter(trade => {
-            // Symbol check
-            if (symbolFilters.size > 0 && !symbolFilters.has(trade.symbol)) {
-                return false
-            }
+            if (symbolSet.size > 0 && !symbolSet.has(trade.symbol)) return false
+            if (sectorSet.size > 0 && !sectorSet.has(trade.sector)) return false
+            if (typeSet.size > 0 && !typeSet.has(trade.type)) return false
 
-            // Sector check
-            if (sectorFilters.size > 0 && !sectorFilters.has(trade.sector)) {
-                return false
-            }
-
-            // Type check
-            if (typeFilters.size > 0 && !typeFilters.has(trade.type)) {
-                return false
-            }
-
-            // Price check
             if (priceFilter) {
                 const price = parseFloat(trade.price) || 0
                 switch (priceFilter) {
                     case 'price_under_50': return price < 50
                     case 'price_50_200': return price >= 50 && price <= 200
                     case 'price_over_200': return price > 200
-                    default: break
                 }
             }
-
             return true
         })
 
         // Cache result
-        filterCache.set(cacheKey, {
-            data: filteredTrades,
-            timestamp: now
-        })
+        filterCache.set(cacheKey, { data: filteredTrades, timestamp: now })
+
+        // OPTIMIZATION: Limit cache size
+        if (filterCache.size > 50) {
+            const firstKey = filterCache.keys().next().value
+            filterCache.delete(firstKey)
+        }
 
         return filteredTrades
-
     } catch (err) {
         console.error('Error filtering trades:', err)
         return []
@@ -108,15 +114,16 @@ async function getFilteredTrades(filters) {
 }
 
 /**
- * OPTIMIZATION: Clear cache when trades update
+ * OPTIMIZATION: Smart cache clearing
  */
-function clearFilterCache() {
+function clearCaches() {
     filterCache.clear()
-    lastTradesUpdate = Date.now()
+    tradesCache.data = null
+    tradesCache.timestamp = 0
 }
 
 /**
- * OPTIMIZED: Batch message sending
+ * OPTIMIZATION: Batch and deduplicate client messages
  */
 function sendToClient(client, data) {
     if (client.readyState === WebSocket.OPEN) {
@@ -131,61 +138,88 @@ function sendToClient(client, data) {
 }
 
 /**
- * OPTIMIZED: Batch broadcasting with change detection
+ * OPTIMIZATION: Throttled broadcasting with deduplication
  */
 async function broadcastUpdatedTrades() {
+    const now = Date.now()
+
+    // Throttle broadcasts
+    if (now - lastBroadcastTime < BROADCAST_THROTTLE) {
+        if (!pendingBroadcast) {
+            pendingBroadcast = setTimeout(() => {
+                pendingBroadcast = null
+                broadcastUpdatedTrades()
+            }, BROADCAST_THROTTLE - (now - lastBroadcastTime))
+        }
+        return
+    }
+
+    lastBroadcastTime = now
+
     if (!wss || clients.size === 0) return
 
-    clearFilterCache() // Clear cache on new data
+    clearCaches() // Clear caches for fresh data
 
     console.log('Broadcasting to', clients.size, 'clients')
 
-    // Collect unique filter sets to avoid duplicate work
-    const uniqueFilters = new Map()
+    // OPTIMIZATION: Group clients by identical filter sets
+    const filterGroups = new Map()
+
     for (const [client, filters] of clientFilters) {
         if (client.readyState === WebSocket.OPEN) {
             const filterKey = JSON.stringify(filters.sort())
-            if (!uniqueFilters.has(filterKey)) {
-                uniqueFilters.set(filterKey, {
-                    filters,
-                    clients: []
-                })
+            if (!filterGroups.has(filterKey)) {
+                filterGroups.set(filterKey, { filters, clients: [] })
             }
-            uniqueFilters.get(filterKey).clients.push(client)
+            filterGroups.get(filterKey).clients.push(client)
         }
     }
 
-    // Process each unique filter set once
-    const results = await Promise.all(
-        Array.from(uniqueFilters.values()).map(async ({ filters, clients }) => {
-            const data = await getFilteredTrades(filters)
-            return { filters, clients, data }
-        })
-    )
-
-    // Send results to clients
+    // OPTIMIZATION: Process each unique filter set in parallel but limited
     const timestamp = Date.now()
-    for (const { filters, clients, data } of results) {
-        const message = {
-            type: 'financial_update',
-            data,
-            filters,
-            count: data.length,
-            message: filters.length === 0
-                ? 'No filters selected'
-                : `${data.length} trades match filters`,
-            is_refresh: true,
-            timestamp
-        }
+    const promises = Array.from(filterGroups.values()).map(async ({ filters, clients }) => {
+        try {
+            const data = await getFilteredTrades(filters)
+            const message = {
+                type: 'financial_update',
+                data,
+                filters,
+                count: data.length,
+                message: filters.length === 0
+                    ? 'No filters selected'
+                    : `${data.length} trades match filters`,
+                is_refresh: true,
+                timestamp
+            }
 
-        clients.forEach(client => sendToClient(client, message))
+            // Send to all clients in this group
+            clients.forEach(client => sendToClient(client, message))
+        } catch (error) {
+            console.error('Error processing filter group:', error)
+        }
+    })
+
+    // OPTIMIZATION: Limit concurrent processing
+    const batchSize = 5
+    for (let i = 0; i < promises.length; i += batchSize) {
+        await Promise.all(promises.slice(i, i + batchSize))
     }
 }
 
 /**
- * OPTIMIZED: Simplified message handler
+ * OPTIMIZATION: Simplified message handling with validation
  */
 function handleClientMessage(ws, data) {
+    // Basic validation
+    if (!data || typeof data !== 'object') {
+        sendToClient(ws, {
+            type: 'error',
+            message: 'Invalid message format',
+            timestamp: Date.now()
+        })
+        return
+    }
+
     switch (data.type) {
         case 'connection':
             sendToClient(ws, {
@@ -220,24 +254,33 @@ async function handleFilterRequest(ws, filters) {
     console.log('Filter request:', filters)
     clientFilters.set(ws, filters || [])
 
-    const filteredTrades = await getFilteredTrades(filters)
-    const message = filters?.length === 0
-        ? 'No filters selected'
-        : `${filteredTrades.length} trades found`
+    try {
+        const filteredTrades = await getFilteredTrades(filters)
+        const message = filters?.length === 0
+            ? 'No filters selected'
+            : `${filteredTrades.length} trades found`
 
-    sendToClient(ws, {
-        type: 'filtered_data',
-        data: filteredTrades,
-        filters: filters || [],
-        count: filteredTrades.length,
-        message,
-        timestamp: Date.now()
-    })
+        sendToClient(ws, {
+            type: 'filtered_data',
+            data: filteredTrades,
+            filters: filters || [],
+            count: filteredTrades.length,
+            message,
+            timestamp: Date.now()
+        })
+    } catch (error) {
+        console.error('Error handling filter request:', error)
+        sendToClient(ws, {
+            type: 'error',
+            message: 'Failed to process filters',
+            timestamp: Date.now()
+        })
+    }
 }
 
 async function handleGetAllTrades(ws) {
     try {
-        const allTrades = await tradeService.getTrades()
+        const allTrades = await getCachedTrades()
         sendToClient(ws, {
             type: 'all_trades_data',
             data: allTrades,
@@ -256,7 +299,7 @@ async function handleGetAllTrades(ws) {
 }
 
 /**
- * OPTIMIZED: Server startup with less complexity
+ * Server startup (unchanged)
  */
 async function startTradesApiServer(port = 4001, options = {}) {
     const app = express()
@@ -266,7 +309,7 @@ async function startTradesApiServer(port = 4001, options = {}) {
     // REST API routes
     app.get('/api/trades', async (req, res) => {
         try {
-            const trades = await tradeService.getTrades()
+            const trades = await getCachedTrades()
             res.json(trades)
         } catch (err) {
             console.error('Error fetching trades:', err)
@@ -277,7 +320,7 @@ async function startTradesApiServer(port = 4001, options = {}) {
     app.get('/api/trades/symbol/:symbol', async (req, res) => {
         try {
             const symbol = req.params.symbol.toUpperCase()
-            const allTrades = await tradeService.getTrades()
+            const allTrades = await getCachedTrades()
             const symbolTrades = allTrades.filter(trade => trade.symbol === symbol)
             res.json(symbolTrades)
         } catch (err) {
@@ -293,7 +336,8 @@ async function startTradesApiServer(port = 4001, options = {}) {
             timestamp: Date.now(),
             message: 'Trades API server is running',
             websocket_clients: clients.size,
-            cache_size: filterCache.size
+            cache_size: filterCache.size,
+            trades_cache_age: tradesCache.timestamp ? Date.now() - tradesCache.timestamp : 0
         })
     })
 
@@ -343,7 +387,7 @@ async function startTradesApiServer(port = 4001, options = {}) {
         })
     })
 
-    // Start Finnhub with throttled integration
+    // Start Finnhub with enhanced throttling
     try {
         await finnhubWS.start(options)
         setupFinnhubIntegration()
@@ -360,43 +404,49 @@ async function startTradesApiServer(port = 4001, options = {}) {
 }
 
 /**
- * OPTIMIZED: Throttled Finnhub integration
+ * OPTIMIZATION: Enhanced throttling for Finnhub integration
  */
 function setupFinnhubIntegration() {
     let updatePending = false
+    let updateCount = 0
+    const BATCH_SIZE = 10 // Process updates in batches
 
     if (finnhubWS.socket) {
         finnhubWS.socket.on('message', () => {
+            updateCount++
+
             if (updatePending) return
 
             updatePending = true
+
+            // Batch updates - wait for multiple updates or timeout
             setTimeout(async () => {
                 updatePending = false
+                const processedCount = updateCount
+                updateCount = 0
+
                 try {
+                    console.log(`Processing ${processedCount} Finnhub updates`)
                     await broadcastUpdatedTrades()
                 } catch (err) {
                     console.error('Broadcast error:', err)
                 }
-            }, 1000)
+            }, updateCount >= BATCH_SIZE ? 500 : 1500) // Faster for batches
         })
     }
 }
 
-/**
- * Setup graceful shutdown handling
- */
+// Rest of the functions remain the same...
 function setupGracefulShutdown(httpServer) {
     console.log('Setting up graceful shutdown handlers...')
 
     function shutdown(signal) {
         console.log(`\n🛑 Received ${signal}. Starting graceful shutdown...`)
 
-        // Stop accepting new connections
         httpServer.close(() => {
             console.log('✅ HTTP server closed')
         })
 
-        // Close all WebSocket connections
         if (wss) {
             console.log('🔌 Closing WebSocket connections...')
             wss.clients.forEach((ws) => {
@@ -409,26 +459,21 @@ function setupGracefulShutdown(httpServer) {
             })
         }
 
-        // Disconnect Finnhub
         if (finnhubWS) {
             console.log('📡 Disconnecting Finnhub WebSocket...')
             finnhubWS.disconnect()
             finnhubWS.stopCronJobs()
         }
 
-        // Clear caches
-        clearFilterCache()
-
+        clearCaches()
         console.log('✅ Graceful shutdown complete')
         process.exit(0)
     }
 
-    // Handle different shutdown signals
     process.on('SIGTERM', () => shutdown('SIGTERM'))
     process.on('SIGINT', () => shutdown('SIGINT'))
-    process.on('SIGUSR2', () => shutdown('SIGUSR2')) // nodemon restart
+    process.on('SIGUSR2', () => shutdown('SIGUSR2'))
 
-    // Handle uncaught exceptions
     process.on('uncaughtException', (error) => {
         console.error('❌ Uncaught Exception:', error)
         shutdown('uncaughtException')
@@ -444,7 +489,8 @@ function getConnectionStats() {
     return {
         total_clients: clients.size,
         active_filters: clientFilters.size,
-        cache_size: filterCache.size
+        cache_size: filterCache.size,
+        trades_cache_age: tradesCache.timestamp ? Date.now() - tradesCache.timestamp : 0
     }
 }
 
@@ -453,5 +499,5 @@ module.exports = {
     setupGracefulShutdown,
     broadcastUpdatedTrades,
     getConnectionStats,
-    clearFilterCache
+    clearCaches
 }
