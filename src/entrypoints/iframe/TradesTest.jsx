@@ -184,61 +184,54 @@ const TradeCard = memo(({ trade }) => {
 });
 
 // OPTIMIZATION: Simplified, memoized filter components
-const FilterSummary = memo(({ activeFilters }) => {
+const FilterSummary = memo(({ financeFilters, sportsFilters }) => {
     const summary = useMemo(() => {
-        const sportsFilters = activeFilters.filter(f => ['NFL', 'NBA', 'MLB', 'NHL'].includes(f));
-        const symbolFilters = activeFilters.filter(f => f.startsWith('symbol_'));
-
         const parts = [];
         if (sportsFilters.length > 0) {
             parts.push(`${sportsFilters.length} sport${sportsFilters.length > 1 ? 's' : ''}`);
         }
-        if (symbolFilters.length > 0) {
-            parts.push(`${symbolFilters.length} symbol${symbolFilters.length > 1 ? 's' : ''}`);
+        if (financeFilters.length > 0) {
+            parts.push(`${financeFilters.length} symbol${financeFilters.length > 1 ? 's' : ''}`);
         }
 
         return parts.length > 0 ? parts.join(', ') : 'No filters active';
-    }, [activeFilters]);
+    }, [financeFilters, sportsFilters]);
 
     return <p className="text-sm text-base-content/60">{summary}</p>;
 });
 
-const FilterTags = memo(({ activeFilters }) => {
-    const tags = useMemo(() => activeFilters.slice(0, 10), [activeFilters]); // Limit visible tags
+const FilterTags = memo(({ financeFilters, sportsFilters }) => {
+    const allFilters = useMemo(() => [...sportsFilters, ...financeFilters], [financeFilters, sportsFilters]);
+    const tags = useMemo(() => allFilters.slice(0, 10), [allFilters]); // Limit visible tags
 
     if (tags.length === 0) return null;
 
     return (
         <div className="flex flex-wrap gap-1">
-            {tags.map(filter => (
-                <span key={filter} className="badge badge-outline badge-sm">
+            {sportsFilters.map(filter => (
+                <span key={filter} className="badge badge-warning badge-sm">
+                    {filter}
+                </span>
+            ))}
+            {financeFilters.map(filter => (
+                <span key={filter} className="badge badge-info badge-sm">
                     {formatFilterForDisplay(filter)}
                 </span>
             ))}
-            {activeFilters.length > 10 && (
+            {allFilters.length > 10 && (
                 <span className="badge badge-outline badge-sm">
-                    +{activeFilters.length - 10} more
+                    +{allFilters.length - 10} more
                 </span>
             )}
         </div>
     );
 });
 
-// OPTIMIZATION: Custom hook for filter calculation with deep equality check
-function useTradeFilters(financeState, sportsToggles) {
+// FIX: Separate finance and sports filters properly
+function useFinanceFilters(financeState) {
     return useMemo(() => {
         const filters = [];
 
-        // Add sports filters
-        if (sportsToggles) {
-            Object.entries(sportsToggles).forEach(([sport, enabled]) => {
-                if (enabled) {
-                    filters.push(sport);
-                }
-            });
-        }
-
-        // Add finance filters
         if (financeState) {
             // Handle stocks
             if (financeState.stocks?.enabled && financeState.stocks?.activePreset) {
@@ -259,15 +252,23 @@ function useTradeFilters(financeState, sportsToggles) {
 
         return filters;
     }, [
-        // OPTIMIZATION: More specific dependencies
         financeState?.stocks?.enabled,
         financeState?.stocks?.activePreset,
         financeState?.crypto?.enabled,
         financeState?.crypto?.activePreset,
         JSON.stringify(financeState?.stocks?.customSelections || {}),
-        JSON.stringify(financeState?.crypto?.customSelections || {}),
-        JSON.stringify(sportsToggles || {})
+        JSON.stringify(financeState?.crypto?.customSelections || {})
     ]);
+}
+
+function useSportsFilters(sportsToggles) {
+    return useMemo(() => {
+        if (!sportsToggles) return [];
+
+        return Object.entries(sportsToggles)
+            .filter(([sport, enabled]) => enabled)
+            .map(([sport]) => sport);
+    }, [JSON.stringify(sportsToggles || {})]);
 }
 
 export default function TradesTest() {
@@ -281,9 +282,12 @@ export default function TradesTest() {
     const financeState = useSelector((state) => state.finance);
     const sportsToggles = useSelector((state) => state.toggles);
 
-    // OPTIMIZATION: Calculate filters with debouncing
-    const activeFilters = useTradeFilters(financeState, sportsToggles);
-    const debouncedFilters = useDebounce(activeFilters, 300); // 300ms debounce
+    // FIX: Separate finance and sports filters
+    const financeFilters = useFinanceFilters(financeState);
+    const sportsFilters = useSportsFilters(sportsToggles);
+
+    // Only send finance filters to the finance WebSocket
+    const debouncedFinanceFilters = useDebounce(financeFilters, 300);
 
     // OPTIMIZATION: Throttled WebSocket send function
     const throttledSendMessage = useThrottle((message) => {
@@ -293,13 +297,21 @@ export default function TradesTest() {
     }, 100); // Max 10 messages per second
 
     // OPTIMIZATION: Memoized WebSocket functions
-    const sendFilterRequest = useCallback((filters = debouncedFilters) => {
+    const sendFilterRequest = useCallback((filters = debouncedFinanceFilters) => {
+        // FIX: Only send finance-related filters to the finance WebSocket
+        const financeOnlyFilters = filters.filter(f =>
+            f.startsWith('symbol_') ||
+            f.startsWith('sector_') ||
+            f.startsWith('type_') ||
+            f.startsWith('price_')
+        );
+
         throttledSendMessage({
             type: 'filter_request',
-            filters: filters,
+            filters: financeOnlyFilters,
             timestamp: Date.now()
         });
-    }, [debouncedFilters, throttledSendMessage]);
+    }, [debouncedFinanceFilters, throttledSendMessage]);
 
     const sendGetAllTrades = useCallback(() => {
         throttledSendMessage({
@@ -311,13 +323,22 @@ export default function TradesTest() {
     // OPTIMIZATION: Effect for filter updates with debounced filters
     useEffect(() => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            sendFilterRequest(debouncedFilters);
+            sendFilterRequest(debouncedFinanceFilters);
         }
-    }, [debouncedFilters, sendFilterRequest]);
+    }, [debouncedFinanceFilters, sendFilterRequest]);
 
     // OPTIMIZATION: Single WebSocket connection effect
     useEffect(() => {
+        // FIX: Only connect if finance filters are active
+        const hasFinanceFilters = debouncedFinanceFilters.length > 0;
         let isComponentMounted = true;
+
+        if (!hasFinanceFilters) {
+            // Clear data if no finance filters
+            setTradesData({ data: [], type: "filtered_data" });
+            setConnectionStatus('No Finance Filters');
+            return;
+        }
 
         const connectWebSocket = () => {
             if (!isComponentMounted) return;
@@ -342,7 +363,7 @@ export default function TradesTest() {
                     if (!isComponentMounted) return;
                     setConnectionStatus('Disconnected');
 
-                    if (event.code !== 1000) {
+                    if (event.code !== 1000 && hasFinanceFilters) {
                         setConnectionStatus('Reconnecting');
                         reconnectTimeoutRef.current = setTimeout(() => {
                             if (isComponentMounted) connectWebSocket();
@@ -365,7 +386,7 @@ export default function TradesTest() {
                                 break;
                             case 'connection_confirmed':
                                 // Send initial filter request when connection is confirmed
-                                sendFilterRequest(debouncedFilters);
+                                sendFilterRequest(debouncedFinanceFilters);
                                 break;
                         }
                     } catch (err) {
@@ -387,6 +408,7 @@ export default function TradesTest() {
             }
         };
 
+        setConnectionStatus('Connecting');
         // Small initial delay to let the page settle
         const initialTimeout = setTimeout(() => {
             if (isComponentMounted) connectWebSocket();
@@ -402,14 +424,14 @@ export default function TradesTest() {
                 wsRef.current.close(1000, 'Component unmounting');
             }
         };
-    }, []); // Empty dependency array is correct here
+    }, [debouncedFinanceFilters.length > 0]); // Only depend on whether we have filters
 
     // OPTIMIZATION: Memoized computed values
     const lastUpdatedTime = useMemo(() => {
         return tradesData?.timestamp ? new Date(tradesData.timestamp).toLocaleTimeString() : 'Unknown';
     }, [tradesData?.timestamp]);
 
-    const hasNoFilters = debouncedFilters.length === 0;
+    const hasNoFinanceFilters = debouncedFinanceFilters.length === 0;
     const hasNoTrades = !tradesData?.data || tradesData.data.length === 0;
     const tradesCount = tradesData?.data?.length || 0;
 
@@ -447,7 +469,7 @@ export default function TradesTest() {
                                     <CogIcon className="w-5 h-5" />
                                     Active Filters
                                 </h2>
-                                <FilterSummary activeFilters={debouncedFilters} />
+                                <FilterSummary financeFilters={debouncedFinanceFilters} sportsFilters={sportsFilters} />
                             </div>
                             <div className="flex gap-2">
                                 <button
@@ -467,14 +489,14 @@ export default function TradesTest() {
                             </div>
                         </div>
 
-                        <FilterTags activeFilters={debouncedFilters} />
+                        <FilterTags financeFilters={debouncedFinanceFilters} sportsFilters={sportsFilters} />
 
-                        {hasNoFilters && (
+                        {hasNoFinanceFilters && (
                             <div className="alert alert-info mt-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="stroke-current shrink-0 w-6 h-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <span>No filters selected. Use the Display tab to select sports or finance options to see live data.</span>
+                                <span>No finance filters selected. Use the Display tab to select stock or crypto presets to see market data.</span>
                             </div>
                         )}
 
@@ -486,14 +508,18 @@ export default function TradesTest() {
                                 </div>
                                 <div className="grid grid-cols-3 gap-2 text-xs">
                                     <div>
-                                        <strong>Active Filters:</strong> {activeFilters.length}
+                                        <strong>Finance Filters:</strong> {financeFilters.length}
                                     </div>
                                     <div>
-                                        <strong>Debounced Filters:</strong> {debouncedFilters.length}
+                                        <strong>Sports Filters:</strong> {sportsFilters.length}
                                     </div>
                                     <div>
                                         <strong>Trades Count:</strong> {tradesCount}
                                     </div>
+                                </div>
+                                <div className="mt-2 text-xs">
+                                    <div><strong>Finance:</strong> {JSON.stringify(debouncedFinanceFilters)}</div>
+                                    <div><strong>Sports:</strong> {JSON.stringify(sportsFilters)}</div>
                                 </div>
                             </div>
                         )}
@@ -525,27 +551,30 @@ export default function TradesTest() {
                         <div className="hero min-h-[400px] bg-base-100 rounded-box shadow-md">
                             <div className="hero-content text-center">
                                 <div className="max-w-md">
-                                    {hasNoFilters ? (
-                                        <>
-                                            <CogIcon className="w-16 h-16 mx-auto mb-4 text-base-content/50" />
-                                            <h3 className="text-lg font-bold">No Filters Selected</h3>
-                                            <p className="text-base-content/60">
-                                                Please use the Display tab to select sports leagues or financial instruments to view live data.
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="loading loading-spinner loading-lg mb-4"></div>
-                                            <h3 className="text-lg font-bold">Loading trades...</h3>
-                                            <p className="text-base-content/60">
-                                                No trades match your current filters
-                                            </p>
-                                        </>
-                                    )}
+                                    <div className="loading loading-spinner loading-lg mb-4"></div>
+                                    <h3 className="text-lg font-bold">Loading trades...</h3>
+                                    <p className="text-base-content/60">
+                                        No trades match your current filters
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     )
+                ) : connectionStatus === 'No Finance Filters' ? (
+                    <div className="hero min-h-[400px] bg-base-100 rounded-box shadow-md">
+                        <div className="hero-content text-center">
+                            <div className="max-w-md">
+                                <CogIcon className="w-16 h-16 mx-auto mb-4 text-base-content/50" />
+                                <h3 className="text-lg font-bold">No Finance Filters Selected</h3>
+                                <p className="text-base-content/60">
+                                    Please use the Display tab to select stock or crypto presets to view market data.
+                                    {sportsFilters.length > 0 && (
+                                        <><br/><br/>Sports filters are handled separately in the main carousel.</>
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 ) : (
                     <div className="hero min-h-[400px] bg-base-100 rounded-box shadow-md">
                         <div className="hero-content text-center">

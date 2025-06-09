@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef, useMemo, useCallback, memo} from 'react';
 import {Autoplay} from 'swiper/modules';
 import {Swiper, SwiperSlide} from 'swiper/react';
 import 'swiper/css';
@@ -16,36 +16,159 @@ for (let i = startBreakpoint; i <= endBreakpoint; i += breakpointStep) {
     };
 }
 
+// OPTIMIZATION: Memoized component to prevent unnecessary re-renders
+const SportsCarousel = memo(({ sportsData, hasActiveSportsToggles }) => {
+    if (!hasActiveSportsToggles) {
+        return (
+            <div className="text-center py-8 text-gray-500">
+                Select sports options to see games
+            </div>
+        );
+    }
+
+    if (!sportsData || sportsData.length === 0) {
+        return (
+            <div className="text-center py-8 text-gray-500">
+                No games match your current sports filters
+            </div>
+        );
+    }
+
+    return (
+        <Swiper
+            modules={[Autoplay]}
+            autoplay={{delay: 3000, disableOnInteraction: false}}
+            breakpointsBase={'container'}
+            loop={true}
+            speed={600}
+            spaceBetween={8}
+            breakpoints={breakpointsArray}
+            watchSlidesProgress={true}
+            className='h-full'
+        >
+            {sportsData.map((game) => (
+                <SwiperSlide key={game.id} className='h-full py-2'>
+                    <div className="card bg-base-100 shadow-sm h-full">
+                        <div className="card-body">
+                            <GameCard game={game}/>
+                        </div>
+                    </div>
+                </SwiperSlide>
+            ))}
+        </Swiper>
+    );
+});
+
+// OPTIMIZATION: Debounce hook
+function useDebounce(value, delay) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+}
+
 export function Carousel() {
     const toggles = useSelector((state) => state.toggles);
     const finance = useSelector((state) => state.finance);
     const [connectionStatus, setConnectionStatus] = useState('Connecting');
-    const [filteredData, setFilteredData] = useState(null);
+    const [sportsData, setSportsData] = useState(null);
     const wsRef = useRef(null);
+    const reconnectTimeoutRef = useRef(null);
 
-    // Helper function to check if any toggles are active
-    const hasActiveToggles = () => {
-        // Check sports toggles
-        const activeSportsToggles = Object.values(toggles).some(value => value);
+    // OPTIMIZATION: Separate sports and finance logic
+    const sportsToggles = useMemo(() => {
+        if (!toggles) return {};
+        // Filter out non-sports properties
+        const sportKeys = ['NFL', 'NBA', 'MLB', 'NHL']; // Add your sports here
+        const filtered = {};
+        sportKeys.forEach(key => {
+            if (toggles[key]) filtered[key] = toggles[key];
+        });
+        return filtered;
+    }, [toggles]);
 
-        // Check finance toggles
-        const activeFinanceToggles = finance && (
+    // Debounce sports toggles to prevent rapid WebSocket requests
+    const debouncedSportsToggles = useDebounce(sportsToggles, 300);
+
+    // Helper function to check if any sports toggles are active
+    const hasActiveSportsToggles = useMemo(() => {
+        return Object.values(debouncedSportsToggles).some(value => value === true);
+    }, [debouncedSportsToggles]);
+
+    // Helper function to check if any finance options are active
+    const hasActiveFinanceToggles = useMemo(() => {
+        return finance && (
             (finance.stocks?.enabled && finance.stocks?.activePreset) ||
             (finance.crypto?.enabled && finance.crypto?.activePreset)
         );
+    }, [finance]);
 
-        return activeSportsToggles || activeFinanceToggles;
-    };
+    // OPTIMIZATION: Throttled WebSocket send
+    const throttledSendMessage = useCallback((message) => {
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify(message));
+        }
+    }, []);
 
+    // Send filter request to sports server (port 4000)
+    const sendSportsFilterRequest = useCallback((sportsFilters) => {
+        if (!hasActiveSportsToggles) {
+            setSportsData([]);
+            return;
+        }
+
+        // Get array of active sports filters only
+        const activeFilters = Object.entries(sportsFilters)
+            .filter(([key, value]) => value)
+            .map(([key]) => key);
+
+        const filterData = {
+            type: 'filter_request',
+            filters: activeFilters,
+            timestamp: Date.now()
+        };
+
+        throttledSendMessage(filterData);
+        console.log('Sent sports filter request:', filterData);
+    }, [hasActiveSportsToggles, throttledSendMessage]);
+
+    // OPTIMIZATION: Single WebSocket effect for sports only
     useEffect(() => {
-        let reconnectTimer;
         let isComponentMounted = true;
 
-        const connectWebSocket = (attempt = 1) => {
+        // If no sports toggles are active, don't connect to sports WebSocket
+        if (!hasActiveSportsToggles) {
+            setSportsData([]);
+            setConnectionStatus('No Sports Selected');
+
+            // Close existing connection if any
+            if (wsRef.current) {
+                wsRef.current.close(1000, 'No sports filters');
+                wsRef.current = null;
+            }
+            return;
+        }
+
+        const connectWebSocket = () => {
             if (!isComponentMounted) return;
 
+            // Clear any existing reconnection timeout
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current);
+                reconnectTimeoutRef.current = null;
+            }
+
             try {
-                // Updated WebSocket URL to match your server setup
+                // Connect to sports server on port 4000
                 const ws = new WebSocket("ws://localhost:4000/ws");
                 wsRef.current = ws;
 
@@ -53,30 +176,21 @@ export function Carousel() {
                     if (!isComponentMounted) return;
                     setConnectionStatus('Connected');
                     // Send initial connection message
-                    ws.send(JSON.stringify({type: 'connection', timestamp: Date.now()}));
+                    throttledSendMessage({type: 'connection', timestamp: Date.now()});
                 };
 
                 ws.onclose = function close(event) {
                     if (!isComponentMounted) return;
 
-                    // Only log if it's not an expected initial connection failure
-                    if (attempt > 1 || event.code === 1000) {
-                        console.log("WebSocket disconnected", event.code);
-                    }
+                    console.log("Sports WebSocket disconnected", event.code);
+                    setConnectionStatus('Disconnected');
 
-                    // Don't show "Disconnected" on initial failed attempts
-                    if (attempt === 1 && event.code === 1006) {
-                        console.log("Initial connection attempt failed, retrying...");
-                    } else {
-                        setConnectionStatus('Disconnected');
-                    }
-
-                    // Only try to reconnect if it wasn't a manual close
-                    if (event.code !== 1000) {
+                    // Only try to reconnect if we still have active sports toggles and it wasn't a manual close
+                    if (event.code !== 1000 && hasActiveSportsToggles) {
                         setConnectionStatus('Reconnecting');
-                        reconnectTimer = setTimeout(() => {
-                            if (isComponentMounted) {
-                                connectWebSocket(attempt + 1);
+                        reconnectTimeoutRef.current = setTimeout(() => {
+                            if (isComponentMounted && hasActiveSportsToggles) {
+                                connectWebSocket();
                             }
                         }, 2000);
                     }
@@ -84,138 +198,104 @@ export function Carousel() {
 
                 ws.onmessage = function incoming(event) {
                     if (!isComponentMounted) return;
-                    const receivedData = JSON.parse(event.data);
-                    if (receivedData.type === "filtered_data") {
-                        setFilteredData(receivedData);
+                    try {
+                        const receivedData = JSON.parse(event.data);
+                        if (receivedData.type === "filtered_data") {
+                            setSportsData(receivedData.data || []);
+                        }
+                    } catch (error) {
+                        console.error('Sports WebSocket message parse error:', error);
                     }
                 };
 
                 ws.onerror = function error(err) {
                     if (!isComponentMounted) return;
-
-                    // Only log errors after the first attempt to reduce console noise
-                    if (attempt > 1) {
-                        console.error('WebSocket error on attempt', attempt, err);
-                        setConnectionStatus('Connection Error');
-                    }
+                    console.error('Sports WebSocket error:', err);
+                    setConnectionStatus('Connection Error');
                 };
 
             } catch (error) {
                 if (!isComponentMounted) return;
-
-                console.error('Failed to create WebSocket:', error);
+                console.error('Failed to create sports WebSocket:', error);
                 setConnectionStatus('Connection Error');
-                reconnectTimer = setTimeout(() => {
-                    if (isComponentMounted) {
+
+                reconnectTimeoutRef.current = setTimeout(() => {
+                    if (isComponentMounted && hasActiveSportsToggles) {
                         setConnectionStatus('Reconnecting');
-                        connectWebSocket(attempt + 1);
+                        connectWebSocket();
                     }
                 }, 2000);
             }
         };
 
-        // Add a small delay before initial connection to let the page settle
+        setConnectionStatus('Connecting');
+        // Small delay before initial connection to let the page settle
         const initialDelay = setTimeout(() => {
-            if (isComponentMounted) {
+            if (isComponentMounted && hasActiveSportsToggles) {
                 connectWebSocket();
             }
         }, 150);
 
-        // Cleanup on unmount
+        // Cleanup on unmount or when sports toggles become inactive
         return () => {
             isComponentMounted = false;
             clearTimeout(initialDelay);
-            if (reconnectTimer) {
-                clearTimeout(reconnectTimer);
+            if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current);
+                reconnectTimeoutRef.current = null;
             }
             if (wsRef.current) {
-                wsRef.current.close(1000, 'Component unmounting');
+                wsRef.current.close(1000, 'Component unmounting or no sports filters');
+                wsRef.current = null;
             }
         };
-    }, []);
+    }, [hasActiveSportsToggles, throttledSendMessage]);
 
-    // Send filter request to server
-    const sendFilterRequest = (currentToggles = toggles) => {
-        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            // Check if any toggles are active before sending request
-            if (!hasActiveToggles()) {
-                // No toggles active, set empty filtered data
-                setFilteredData({data: [], type: "filtered_data"});
-                return;
-            }
-
-            // Get array of active toggles
-            const activeFilters = Object.entries(currentToggles)
-                .filter(([key, value]) => value)
-                .map(([key]) => key);
-
-            const filterData = {
-                type: 'filter_request',
-                filters: activeFilters,
-                timestamp: Date.now()
-            };
-
-            wsRef.current.send(JSON.stringify(filterData));
-            console.log('Sent filter request:', filterData);
-        } else {
-            console.log('WebSocket is not connected');
-        }
-    };
-
-    // Handle toggles change
+    // Handle sports toggles change
     useEffect(() => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            sendFilterRequest(toggles);
-            console.log('Toggles changed, sent new filter request:', toggles);
-        } else if (!hasActiveToggles()) {
-            // If no toggles are active and WebSocket isn't connected, still clear the data
-            setFilteredData({data: [], type: "filtered_data"});
+            sendSportsFilterRequest(debouncedSportsToggles);
+            console.log('Sports toggles changed, sent new filter request:', debouncedSportsToggles);
         }
-    }, [toggles, finance]);
+    }, [debouncedSportsToggles, sendSportsFilterRequest]);
 
     // Load initial data when connected
     useEffect(() => {
-        if (connectionStatus === 'Connected') {
-            // Send initial filter request
-            sendFilterRequest();
+        if (connectionStatus === 'Connected' && hasActiveSportsToggles) {
+            sendSportsFilterRequest(debouncedSportsToggles);
         }
-    }, [connectionStatus]);
+    }, [connectionStatus, hasActiveSportsToggles, debouncedSportsToggles, sendSportsFilterRequest]);
 
-    console.log('Carousel rendered with:', {filteredData, hasActiveToggles: hasActiveToggles()});
+    console.log('Carousel rendered with:', {
+        sportsData: sportsData?.length || 0,
+        hasActiveSportsToggles,
+        hasActiveFinanceToggles,
+        connectionStatus
+    });
 
     return (
         <div className="flex-grow h-full">
-            <TradesTest/>
-            <Swiper
-                //modules={[Autoplay]}
-                autoplay={{delay: 3000, disableOnInteraction: false}}
-                breakpointsBase={'container'}
-                loop={true}
-                speed={600}
-                spaceBetween={8}
-                breakpoints={breakpointsArray}
-                watchSlidesProgress={true}
-                className='h-full'
-            >
-                <>
-                    {filteredData?.data && filteredData.data.length > 0 ? (
-                        filteredData.data.map((game) => (
-                            <SwiperSlide key={game.id} className='h-full py-2'>
-                                <div className="card bg-base-100 shadow-sm h-full">
-                                    <div className="card-body">
-                                        <GameCard game={game}/>
-                                    </div>
-                                </div>
-                            </SwiperSlide>
-                        ))
-                    ) : (
-                        <div className="text-center py-8 text-gray-500">
-                            {!hasActiveToggles() ? 'Select sports or finance options to see games' :
-                                filteredData ? 'No games match your current filters' : 'Loading games...'}
-                        </div>
-                    )}
-                </>
-            </Swiper>
+            {/* Finance section - always show TradesTest component */}
+            {hasActiveFinanceToggles && <TradesTest/>}
+
+            {/* Sports section - only show when sports are active */}
+            {hasActiveSportsToggles && (
+                <div className="mt-4">
+                    <h2 className="text-lg font-semibold mb-2">Sports Games</h2>
+                    <SportsCarousel
+                        sportsData={sportsData}
+                        hasActiveSportsToggles={hasActiveSportsToggles}
+                    />
+                </div>
+            )}
+
+            {/* Show message when nothing is selected */}
+            {!hasActiveSportsToggles && !hasActiveFinanceToggles && (
+                <div className="text-center py-8 text-gray-500">
+                    <h3 className="text-lg font-semibold mb-2">No Content Selected</h3>
+                    <p>Select sports or finance options from the Display tab to see live data.</p>
+                </div>
+            )}
         </div>
     )
 }
