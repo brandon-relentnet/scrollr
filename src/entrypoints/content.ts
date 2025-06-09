@@ -10,7 +10,7 @@ export default defineContentScript({
       onMount: (wrapper: any, iframe: { style: { border: string; height: string; width: string; position: string; bottom: string; left: string; zIndex: string; }; }) => {
         // Add styles to the iframe like width
         iframe.style.border = 'none';
-        iframe.style.height = 'auto';
+        iframe.style.height = '750px';
         iframe.style.width = '100%';
         iframe.style.position = 'fixed';
         iframe.style.bottom = '0';

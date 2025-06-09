@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { themeChange } from "theme-change";
 import DisplayTab from './tabs/DisplayTab.jsx'
-import PowerTab from './tabs/PowerTab.tsx';
+import PowerTab from './tabs/PowerTab.jsx';
 import ThemeTab from "./tabs/ThemeTab.tsx";
 import AccountsTab from "./tabs/AccountsTab.tsx";
 import SettingsTab from "./tabs/SettingsTab.tsx";

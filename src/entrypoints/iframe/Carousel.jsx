@@ -1,9 +1,10 @@
 import React, {useEffect, useState, useRef} from 'react';
-import { Autoplay } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/react';
+import {Autoplay} from 'swiper/modules';
+import {Swiper, SwiperSlide} from 'swiper/react';
 import 'swiper/css';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 import GameCard from './GameCard';
+import TradesTest from './TradesTest';
 
 const breakpointsArray = {};
 const startBreakpoint = 0;
@@ -16,7 +17,6 @@ for (let i = startBreakpoint; i <= endBreakpoint; i += breakpointStep) {
 }
 
 export function Carousel() {
-    const [data, setData] = useState(null);
     const toggles = useSelector((state) => state.toggles);
     const finance = useSelector((state) => state.finance);
     const [connectionStatus, setConnectionStatus] = useState('Connecting');
@@ -51,10 +51,9 @@ export function Carousel() {
 
                 ws.onopen = function open() {
                     if (!isComponentMounted) return;
-                    console.log("WebSocket connected successfully");
                     setConnectionStatus('Connected');
                     // Send initial connection message
-                    ws.send(JSON.stringify({ type: 'connection', timestamp: Date.now() }));
+                    ws.send(JSON.stringify({type: 'connection', timestamp: Date.now()}));
                 };
 
                 ws.onclose = function close(event) {
@@ -85,23 +84,9 @@ export function Carousel() {
 
                 ws.onmessage = function incoming(event) {
                     if (!isComponentMounted) return;
-
                     const receivedData = JSON.parse(event.data);
-                    console.log('Received:', receivedData);
-
                     if (receivedData.type === "filtered_data") {
-                        console.log("Filtered games received:", receivedData);
                         setFilteredData(receivedData);
-                    } else if (receivedData.type === "games_updated") {
-                        console.log("Games updated notification:", receivedData);
-                        setData(receivedData);
-                        // Optionally auto-refresh filters when data updates
-                        // sendFilterRequest();
-                    } else if (receivedData.type === "new_data") {
-                        console.log("New data received:", receivedData);
-                        setData(receivedData);
-                    } else {
-                        setData(receivedData);
                     }
                 };
 
@@ -134,7 +119,7 @@ export function Carousel() {
             if (isComponentMounted) {
                 connectWebSocket();
             }
-        }, 250);
+        }, 150);
 
         // Cleanup on unmount
         return () => {
@@ -155,7 +140,7 @@ export function Carousel() {
             // Check if any toggles are active before sending request
             if (!hasActiveToggles()) {
                 // No toggles active, set empty filtered data
-                setFilteredData({ data: [], type: "filtered_data" });
+                setFilteredData({data: [], type: "filtered_data"});
                 return;
             }
 
@@ -184,7 +169,7 @@ export function Carousel() {
             console.log('Toggles changed, sent new filter request:', toggles);
         } else if (!hasActiveToggles()) {
             // If no toggles are active and WebSocket isn't connected, still clear the data
-            setFilteredData({ data: [], type: "filtered_data" });
+            setFilteredData({data: [], type: "filtered_data"});
         }
     }, [toggles, finance]);
 
@@ -196,13 +181,14 @@ export function Carousel() {
         }
     }, [connectionStatus]);
 
-    console.log('Carousel rendered with:', { filteredData, hasActiveToggles: hasActiveToggles() });
+    console.log('Carousel rendered with:', {filteredData, hasActiveToggles: hasActiveToggles()});
 
     return (
-        <div className="flex-grow h-full overflow-hidden">
+        <div className="flex-grow h-full">
+            <TradesTest/>
             <Swiper
                 //modules={[Autoplay]}
-                autoplay={{ delay: 3000, disableOnInteraction: false }}
+                autoplay={{delay: 3000, disableOnInteraction: false}}
                 breakpointsBase={'container'}
                 loop={true}
                 speed={600}
@@ -217,7 +203,7 @@ export function Carousel() {
                             <SwiperSlide key={game.id} className='h-full py-2'>
                                 <div className="card bg-base-100 shadow-sm h-full">
                                     <div className="card-body">
-                                        <GameCard game={game} />
+                                        <GameCard game={game}/>
                                     </div>
                                 </div>
                             </SwiperSlide>
