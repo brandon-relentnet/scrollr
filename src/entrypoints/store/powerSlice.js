@@ -3,12 +3,17 @@ import { createSlice } from "@reduxjs/toolkit";
 const powerSlice = createSlice({
     name: "power",
     initialState: {
-        mode: false,
+        mode: true, // Default to enabled
     },
     reducers: {
-        setPower: (state, action) => action.payload,
+        setPower: (state, action) => {
+            state.mode = action.payload;
+        },
+        togglePower: (state) => {
+            state.mode = !state.mode;
+        },
     },
 });
 
-export const { setPower } = powerSlice.actions;
+export const { setPower, togglePower } = powerSlice.actions;
 export default powerSlice.reducer;

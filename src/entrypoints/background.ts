@@ -16,8 +16,11 @@ export default defineBackground(() => {
   // Initialize store asynchronously but don't make the main function async
   void initializeStore();
 
-  // Listen for messages from popup/content scripts
-  browser.runtime.onMessage.addListener((message: { type: string; action: any; }, sender: any, sendResponse: (arg0: { error?: string; state?: any; }) => void) => {
+  // Listen for messages from popup/content scripts/iframe
+  browser.runtime.onMessage.addListener((message: { type: string; action: any; layout?: string; power?: boolean; }, sender: any, sendResponse: (arg0: {
+    layout: any;
+    power: boolean
+  }) => void) => {
     if (!store) {
       sendResponse({ error: 'Store not ready' });
       return true;
@@ -29,10 +32,67 @@ export default defineBackground(() => {
       store.dispatch(message.action);
       // Respond with the updated state
       sendResponse({ state: store.getState() });
+
+      // Notify all content scripts about state change
+      notifyContentScripts();
+    } else if (message.type === 'LAYOUT_CHANGED') {
+      // Handle layout change from iframe
+      const { setLayout } = require('@/entrypoints/store/layoutSlice');
+      store.dispatch(setLayout(message.layout));
+      sendResponse({ success: true });
+
+      // Notify content scripts
+      notifyContentScripts();
+    } else if (message.type === 'POWER_TOGGLED') {
+      // Handle power toggle from iframe
+      const { setPower } = require('@/entrypoints/store/powerSlice');
+      store.dispatch(setPower(message.power));
+      sendResponse({ success: true });
+
+      // Notify content scripts
+      notifyContentScripts();
+    } else if (message.type === 'GET_IFRAME_STATE') {
+      // Content script requesting current state
+      const state = store.getState();
+      sendResponse({
+        layout: state.layout?.mode || 'compact',
+        power: state.power?.mode !== false
+      });
     }
 
     return true;
   });
+
+  // Listen for store changes and notify content scripts
+  async function notifyContentScripts() {
+    if (!store) return;
+
+    const state = store.getState();
+    const iframeState = {
+      layout: state.layout?.mode || 'compact',
+      power: state.power?.mode !== false
+    };
+
+    try {
+      // Get all tabs and send message to content scripts
+      const tabs = await browser.tabs.query({});
+
+      for (const tab of tabs) {
+        if (tab.id) {
+          try {
+            await browser.tabs.sendMessage(tab.id, {
+              type: 'IFRAME_STATE_UPDATE',
+              ...iframeState
+            });
+          } catch (error) {
+            // Tab might not have content script, ignore error
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to notify content scripts:', error);
+    }
+  }
 });
 
 async function initializeStore() {

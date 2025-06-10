@@ -1,5 +1,5 @@
-import {LockOpenIcon, LockClosedIcon, InformationCircleIcon, CursorArrowRaysIcon} from "@heroicons/react/24/solid";
-import {useState, useEffect} from "react";
+import {LockOpenIcon, LockClosedIcon, InformationCircleIcon} from "@heroicons/react/24/solid";
+import {useState} from "react";
 import {useSelector} from "react-redux";
 
 export default function GameCard({game}) {
@@ -7,7 +7,6 @@ export default function GameCard({game}) {
     const layout = useSelector((state) => state.layout?.mode || 'compact');
 
     // Determine if minimal mode should be used based on layout
-    // 'compact' = minimal/condensed layout, 'comfort' = spacious layout
     const isMinimal = layout === 'compact';
 
     const getStatusIcon = (state) => {
@@ -29,7 +28,7 @@ export default function GameCard({game}) {
             case 'pre':
                 return `btn-accent`;
             case 'in':
-                return `btn-success`;
+                return `btn-primary`;
             case 'post':
                 return `btn-error`;
             default:
@@ -67,12 +66,13 @@ export default function GameCard({game}) {
                                 data-tip={game.start_time ? new Date(game.start_time).toLocaleString() + ' - ' + game.league : ''}
                             >
                                 <button
-                                    className={`${getStatusBtn(game.state)} btn btn-outline cursor-default`}>
-                                    <div className="ml-2 inline-grid *:[grid-area:1/1]">
-                            <div className="status status-primary animate-ping"></div>
-                            <div className="status status-primary"></div>
-                        </div>
-                                    {getStatusText(game.state, game.short_detail)}</button>
+                                    className={`${getStatusBtn(game.state)} ${isMinimal ? '' : 'btn btn-outline'} cursor-default`}>
+                                    <div className={`ml-2 inline-grid *:[grid-area:1/1] ${isMinimal ? 'mr-1' : ''}`}>
+                                        <div className="status status-primary animate-ping"></div>
+                                        <div className="status status-primary"></div>
+                                    </div>
+                                    {getStatusText(game.state, game.short_detail)}
+                                </button>
                             </div>
                         </span>
                 </>) : (<div

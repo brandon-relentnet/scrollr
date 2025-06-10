@@ -9,18 +9,37 @@ import {
 } from "@heroicons/react/24/solid";
 import { useSelector, useDispatch } from "react-redux";
 import { setLayout } from "@/entrypoints/store/layoutSlice";
+import { togglePower } from "@/entrypoints/store/powerSlice";
 
-export default function PowerTab({ power, setPower }) {
+export default function PowerTab() {
     const dispatch = useDispatch();
     const layout = useSelector((state) => {
         return state.layout?.mode || 'compact';
     });
+    const power = useSelector((state) => {
+        return state.power?.mode !== false;
+    });
 
     const handleLayoutChange = () => {
-        // Toggle between 'compact' and 'comfort' modes
         const newLayout = layout === 'compact' ? 'comfort' : 'compact';
         dispatch(setLayout(newLayout));
+
+        // Also notify background script directly for immediate update
+        browser.runtime.sendMessage({
+            type: 'LAYOUT_CHANGED',
+            layout: newLayout
+        });
     }
+
+    const handlePowerToggle = () => {
+        dispatch(togglePower());
+
+        // Also notify background script directly for immediate update
+        browser.runtime.sendMessage({
+            type: 'POWER_TOGGLED',
+            power: !power
+        });
+    };
 
     return (
         <>
@@ -30,8 +49,11 @@ export default function PowerTab({ power, setPower }) {
             </label>
             <div className="tab-content bg-base-100 border-base-300 p-6">
                 <div className="flex flex-col items-center justify-center">
-                    <button onClick={() => setPower(!power)} className="btn btn-ghost btn-circle p-6 size-50">
-                        {!power ? <BoltIcon /> : <BoltSlashIcon />}
+                    <button
+                        onClick={handlePowerToggle}
+                        className={`btn btn-ghost btn-circle p-6 size-50 ${!power ? 'text-error' : 'text-success'}`}
+                    >
+                        {power ? <BoltIcon /> : <BoltSlashIcon />}
                     </button>
                     <ul className="menu menu-horizontal bg-base-200 rounded-box mt-6">
                         <li>
