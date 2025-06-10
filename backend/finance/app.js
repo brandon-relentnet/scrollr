@@ -1,6 +1,7 @@
 // app.js - Fixed version with proper imports and single server + skip flag support
 const { startTradesApiServer, setupGracefulShutdown } = require('./api');
 require('dotenv').config();
+const pool = require('./db');
 
 function parseCommandLineArgs() {
     const args = process.argv.slice(2);
@@ -48,6 +49,17 @@ async function startServer() {
     try {
         console.log('🚀 Starting Trades API Server...');
 
+        // Test database connection first
+        console.log('📊 Testing database connection...');
+        try {
+            await pool.query('SELECT 1');
+            console.log('✅ Database connection successful');
+        } catch (dbError) {
+            console.error('❌ Database connection failed:', dbError);
+            console.error('Please ensure your database is running and .env is configured correctly');
+            process.exit(1);
+        }
+
         // Parse command line arguments
         const options = parseCommandLineArgs();
 
@@ -55,9 +67,15 @@ async function startServer() {
             console.log('⏭️  Skipping previous closes update (--skip flag detected)');
         }
 
-        // Start the trades API server (it includes both WebSocket AND REST endpoints)
+        // Start the trades API server
         const port = process.env.PORT || 4001;
+        console.log(`🌐 Starting HTTP server on port ${port}...`);
+
         const { httpServer, wss } = await startTradesApiServer(port, options);
+
+        // Wait for server to be fully ready
+        console.log('⏳ Waiting for server to be fully ready...');
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         // Setup graceful shutdown
         setupGracefulShutdown(httpServer);
@@ -71,7 +89,7 @@ async function startServer() {
             console.log('⚠️  Previous closes were skipped - real-time updates may be inaccurate');
         }
 
-        console.log('\n👂 Listening for connections...\n');
+        console.log('\n👂 Server is ready for connections...\n');
 
         return { httpServer, wss };
 

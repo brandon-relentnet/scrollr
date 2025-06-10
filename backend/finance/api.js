@@ -6,6 +6,7 @@ const WebSocket = require('ws')
 const tradeService = require('./tradeService')
 const finnhubWS = require('./finnhubWebSocket')
 require('dotenv').config()
+const pool = require('./db')
 
 let wss = null
 const clients = new Set()
@@ -331,15 +332,35 @@ async function startTradesApiServer(port = 4001, options = {}) {
 
     // Health check endpoint
     app.get('/health', (req, res) => {
-        res.json({
+        const health = {
             status: 'healthy',
             timestamp: Date.now(),
             message: 'Trades API server is running',
             websocket_clients: clients.size,
             cache_size: filterCache.size,
-            trades_cache_age: tradesCache.timestamp ? Date.now() - tradesCache.timestamp : 0
-        })
-    })
+            trades_cache_age: tradesCache.timestamp ? Date.now() - tradesCache.timestamp : 0,
+            database_connected: false, // Add DB health check
+            finnhub_connected: false   // Add Finnhub connection status
+        };
+
+        // Check database connection
+        pool.query('SELECT 1', (err) => {
+            health.database_connected = !err;
+
+            // Check Finnhub connection
+            health.finnhub_connected = finnhubWS.socket &&
+                finnhubWS.socket.readyState === WebSocket.OPEN;
+
+            // Set status based on critical components
+            if (!health.database_connected) {
+                health.status = 'unhealthy';
+                health.message = 'Database connection failed';
+                return res.status(503).json(health);
+            }
+
+            res.json(health);
+        });
+    });
 
     const httpServer = http.createServer(app)
 

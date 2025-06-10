@@ -72,7 +72,7 @@ export default function useSportsData() {
         };
 
         throttledSendMessage(filterData);
-        console.log('Sent sports filter request:', filterData);
+        //console.log('Sent sports filter request:', filterData);
     }, [hasActiveSportsToggles, throttledSendMessage]);
 
     // OPTIMIZATION: Single WebSocket effect for sports only
@@ -189,7 +189,7 @@ export default function useSportsData() {
     useEffect(() => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             sendSportsFilterRequest(debouncedSportsToggles);
-            console.log('Sports toggles changed, sent new filter request:', debouncedSportsToggles);
+            //console.log('Sports toggles changed, sent new filter request:', debouncedSportsToggles);
         }
     }, [debouncedSportsToggles, sendSportsFilterRequest]);
 

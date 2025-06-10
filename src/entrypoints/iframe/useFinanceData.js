@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { STOCK_PRESETS, CRYPTO_PRESETS } from '@/entrypoints/popup/tabs/data';
+import { createWebSocketConnection } from './connectionUtils';
 
 // OPTIMIZATION: Debounce utility
 function useDebounce(value, delay) {
@@ -86,7 +87,7 @@ function useFinanceFilters(financeState) {
 
 // Custom hook to handle finance data and WebSocket connection
 export default function useFinanceData() {
-    const [connectionStatus, setConnectionStatus] = useState('Connecting');
+    const [connectionStatus, setConnectionStatus] = useState('Checking Server');
     const [tradesData, setTradesData] = useState(null);
     const wsRef = useRef(null);
     const reconnectTimeoutRef = useRef(null);
@@ -141,11 +142,9 @@ export default function useFinanceData() {
         let isComponentMounted = true;
 
         if (!hasFinanceFilters) {
-            // Clear data if no finance filters
             setTradesData({data: [], type: "filtered_data"});
             setConnectionStatus('No Finance Filters');
 
-            // Close existing connection if any
             if (wsRef.current) {
                 wsRef.current.close(1000, 'No finance filters');
                 wsRef.current = null;
@@ -153,22 +152,30 @@ export default function useFinanceData() {
             return;
         }
 
-        const connectWebSocket = () => {
+        const connectWebSocket = async () => {
             if (!isComponentMounted) return;
 
-            // Clear any existing reconnection timeout
             if (reconnectTimeoutRef.current) {
                 clearTimeout(reconnectTimeoutRef.current);
                 reconnectTimeoutRef.current = null;
             }
 
             try {
-                const ws = new WebSocket("ws://localhost:4001/ws");
+                setConnectionStatus('Connecting');
+
+                // Use health check before connecting
+                const ws = await createWebSocketConnection(4001);
+                if (!isComponentMounted) {
+                    ws.close();
+                    return;
+                }
+
                 wsRef.current = ws;
 
                 ws.onopen = () => {
                     if (!isComponentMounted) return;
                     setConnectionStatus('Connected');
+                    reconnectTimeoutRef.attempts = 0; // Reset backoff
                     throttledSendMessage({type: 'connection', timestamp: Date.now()});
                 };
 
@@ -178,9 +185,16 @@ export default function useFinanceData() {
 
                     if (event.code !== 1000 && hasFinanceFilters) {
                         setConnectionStatus('Reconnecting');
+                        // Exponential backoff for reconnections
+                        const attempt = (reconnectTimeoutRef.attempts || 0) + 1;
+                        const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+
                         reconnectTimeoutRef.current = setTimeout(() => {
-                            if (isComponentMounted) connectWebSocket();
-                        }, 2000);
+                            if (isComponentMounted) {
+                                reconnectTimeoutRef.attempts = attempt;
+                                connectWebSocket();
+                            }
+                        }, delay);
                     }
                 };
 
@@ -198,7 +212,6 @@ export default function useFinanceData() {
                                 setTradesData(receivedData);
                                 break;
                             case 'connection_confirmed':
-                                // Send initial filter request when connection is confirmed
                                 sendFilterRequest(debouncedFinanceFilters);
                                 break;
                         }
@@ -214,22 +227,27 @@ export default function useFinanceData() {
 
             } catch (error) {
                 if (!isComponentMounted) return;
-                setConnectionStatus('Connection Error');
+                console.error('Failed to create WebSocket connection:', error);
+                setConnectionStatus('Server Not Ready');
+
+                // Retry with exponential backoff
+                const attempt = (reconnectTimeoutRef.attempts || 0) + 1;
+                const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+
                 reconnectTimeoutRef.current = setTimeout(() => {
-                    if (isComponentMounted) connectWebSocket();
-                }, 2000);
+                    if (isComponentMounted) {
+                        reconnectTimeoutRef.attempts = attempt;
+                        connectWebSocket();
+                    }
+                }, delay);
             }
         };
 
-        setConnectionStatus('Connecting');
-        // Small initial delay to let the page settle
-        const initialTimeout = setTimeout(() => {
-            if (isComponentMounted) connectWebSocket();
-        }, 150);
+        // Start connection attempt immediately (health check will handle the delay)
+        connectWebSocket();
 
         return () => {
             isComponentMounted = false;
-            clearTimeout(initialTimeout);
             if (reconnectTimeoutRef.current) {
                 clearTimeout(reconnectTimeoutRef.current);
             }
@@ -237,7 +255,7 @@ export default function useFinanceData() {
                 wsRef.current.close(1000, 'Component unmounting');
             }
         };
-    }, [hasFinanceFilters]); // Only depend on whether we have filters
+    }, [hasFinanceFilters]);
 
     return {
         tradesData,

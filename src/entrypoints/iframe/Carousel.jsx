@@ -40,7 +40,7 @@ export function Carousel() {
                             </SwiperSlide>
                         ))}
                         {sportsData.map((game) => (
-                            <SwiperSlide key={game.id} className='py-2'>
+                            <SwiperSlide key={game.id} className='h-full py-2'>
                                 <GameCard game={game}/>
                             </SwiperSlide>
                         ))}

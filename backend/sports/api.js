@@ -104,6 +104,28 @@ function startApiServer(port = 4000) {
         }
     })
 
+    app.get('/health', async (req, res) => {
+        const health = {
+            status: 'healthy',
+            timestamp: Date.now(),
+            message: 'Sports API server is running',
+            websocket_clients: clients.size,
+            database_connected: false
+        };
+
+        try {
+            // Test database connection
+            await pool.query('SELECT 1');
+            health.database_connected = true;
+            res.json(health);
+        } catch (error) {
+            health.status = 'unhealthy';
+            health.database_connected = false;
+            health.message = 'Database connection failed';
+            res.status(503).json(health);
+        }
+    });
+
     // Create HTTP server
     const httpServer = http.createServer(app)
 
