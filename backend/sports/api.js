@@ -4,6 +4,7 @@ const cors = require('cors')
 const http = require('http')
 const WebSocket = require('ws')
 const { getAllGames, getGamesByLeague } = require('./dbQueries')
+const pool = require('./db')
 
 let wss = null  // WebSocket server reference
 const clients = new Set()  // Track connected clients and their filters

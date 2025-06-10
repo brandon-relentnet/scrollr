@@ -47,7 +47,7 @@ const TradeCard = memo(({trade}) => {
     }, [trade.previous_close]);
 
     return (
-        <div className={`card group bg-base-100 cursor-pointer hover:border-primary border-transparent border-2 transition duration-150 ${isMinimal ? 'h-14' : 'h-40'}`}>
+        <div className={`card group bg-base-200 cursor-pointer card-border shadow-md border-base-300 transition duration-150 ${isMinimal ? 'h-14' : 'h-40'}`}>
             <div className={`card-body flex ${isMinimal ? 'py-2 px-2 flex-row justify-evenly items-center' : 'justify-center p-4'}`}>
 
                 {/* Minimal Mode Layout */}

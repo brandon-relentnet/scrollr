@@ -3,25 +3,17 @@ const pool = require('./db');
 const excludedStates = ['post', 'completed', 'final'];
 
 async function getTimeInfo() {
-  const query = `
-    SELECT 
-      (CURRENT_TIMESTAMP AT TIME ZONE $1) AS currentDay,
-      ((CURRENT_TIMESTAMP AT TIME ZONE $1) + INTERVAL '24 hour') AS nextDay
-  `;
+  const currentDate = new Date();
+  const nextDate = new Date(currentDate);
+  nextDate.setDate(currentDate.getDate() + 1);
 
-  // Get host's local timezone in short form
-  let value = [new Date().toLocaleTimeString('en-us',{timeZoneName:'short'}).split(' ')[2]];
-
-  const result = await pool.query(query, value);
-
-  // Extract and format the time info
-  const timeInfo = {
-    currentDay: result.rows[0].currentday.toISOString(),
-    nextDay: result.rows[0].nextday.toISOString(),
+  let timeInfo = {
+    currentDay: currentDate.toISOString(),
+    nextDay: nextDate.toISOString(),
   };
 
   console.log('TIME INFO', timeInfo);
-  return timeInfo;
+  return(timeInfo);
 }
 
 async function clearTable(leaguesToIngest) {

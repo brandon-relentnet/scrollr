@@ -5,147 +5,165 @@ import {useSelector} from "react-redux";
 export default function GameCard({game}) {
     const [pinned, setPinned] = useState(false);
     const layout = useSelector((state) => state.layout?.mode || 'compact');
-
-    // Determine if minimal mode should be used based on layout
     const isMinimal = layout === 'compact';
+    const isLive = game.state === 'in';
 
-    const getStatusIcon = (state) => {
-        switch (state) {
-            case 'pre':
-                return `text-accent/30 hover:text-accent`;
-            case 'in':
-                return `text-success`;
-            case 'post':
-                return `text-error`;
-            default:
-                return `text-error`;
-        }
-    }
-
-    // Function to get the status text based on game state
-    const getStatusBtn = (state) => {
-        switch (state) {
-            case 'pre':
-                return `btn-accent`;
-            case 'in':
-                return `btn-primary`;
-            case 'post':
-                return `btn-error`;
-            default:
-                return `btn-error`;
-        }
-    }
-
-    const getStatusText = (state, detail) => {
-        switch (state) {
-            case 'pre':
-                return 'Upcoming';
-            case 'in':
-                return detail || 'Live';
-            case 'post':
-                return 'Final';
-            default:
-                return state;
+    // Centralized styling configuration
+    const styles = {
+        minimal: {
+            card: 'h-14',
+            cardBody: 'py-2 px-2 flex-row justify-evenly',
+            statusContainer: 'absolute top-1 left-1',
+            statusText: 'text-xs',
+            statusButton: '',
+            statusIndicatorMargin: 'mr-1',
+            gameDetails: 'flex items-center divide-x-2 divide-base-content/10',
+            awayTeam: 'pr-2 mr-2',
+            homeTeam: 'flex-row-reverse',
+            teamScore: 'text-base',
+            awayScore: 'ml-1',
+            homeScore: 'mr-1',
+            pinButton: 'absolute group-hover:visible px-2 invisible top-0 right-0 my-1.5 mx-2 btn swap swap-rotate cursor-pointer hover:scale-110'
+        },
+        comfort: {
+            card: 'h-40',
+            cardBody: 'justify-center p-4',
+            statusContainer: '',
+            statusText: '',
+            statusButton: 'btn btn-outline',
+            statusIndicatorMargin: '',
+            gameDetails: 'divide-y-2 divide-base-content/10',
+            awayTeam: 'mb-1 pb-1',
+            homeTeam: '',
+            teamScore: 'text-xl',
+            awayScore: '',
+            homeScore: '',
+            pinButton: 'group-hover:visible invisible swap swap-rotate cursor-pointer hover:scale-110 transition-transform'
         }
     };
+
+    const currentStyles = isMinimal ? styles.minimal : styles.comfort;
+
+    const getStatusClasses = (state) => ({
+        icon: state === 'pre' ? 'text-primary/30 hover:text-primary' : state === 'in' ? 'text-success' : 'text-error',
+        button: state === 'pre' ? 'btn-primary' : state === 'in' ? 'btn-success' : 'btn-error',
+        text: state === 'pre' ? 'Upcoming' : state === 'in' ? 'Live' : 'Final',
+    });
 
     const handlePinClick = (e) => {
         e.stopPropagation();
         setPinned(!pinned);
     };
 
-    const isLive = game.state === 'in';
+    const StatusContent = () => {
+        const {icon, button, text} = getStatusClasses(game.state);
+        const tooltipContent = game.start_time
+            ? `${new Date(game.start_time).toLocaleString()} - ${game.league}`
+            : '';
 
-    const StatusContent = () => (
-        <div className={`${isMinimal ? 'absolute top-1 left-1' : ''} flex items-center justify-evenly gap-2`}>
-            {isLive ? (<>
+        return (
+            <div className={`${currentStyles.statusContainer} flex items-center justify-evenly gap-2`}>
+                {isLive ? (
+                    <span className={`text-base-content/70 group font-bold ${currentStyles.statusText}`}>
+                        <div className="tooltip-right tooltip tooltip-primary" data-tip={tooltipContent}>
+                            <button className={`${button} ${currentStyles.statusButton} cursor-default`}>
+                                <div
+                                    className={`ml-2 inline-grid *:[grid-area:1/1] ${currentStyles.statusIndicatorMargin}`}>
+                                    <div className="status status-primary animate-ping"></div>
+                                    <div className="status status-primary"></div>
+                                </div>
+                                {text}
+                            </button>
+                        </div>
+                    </span>
+                ) : !isMinimal ? (
+                    <div className="tooltip-right tooltip tooltip-primary" data-tip={tooltipContent}>
+                        <button className={`${button} ${currentStyles.statusButton} cursor-default`}>
+                            {text}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="tooltip-right tooltip tooltip-primary" data-tip={tooltipContent}>
+                        <InformationCircleIcon className={`size-6 ${icon}`}/>
+                    </div>
+                )}
+            </div>
+        );
+    };
 
-                        <span className={`text-base-content/70 group font-bold ${isMinimal ? 'text-xs' : ''}`}>
-                            <div
-                                className={`tooltip-right tooltip tooltip-primary`}
-                                data-tip={game.start_time ? new Date(game.start_time).toLocaleString() + ' - ' + game.league : ''}
-                            >
-                                <button
-                                    className={`${getStatusBtn(game.state)} ${isMinimal ? '' : 'btn btn-outline'} cursor-default`}>
-                                    <div className={`ml-2 inline-grid *:[grid-area:1/1] ${isMinimal ? 'mr-1' : ''}`}>
-                                        <div className="status status-primary animate-ping"></div>
-                                        <div className="status status-primary"></div>
-                                    </div>
-                                    {getStatusText(game.state, game.short_detail)}
-                                </button>
-                            </div>
-                        </span>
-                </>) : (<div
-                    className={`tooltip-right tooltip tooltip-primary`}
-                    data-tip={game.start_time ? new Date(game.start_time).toLocaleString() + ' - ' + game.league : ''}
-                >
-                    {!isMinimal ? <button
-                            className={`${getStatusBtn(game.state)} btn btn-outline cursor-default`}>{getStatusText(game.state, game.short_detail)}</button> :
-                        <InformationCircleIcon className={`size-6 ${getStatusIcon(game.state)}`}
-                        />}
-                </div>)}
-        </div>);
-
-    return (<div
-            className={`card group bg-base-100 cursor-pointer hover:border-primary border-transparent border-2 transition duration-150 ${isMinimal ? 'h-14 ' : 'h-40'}`}
-            onClick={() => window.open(game.link, '_blank')}>
-            <div
-                className={`card-body flex  ${isMinimal ? 'py-2 px-2 flex-row justify-evenly' : 'justify-center p-4'}`}>
+    return (
+        <div
+            className={`card bg-base-200 group cursor-pointer card-border border-base-300 transition duration-150 ${currentStyles.card}`}
+            onClick={() => window.open(game.link, '_blank')}
+        >
+            <div className={`card-body flex ${currentStyles.cardBody}`}>
                 {/* Header for comfort mode */}
-                {!isMinimal ? (<div className="flex justify-between items-start">
+                {!isMinimal ? (
+                    <div className="flex justify-between items-start">
                         <StatusContent/>
                         <div className="flex items-center space-x-2">
-                            <label className="group-hover:visible invisible swap swap-rotate cursor-pointer hover:scale-110 transition-transform"
-                                   onClick={(e) => e.stopPropagation()}>
+                            <label
+                                className={currentStyles.pinButton}
+                                onClick={(e) => e.stopPropagation()}
+                            >
                                 <input type="checkbox" checked={pinned} onChange={handlePinClick}/>
                                 <LockOpenIcon className="swap-off size-5"/>
                                 <LockClosedIcon className="swap-on size-5"/>
                             </label>
                         </div>
-                    </div>) : (<StatusContent/>)}
+                    </div>
+                ) : (
+                    <StatusContent/>
+                )}
 
                 {/* Game Details */}
-                <div
-                    className={`${isMinimal ? 'flex items-center divide-x-2 divide-base-content/10' : 'divide-y-2 divide-base-content/10'}`}>
+                <div className={currentStyles.gameDetails}>
                     {/* Away Team */}
-                    <div className={`flex items-center justify-between ${isMinimal ? 'pr-2 mr-2' : 'mb-1 pb-1'}`}>
+                    <div className={`flex items-center justify-between ${currentStyles.awayTeam}`}>
                         <div className={`flex items-center gap-2 ${isMinimal ? 'flex-row-reverse' : ''}`}>
                             <img
                                 src={game.away_team_logo}
                                 alt={game?.away_team_name}
-                                className={`size-8`}
+                                className="size-8"
                                 onError={(e) => e.target.style.display = 'none'}
                             />
-                            <span className={`font-semibold`}>{game.away_team_name}</span>
+                            <span className="font-semibold">{game.away_team_name}</span>
                         </div>
-                        <span
-                            className={`font-bold ${isMinimal ? 'text-base ml-1' : 'text-xl'}`}>{game.away_team_score}</span>
+                        <span className={`font-bold ${currentStyles.teamScore} ${currentStyles.awayScore}`}>
+                            {game.away_team_score}
+                        </span>
                     </div>
 
                     {/* Home Team */}
-                    <div className={`flex items-center justify-between ${isMinimal ? 'flex-row-reverse' : ''}`}>
-                        <div className={`flex items-center gap-2`}>
+                    <div className={`flex items-center justify-between ${currentStyles.homeTeam}`}>
+                        <div className="flex items-center gap-2">
                             <img
                                 src={game.home_team_logo}
                                 alt={game.home_team_name}
-                                className={`size-8`}
+                                className="size-8"
                                 onError={(e) => e.target.style.display = 'none'}
                             />
-                            <span className={`font-semibold`}>{game.home_team_name}</span>
+                            <span className="font-semibold">{game.home_team_name}</span>
                         </div>
                         <span
-                            className={`font-bold text-base-content ${isMinimal ? 'text-base mr-1' : 'text-xl'}`}>{game.home_team_score}</span>
+                            className={`font-bold text-base-content ${currentStyles.teamScore} ${currentStyles.homeScore}`}>
+                            {game.home_team_score}
+                        </span>
                     </div>
                 </div>
 
                 {/* Side Header for compact mode */}
-                {isMinimal && (<label
-                        className="absolute group-hover:visible px-2 invisible top-0 right-0 my-1.5 mx-2 btn swap swap-rotate cursor-pointer hover:scale-110"
-                        onClick={(e) => e.stopPropagation()}>
+                {isMinimal && (
+                    <label
+                        className={currentStyles.pinButton}
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <input type="checkbox" checked={pinned} onChange={handlePinClick}/>
                         <LockOpenIcon className="swap-off size-5"/>
                         <LockClosedIcon className="swap-on size-5 !text-secondary"/>
-                    </label>)}
+                    </label>
+                )}
             </div>
-        </div>);
+        </div>
+    );
 };
