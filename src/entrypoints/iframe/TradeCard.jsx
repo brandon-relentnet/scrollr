@@ -4,12 +4,15 @@ import {
     ArrowDownIcon,
     ClockIcon,
 } from '@heroicons/react/24/solid';
+import {useSelector} from "react-redux";
 
 const TradeCard = memo(({trade}) => {
+    const layout = useSelector((state) => state.layout?.mode || 'compact');
+
+    // Determine if minimal mode should be used based on layout
+    const isMinimal = layout === 'compact';
+
     const isPositive = trade.direction === 'up';
-    const cardClass = isPositive
-        ? 'border-l-4 border-l-success bg-success/5'
-        : 'border-l-4 border-l-error bg-error/5';
 
     // OPTIMIZATION: Pre-calculated values with proper rounding
     const formattedPrice = useMemo(() => {
@@ -44,44 +47,82 @@ const TradeCard = memo(({trade}) => {
     }, [trade.previous_close]);
 
     return (
-        <div className="card bg-base-100 shadow-sm h-full overflow-hidden">
-            <div className="card-body p-5">
-                <div className="flex justify-between items-start mb-2">
-                    <div>
-                        <h3 className="card-title text-lg font-bold">{trade.symbol}</h3>
-                        <p className="text-2xl font-mono font-bold">
-                            ${formattedPrice}
-                        </p>
-                    </div>
-                    <div className={`flex items-center gap-1 ${isPositive ? 'text-success' : 'text-error'}`}>
-                        {isPositive ? (
-                            <ArrowUpIcon className="w-5 h-5"/>
-                        ) : (
-                            <ArrowDownIcon className="w-5 h-5"/>
-                        )}
-                        <span className="font-bold">{formattedPercentage}</span>
-                    </div>
-                </div>
+        <div className={`card group bg-base-100 cursor-pointer hover:border-primary border-transparent border-2 transition duration-150 ${isMinimal ? 'h-14' : 'h-40'}`}>
+            <div className={`card-body flex ${isMinimal ? 'py-2 px-2 flex-row justify-evenly items-center' : 'justify-center p-4'}`}>
 
-                <div className="divider my-2"></div>
+                {/* Minimal Mode Layout */}
+                {isMinimal ? (
+                    <>
+                        {/* Symbol and Direction Icon */}
+                        <div className="flex items-center gap-2">
+                            <div className={`flex items-center gap-1 ${isPositive ? 'text-success' : 'text-error'}`}>
+                                {isPositive ? (
+                                    <ArrowUpIcon className="size-4"/>
+                                ) : (
+                                    <ArrowDownIcon className="size-4"/>
+                                )}
+                            </div>
+                            <span className="font-bold text-sm">{trade.symbol}</span>
+                        </div>
 
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                        <span className="text-base-content/60">Previous Close:</span>
-                        <p className="font-mono">${formattedPreviousClose}</p>
-                    </div>
-                    <div>
-                        <span className="text-base-content/60">Change:</span>
-                        <p className={`font-mono font-bold ${isPositive ? 'text-success' : 'text-error'}`}>
-                            ${formattedChange}
-                        </p>
-                    </div>
-                </div>
+                        {/* Price */}
+                        <div className="flex flex-col items-center">
+                            <span className="font-mono font-bold text-base">${formattedPrice}</span>
+                        </div>
 
-                <div className="flex items-center gap-1 mt-2 text-xs text-base-content/60">
-                    <ClockIcon className="w-3 h-3"/>
-                    <span>Updated: {formattedTime}</span>
-                </div>
+                        {/* Change */}
+                        <div className="flex flex-col items-center">
+                            <span className={`font-mono font-bold text-sm ${isPositive ? 'text-success' : 'text-error'}`}>
+                                {formattedPercentage}
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    /* Comfort Mode Layout */
+                    <>
+                        {/* Header */}
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h3 className="card-title text-lg font-bold">{trade.symbol}</h3>
+                                <p className="text-2xl font-mono font-bold">
+                                    ${formattedPrice}
+                                </p>
+                            </div>
+                            <div className={`flex flex-col items-end`}>
+                                <div
+                                    className={`flex items-center gap-1 ${isPositive ? 'text-success' : 'text-error'}`}>
+                                    {isPositive ? (
+                                        <ArrowUpIcon className="size-5"/>
+                                    ) : (
+                                        <ArrowDownIcon className="size-5"/>
+                                    )}
+                                    <span className="font-bold">{formattedPercentage}</span>
+                                </div>
+                                <div className="flex items-center gap-1 mt-2 text-xs text-base-content/60">
+                                    <ClockIcon className="w-3 h-3"/>
+                                    <span>Updated: {formattedTime}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="divider -my-1"></div>
+
+                        <div className="flex justify-between gap-2 text-sm">
+                            <div>
+                                <span className="text-base-content/60">Previous Close:</span>
+                                <p className="font-mono">${formattedPreviousClose}</p>
+                            </div>
+                            <div>
+                                <span className="text-base-content/60">Change:</span>
+                                <p className={`font-mono font-bold ${isPositive ? 'text-success' : 'text-error'}`}>
+                                    ${formattedChange}
+                                </p>
+                            </div>
+                        </div>
+
+
+                    </>
+                )}
             </div>
         </div>
     );

@@ -23,30 +23,31 @@ export function Carousel() {
 
     return (
         <div className="flex-grow overflow-hidden">
-                {(tradesData?.data?.length > 0 || sportsData?.length > 0) && (
-                    <Swiper
-                        //modules={[Autoplay]}
-                        autoplay={{delay: 3000, disableOnInteraction: false}}
-                        breakpointsBase={'container'}
-                        loop={true}
-                        speed={600}
-                        spaceBetween={8}
-                        breakpoints={breakpointsArray}
-                        watchSlidesProgress={true}
-                    >
-                        {tradesData.data.map((trade) => (
-                            <SwiperSlide key={trade.symbol} className='h-full py-2'>
+            {(tradesData?.data?.length > 0 || sportsData?.length > 0) && (
+                <Swiper
+                    modules={[Autoplay]}
+                    autoplay={{delay: 3000, disableOnInteraction: false}}
+                    breakpointsBase={'container'}
+                    loop={true}
+                    speed={600}
+                    spaceBetween={8}
+                    breakpoints={breakpointsArray}
+                    watchSlidesProgress={true}
+                >
+                    {tradesData?.data?.length > 0 &&
+                        tradesData.data.map((trade) => (
+                            <SwiperSlide key={trade.symbol} className="h-full py-2">
                                 <TradeCard trade={trade}/>
                             </SwiperSlide>
                         ))}
-                        {sportsData.map((game) => (
-                            <SwiperSlide key={game.id} className='h-full py-2'>
+                    {sportsData?.length > 0 &&
+                        sportsData.map((game) => (
+                            <SwiperSlide key={game.id} className="h-full py-2">
                                 <GameCard game={game}/>
                             </SwiperSlide>
                         ))}
-                    </Swiper>
-                )}
-
+                </Swiper>
+            )}
             {/* Show message when no filters are selected */}
             {!hasFinanceFilters && !hasActiveSportsToggles && (
                 <div className="mt-4">
