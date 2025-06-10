@@ -7,7 +7,7 @@ export default defineContentScript({
     let currentLayout = 'compact';
 
     // Height configurations based on layout mode
-    const heightConfig = {
+    const heightConfig: { [key: string]: string } = {
       compact: '72px',
       comfort: '176px'
     };
@@ -50,7 +50,6 @@ export default defineContentScript({
     const updateIframeHeight = (layoutMode: string) => {
       if (iframeElement && isVisible) {
         currentLayout = layoutMode;
-        // @ts-ignore
         const newHeight = heightConfig[layoutMode] || heightConfig.compact;
         iframeElement.style.height = newHeight;
         console.log(`Iframe height updated to: ${newHeight} for layout: ${layoutMode}`);
@@ -66,7 +65,6 @@ export default defineContentScript({
           iframeElement.style.opacity = '1';
           iframeElement.style.pointerEvents = 'auto';
           iframeElement.style.transform = 'translateY(0)';
-          // @ts-ignore
           iframeElement.style.height = heightConfig[currentLayout];
         } else {
           iframeElement.style.opacity = '0';
@@ -92,12 +90,5 @@ export default defineContentScript({
 
     // Show UI to user
     ui.mount();
-
-    // Cleanup function
-    const cleanup = () => {
-      // No cleanup needed since browser.runtime.onMessage handles its own cleanup
-    };
-
-    return cleanup;
   },
 });
