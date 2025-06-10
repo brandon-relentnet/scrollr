@@ -29,7 +29,6 @@ function financeReducer(state, action) {
             };
 
         case 'TOGGLE_SELECTION': {
-            // More efficient single property update
             const currentSelections = state[financeType].customSelections;
             const newSelections = {
                 ...currentSelections,
@@ -94,7 +93,7 @@ function financeReducer(state, action) {
     }
 }
 
-// Default states (unchanged)
+// Default states
 const getDefaultFinanceState = () => ({
     stocks: {
         enabled: false,
@@ -117,61 +116,107 @@ const getDefaultSportsState = () => ({
     NHL: false
 });
 
+// FIX: Deep comparison utility
+function deepEqual(obj1, obj2) {
+    if (obj1 === obj2) return true;
+    if (!obj1 || !obj2) return false;
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length !== keys2.length) return false;
+
+    for (let key of keys1) {
+        if (!keys2.includes(key)) return false;
+
+        if (typeof obj1[key] === 'object' && typeof obj2[key] === 'object') {
+            if (!deepEqual(obj1[key], obj2[key])) return false;
+        } else if (obj1[key] !== obj2[key]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 export default function DisplayTab() {
     const dispatch = useDispatch();
     const reduxToggles = useSelector((state) => state.toggles);
     const reduxFinance = useSelector((state) => state.finance);
 
-    // State initialization
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    // FIX: Initialize state more reliably
     const [selectedSports, setSelectedSports] = useState(() => {
-        return reduxToggles && Object.keys(reduxToggles).length > 0
+        const initial = (reduxToggles && Object.keys(reduxToggles).length > 0)
             ? reduxToggles
             : getDefaultSportsState();
+        console.log('Initial sports state:', initial);
+        return initial;
     });
 
     const [financeState, dispatchFinance] = useReducer(financeReducer,
-        reduxFinance && Object.keys(reduxFinance).length > 0
+        (reduxFinance && Object.keys(reduxFinance).length > 0)
             ? reduxFinance
             : getDefaultFinanceState()
     );
 
-    // Debounced Redux sync - only sync after user stops making changes
+    // Track last synced state
+    const lastSyncedRef = useRef({ sports: null, finance: null });
     const syncTimeoutRef = useRef(null);
-    const lastSyncRef = useRef({ sports: null, finance: null });
 
+    // FIX: Better initialization effect that runs once
+    useEffect(() => {
+        if (!isInitialized) {
+            console.log('Initializing DisplayTab with Redux state:', { reduxFinance, reduxToggles });
+
+            // Initialize sports from Redux if available
+            if (reduxToggles && Object.keys(reduxToggles).length > 0) {
+                setSelectedSports(reduxToggles);
+                lastSyncedRef.current.sports = reduxToggles;
+            } else {
+                // If no Redux state, sync default state to Redux
+                const defaultSports = getDefaultSportsState();
+                dispatch(setToggles(defaultSports));
+                lastSyncedRef.current.sports = defaultSports;
+            }
+
+            // Initialize finance from Redux if available
+            if (reduxFinance && Object.keys(reduxFinance).length > 0) {
+                dispatchFinance({ type: 'INIT_FROM_REDUX', state: reduxFinance });
+                lastSyncedRef.current.finance = reduxFinance;
+            } else {
+                // If no Redux state, sync default state to Redux
+                const defaultFinance = getDefaultFinanceState();
+                dispatch(setFinance(defaultFinance));
+                lastSyncedRef.current.finance = defaultFinance;
+            }
+
+            setIsInitialized(true);
+        }
+    }, [dispatch, reduxToggles, reduxFinance, isInitialized]);
+
+    // Improved debounced Redux sync
     const debouncedSyncToRedux = useCallback((type, data) => {
         clearTimeout(syncTimeoutRef.current);
         syncTimeoutRef.current = setTimeout(() => {
-            if (type === 'sports' && JSON.stringify(data) !== JSON.stringify(lastSyncRef.current.sports)) {
-                dispatch(setToggles(data));
-                lastSyncRef.current.sports = data;
-            } else if (type === 'finance' && JSON.stringify(data) !== JSON.stringify(lastSyncRef.current.finance)) {
-                dispatch(setFinance(data));
-                lastSyncRef.current.finance = data;
+            if (type === 'sports') {
+                if (!deepEqual(data, lastSyncedRef.current.sports)) {
+                    console.log('Syncing sports to Redux:', data);
+                    dispatch(setToggles(data));
+                    lastSyncedRef.current.sports = data;
+                }
+            } else if (type === 'finance') {
+                if (!deepEqual(data, lastSyncedRef.current.finance)) {
+                    console.log('Syncing finance to Redux:', data);
+                    dispatch(setFinance(data));
+                    lastSyncedRef.current.finance = data;
+                }
             }
-        }, 150); // 300ms debounce
+        }, 200); // Reduced debounce time for better responsiveness
     }, [dispatch]);
 
-    // Sync with Redux only when needed
-    useEffect(() => {
-        if (reduxToggles && Object.keys(reduxToggles).length > 0) {
-            setSelectedSports(reduxToggles);
-        }
-        if (reduxFinance && Object.keys(reduxFinance).length > 0) {
-            dispatchFinance({ type: 'INIT_FROM_REDUX', state: reduxFinance });
-        }
-    }, []);
-
-    // Debounced sync to Redux
-    useEffect(() => {
-        debouncedSyncToRedux('finance', financeState);
-    }, [financeState, debouncedSyncToRedux]);
-
-    useEffect(() => {
-        debouncedSyncToRedux('sports', selectedSports);
-    }, [selectedSports, debouncedSyncToRedux]);
-
-    // Memoized computations for better performance
+    // Memoized computations
     const getSelected = useCallback((type) =>
         Object.entries(financeState[type].customSelections)
             .filter(([, enabled]) => enabled)
@@ -200,7 +245,7 @@ export default function DisplayTab() {
         clearTimeout(searchTimeoutRef.current);
         searchTimeoutRef.current = setTimeout(() => {
             dispatchFinance({ type: 'SET_SEARCH', financeType: type, term: value });
-        }, 150); // 150ms debounce for search
+        }, 150);
     }, []);
 
     const openModal = useCallback((type) => {
@@ -212,6 +257,42 @@ export default function DisplayTab() {
     const toggleSport = useCallback((key) => {
         setSelectedSports(prev => ({ ...prev, [key]: !prev[key] }));
     }, []);
+
+    // FIX: Only sync when there are meaningful changes and component is initialized
+    useEffect(() => {
+        if (isInitialized && financeState) {
+            const shouldSync = !deepEqual(financeState, lastSyncedRef.current.finance);
+
+            if (shouldSync) {
+                console.log('Finance state changed, syncing to Redux');
+                debouncedSyncToRedux('finance', financeState);
+            }
+        }
+    }, [financeState, debouncedSyncToRedux, isInitialized]);
+
+    useEffect(() => {
+        if (isInitialized && selectedSports) {
+            const shouldSync = !deepEqual(selectedSports, lastSyncedRef.current.sports);
+
+            if (shouldSync) {
+                console.log('Sports state changed, syncing to Redux');
+                debouncedSyncToRedux('sports', selectedSports);
+            }
+        }
+    }, [selectedSports, debouncedSyncToRedux, isInitialized]);
+
+    // FIX: Add debug logging for state tracking
+    useEffect(() => {
+        console.log('DisplayTab render state:', {
+            isInitialized,
+            stocksEnabled: financeState.stocks?.enabled,
+            stocksPreset: financeState.stocks?.activePreset,
+            cryptoEnabled: financeState.crypto?.enabled,
+            cryptoPreset: financeState.crypto?.activePreset,
+            hasReduxFinance: !!(reduxFinance && Object.keys(reduxFinance).length > 0),
+            stocksSelectionCount: Object.values(financeState.stocks?.customSelections || {}).filter(Boolean).length
+        });
+    }, [isInitialized, financeState, reduxFinance]);
 
     // Memoized components to prevent unnecessary re-renders
     const renderPresetOptions = useCallback((type) => {
@@ -229,7 +310,10 @@ export default function DisplayTab() {
                         type="checkbox"
                         className="toggle"
                         checked={settings.enabled}
-                        onChange={() => dispatchFinance({ type: 'TOGGLE_CATEGORY', financeType: type })}
+                        onChange={() => {
+                            console.log(`Toggling ${type}:`, !settings.enabled);
+                            dispatchFinance({ type: 'TOGGLE_CATEGORY', financeType: type });
+                        }}
                     />
                 </label>
 
@@ -242,7 +326,10 @@ export default function DisplayTab() {
                                     name={`${type}-preset`}
                                     className="radio radio-sm"
                                     checked={settings.activePreset === preset.key}
-                                    onChange={() => dispatchFinance({ type: 'SELECT_PRESET', financeType: type, preset: preset.key })}
+                                    onChange={() => {
+                                        console.log(`Selecting ${type} preset:`, preset.key);
+                                        dispatchFinance({ type: 'SELECT_PRESET', financeType: type, preset: preset.key });
+                                    }}
                                 />
                                 <span className="label-text">{preset.label}</span>
                             </label>
@@ -354,6 +441,22 @@ export default function DisplayTab() {
             </div>
         </fieldset>
     ), [selectedSports, toggleSport]);
+
+    // FIX: Don't render the main content until initialized
+    if (!isInitialized) {
+        return (
+            <>
+                <label className="tab">
+                    <input type="radio" name="my_tabs_3" className="tab" aria-label="Tab 2"/>
+                    <ComputerDesktopIcon className="size-8"/>
+                </label>
+                <div className="tab-content bg-base-100 border-base-300 p-2 flex items-center justify-center">
+                    <div className="loading loading-spinner loading-lg"></div>
+                    <span className="ml-2">Initializing...</span>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
