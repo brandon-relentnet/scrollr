@@ -3,7 +3,7 @@
 <div align="center">
 
 ![Scrollr Logo](https://img.shields.io/badge/Scrollr-v2.0.0--beta.1-blue?style=for-the-badge)
-[![MPL-2.0 License](https://img.shields.io/badge/License-MPL-2.0-green.svg?style=for-the-badge)](https://choosealicense.com/licenses/mpl-2.0/)
+[![MPL-2.0 License](https://img.shields.io/badge/License-MPL2.0-green.svg?style=for-the-badge)](https://choosealicense.com/licenses/mpl-2.0/)
 [![Open Source](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red?style=for-the-badge)](https://github.com/brandon-relentnet/wxt-extension-template)
 
 **A modern, high-performance browser extension for displaying real-time financial, sports, and custom data tickers across your browser tabs.**
