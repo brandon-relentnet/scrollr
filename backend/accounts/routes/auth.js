@@ -326,6 +326,136 @@ router.post('/settings', authenticateToken, async (req, res) => {
     }
 });
 
+// Get user RSS feeds
+router.get('/rss-feeds', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const result = await pool.query(
+            'SELECT id, name, url, category, created_at, updated_at FROM rss_feeds WHERE user_id = $1 ORDER BY created_at DESC',
+            [userId]
+        );
+
+        res.json({ feeds: result.rows });
+
+    } catch (error) {
+        console.error('Get RSS feeds error:', error);
+        res.status(500).json({ error: 'Server error retrieving RSS feeds' });
+    }
+});
+
+// Add RSS feed
+router.post('/rss-feeds', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { name, url, category } = req.body;
+
+        if (!name || !url) {
+            return res.status(400).json({ 
+                error: 'Name and URL are required' 
+            });
+        }
+
+        // Basic URL validation
+        try {
+            new URL(url);
+        } catch {
+            return res.status(400).json({ 
+                error: 'Invalid URL format' 
+            });
+        }
+
+        const result = await pool.query(
+            `INSERT INTO rss_feeds (user_id, name, url, category) 
+             VALUES ($1, $2, $3, $4) 
+             RETURNING id, name, url, category, created_at, updated_at`,
+            [userId, name, url, category || 'General']
+        );
+
+        res.status(201).json({
+            message: 'RSS feed added successfully',
+            feed: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Add RSS feed error:', error);
+        res.status(500).json({ error: 'Server error adding RSS feed' });
+    }
+});
+
+// Update RSS feed
+router.put('/rss-feeds/:id', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const feedId = req.params.id;
+        const { name, url, category } = req.body;
+
+        // Check if feed belongs to user
+        const existingFeed = await pool.query(
+            'SELECT id FROM rss_feeds WHERE id = $1 AND user_id = $2',
+            [feedId, userId]
+        );
+
+        if (existingFeed.rows.length === 0) {
+            return res.status(404).json({ error: 'RSS feed not found' });
+        }
+
+        // Validate URL if provided
+        if (url) {
+            try {
+                new URL(url);
+            } catch {
+                return res.status(400).json({ 
+                    error: 'Invalid URL format' 
+                });
+            }
+        }
+
+        const result = await pool.query(
+            `UPDATE rss_feeds 
+             SET name = COALESCE($1, name), 
+                 url = COALESCE($2, url),
+                 category = COALESCE($3, category),
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $4 AND user_id = $5
+             RETURNING id, name, url, category, created_at, updated_at`,
+            [name, url, category, feedId, userId]
+        );
+
+        res.json({
+            message: 'RSS feed updated successfully',
+            feed: result.rows[0]
+        });
+
+    } catch (error) {
+        console.error('Update RSS feed error:', error);
+        res.status(500).json({ error: 'Server error updating RSS feed' });
+    }
+});
+
+// Delete RSS feed
+router.delete('/rss-feeds/:id', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const feedId = req.params.id;
+
+        const result = await pool.query(
+            'DELETE FROM rss_feeds WHERE id = $1 AND user_id = $2 RETURNING id',
+            [feedId, userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'RSS feed not found' });
+        }
+
+        res.json({ message: 'RSS feed deleted successfully' });
+
+    } catch (error) {
+        console.error('Delete RSS feed error:', error);
+        res.status(500).json({ error: 'Server error deleting RSS feed' });
+    }
+});
+
 // Delete account
 router.delete('/account', authenticateToken, async (req, res) => {
     try {

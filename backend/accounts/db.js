@@ -85,6 +85,19 @@ export async function initializeDatabase() {
             )
         `);
 
+        // Create rss_feeds table for user RSS feeds
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS rss_feeds (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                name VARCHAR(255) NOT NULL,
+                url VARCHAR(1000) NOT NULL,
+                category VARCHAR(100) DEFAULT 'General',
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
         console.log('Database tables initialized successfully');
     } catch (error) {
         console.error('Database initialization error:', error);

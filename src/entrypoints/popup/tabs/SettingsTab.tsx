@@ -8,7 +8,12 @@ export default function SettingsTab() {
     const [isClearing, setIsClearing] = useState(false);
     const [statusMessage, setStatusMessage] = useState('');
     
-    const allState = useSelector(state => state);
+    const theme = useSelector((state: any) => state.theme);
+    const layout = useSelector((state: any) => state.layout);
+    const finance = useSelector((state: any) => state.finance);
+    const power = useSelector((state: any) => state.power);
+    const toggles = useSelector((state: any) => state.toggles);
+    const rss = useSelector((state: any) => state.rss);
     const dispatch = useDispatch();
 
     const showStatus = (message: string, isError = false) => {
@@ -23,7 +28,7 @@ export default function SettingsTab() {
             const exportData = {
                 version: "2.0.0-beta.1",
                 timestamp: new Date().toISOString(),
-                settings: allState
+                settings: { theme, layout, finance, power, toggles, rss }
             };
             
             const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -63,8 +68,9 @@ export default function SettingsTab() {
                 }
                 
                 // Restore each slice of state
+                const validKeys = ['theme', 'layout', 'finance', 'power', 'toggles', 'rss'];
                 Object.keys(importData.settings).forEach(key => {
-                    if (allState && typeof allState === 'object' && key in allState) {
+                    if (validKeys.includes(key)) {
                         const actionType = `${key}/setState`;
                         dispatch({ type: actionType, payload: importData.settings[key] });
                     }

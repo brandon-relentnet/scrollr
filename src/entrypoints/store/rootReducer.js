@@ -4,6 +4,7 @@ import TogglesReducer from "./togglesSlice.js";
 import FinanceReducer from "./financeSlice.js";
 import PowerReducer from "./powerSlice.js";
 import LayoutReducer from "./layoutSlice.js";
+import RssReducer from "./rssSlice.js";
 
 const rootReducer = combineReducers({
     // Add your reducers here
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
     finance: FinanceReducer,
     power: PowerReducer,
     layout: LayoutReducer,
+    rss: RssReducer,
 })
 
 export default rootReducer;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 
 const API_BASE_URL = 'http://localhost:5000/api';
@@ -43,10 +43,16 @@ export function useAuth() {
     const dispatch = useDispatch();
     
     // Get settings with a stable reference to prevent infinite loops
-    const currentSettings = useSelector((state: any) => {
-        const { theme, layout, finance, power, toggles } = state;
-        return { theme, layout, finance, power, toggles };
-    });
+    const theme = useSelector((state: any) => state.theme);
+    const layout = useSelector((state: any) => state.layout);
+    const finance = useSelector((state: any) => state.finance);
+    const power = useSelector((state: any) => state.power);
+    const toggles = useSelector((state: any) => state.toggles);
+    const rss = useSelector((state: any) => state.rss);
+    
+    const currentSettings = useMemo(() => ({
+        theme, layout, finance, power, toggles, rss
+    }), [theme, layout, finance, power, toggles, rss]);
 
     // Save current settings to server
     const saveSettingsToServer = useCallback(async (token: string, settingsToSave?: any) => {
@@ -107,7 +113,7 @@ export function useAuth() {
             // If there's an error loading settings, save current local settings as backup
             await saveSettingsToServer(token);
         }
-    }, [dispatch]);
+    }, [dispatch, saveSettingsToServer]);
 
     // Initialize auth state from storage
     useEffect(() => {
