@@ -6,6 +6,7 @@ import TradeCard from './TradeCard';
 import useSportsData from './useSportsData';
 import useFinanceData from './useFinanceData';
 import { memo, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 
 // Pre-computed breakpoints - moved outside component to prevent recreation
 const BREAKPOINTS = (() => {
@@ -18,10 +19,20 @@ const BREAKPOINTS = (() => {
     return breakpoints;
 })();
 
+// Speed configurations
+const SPEED_CONFIG = {
+    slow: { delay: 5000, speed: 1000 },
+    classic: { delay: 3000, speed: 600 },
+    fast: { delay: 1500, speed: 300 }
+};
+
 export const Carousel = memo(function Carousel() {
     // Use both custom hooks to get data
     const {sportsData, connectionStatus: sportsConnectionStatus, hasActiveSportsToggles} = useSportsData();
     const {tradesData, connectionStatus: financeConnectionStatus, hasFinanceFilters} = useFinanceData();
+    
+    // Get speed setting from Redux
+    const speed = useSelector((state) => state.layout?.speed || 'classic');
 
     // Memoize expensive computations
     const hasData = useMemo(() => {
@@ -32,15 +43,20 @@ export const Carousel = memo(function Carousel() {
         return !hasFinanceFilters && !hasActiveSportsToggles;
     }, [hasFinanceFilters, hasActiveSportsToggles]);
 
+    // Get speed configuration based on current speed setting
+    const speedConfig = useMemo(() => {
+        return SPEED_CONFIG[speed] || SPEED_CONFIG.classic;
+    }, [speed]);
+
     return (
         <div className="flex-grow overflow-hidden">
             {hasData && (
                 <Swiper
                     modules={[Autoplay]}
-                    autoplay={{delay: 3000, disableOnInteraction: false}}
+                    autoplay={{delay: speedConfig.delay, disableOnInteraction: false}}
                     breakpointsBase={'container'}
                     loop={true}
-                    speed={600}
+                    speed={speedConfig.speed}
                     spaceBetween={8}
                     breakpoints={BREAKPOINTS}
                     watchSlidesProgress={true}

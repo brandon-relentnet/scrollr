@@ -5,6 +5,7 @@ export default defineContentScript({
     let iframeElement: HTMLIFrameElement | null = null;
     let isVisible = true;
     let currentLayout = 'compact';
+    let currentPosition = 'top';
 
     // Height configurations based on layout mode
     const heightConfig: { [key: string]: string } = {
@@ -25,6 +26,7 @@ export default defineContentScript({
           const response = await browser.runtime.sendMessage({ type: 'GET_IFRAME_STATE' });
           if (response && !response.error) {
             currentLayout = response.layout;
+            currentPosition = response.position || 'top';
             isVisible = response.power;
           }
         } catch (error) {
@@ -36,15 +38,44 @@ export default defineContentScript({
         iframe.style.height = heightConfig[currentLayout];
         iframe.style.width = '100%';
         iframe.style.position = 'fixed';
-        iframe.style.bottom = '0';
         iframe.style.left = '0';
         iframe.style.zIndex = '999999';
         iframe.style.transition = 'all 0.3s ease-out';
         iframe.style.opacity = isVisible ? '1' : '0';
         iframe.style.pointerEvents = isVisible ? 'auto' : 'none';
-        iframe.style.transform = isVisible ? 'translateY(0)' : 'translateY(100%)';
+        
+        // Set initial position
+        updateIframePosition(currentPosition);
+        updateIframeTransform(isVisible, currentPosition);
       },
     });
+
+    // Function to update iframe position (top/bottom)
+    const updateIframePosition = (position: string) => {
+      if (iframeElement) {
+        if (position === 'top') {
+          iframeElement.style.top = '0';
+          iframeElement.style.bottom = '';
+        } else {
+          iframeElement.style.bottom = '0';
+          iframeElement.style.top = '';
+        }
+        currentPosition = position;
+        console.log(`Iframe position updated to: ${position}`);
+      }
+    };
+
+    // Function to update iframe transform based on visibility and position
+    const updateIframeTransform = (visible: boolean, position: string) => {
+      if (iframeElement) {
+        if (visible) {
+          iframeElement.style.transform = 'translateY(0)';
+        } else {
+          const translateDirection = position === 'top' ? '-100%' : '100%';
+          iframeElement.style.transform = `translateY(${translateDirection})`;
+        }
+      }
+    };
 
     // Function to update iframe height
     const updateIframeHeight = (layoutMode: string) => {
@@ -64,23 +95,26 @@ export default defineContentScript({
         if (visible) {
           iframeElement.style.opacity = '1';
           iframeElement.style.pointerEvents = 'auto';
-          iframeElement.style.transform = 'translateY(0)';
           iframeElement.style.height = heightConfig[currentLayout];
         } else {
           iframeElement.style.opacity = '0';
           iframeElement.style.pointerEvents = 'none';
-          iframeElement.style.transform = 'translateY(100%)';
         }
 
+        updateIframeTransform(visible, currentPosition);
         console.log(`Iframe visibility toggled: ${visible ? 'visible' : 'hidden'}`);
       }
     };
 
     // Listen for messages from background script
-    browser.runtime.onMessage.addListener((message: { type: string; layout?: string; power?: boolean; }) => {
+    browser.runtime.onMessage.addListener((message: { type: string; layout?: string; power?: boolean; position?: string; }) => {
       if (message.type === 'IFRAME_STATE_UPDATE') {
         if (message.layout && message.layout !== currentLayout) {
           updateIframeHeight(message.layout);
+        }
+        if (message.position && message.position !== currentPosition) {
+          updateIframePosition(message.position);
+          updateIframeTransform(isVisible, message.position);
         }
         if (message.power !== undefined && message.power !== isVisible) {
           toggleIframeVisibility(message.power);

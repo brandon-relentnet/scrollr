@@ -64,7 +64,7 @@ export default function SettingsTab() {
                 
                 // Restore each slice of state
                 Object.keys(importData.settings).forEach(key => {
-                    if (allState[key]) {
+                    if (allState && typeof allState === 'object' && key in allState) {
                         const actionType = `${key}/setState`;
                         dispatch({ type: actionType, payload: importData.settings[key] });
                     }

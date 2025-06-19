@@ -5,16 +5,24 @@ import {
     BoltSlashIcon,
     ClockIcon,
     PowerIcon,
-    ViewColumnsIcon
+    ViewColumnsIcon,
+    ArrowUpIcon,
+    ArrowDownIcon
 } from "@heroicons/react/24/solid";
 import { useSelector, useDispatch } from "react-redux";
-import { setLayout } from "@/entrypoints/store/layoutSlice";
+import { setLayout, toggleSpeed, togglePosition } from "@/entrypoints/store/layoutSlice";
 import { togglePower } from "@/entrypoints/store/powerSlice";
 
 export default function PowerTab() {
     const dispatch = useDispatch();
     const layout = useSelector((state) => {
         return state.layout?.mode || 'compact';
+    });
+    const speed = useSelector((state) => {
+        return state.layout?.speed || 'classic';
+    });
+    const position = useSelector((state) => {
+        return state.layout?.position || 'top';
     });
     const power = useSelector((state) => {
         return state.power?.mode !== false;
@@ -41,6 +49,26 @@ export default function PowerTab() {
         });
     };
 
+    const handleSpeedToggle = () => {
+        dispatch(toggleSpeed());
+
+        // Also notify background script directly for immediate update
+        browser.runtime.sendMessage({
+            type: 'SPEED_CHANGED',
+            speed: speed === 'slow' ? 'classic' : speed === 'classic' ? 'fast' : 'slow'
+        });
+    };
+
+    const handlePositionToggle = () => {
+        dispatch(togglePosition());
+
+        // Also notify background script directly for immediate update
+        browser.runtime.sendMessage({
+            type: 'POSITION_CHANGED',
+            position: position === 'top' ? 'bottom' : 'top'
+        });
+    };
+
     return (
         <>
             <label className="tab">
@@ -57,14 +85,28 @@ export default function PowerTab() {
                     </button>
                     <ul className="menu menu-horizontal bg-base-200 rounded-box mt-6">
                         <li>
-                            <a className="tooltip" data-tip="Speed">
+                            <button
+                                onClick={handleSpeedToggle}
+                                className="tooltip"
+                                data-tip={`Speed: ${speed.charAt(0).toUpperCase() + speed.slice(1)}`}
+                            >
                                 <ClockIcon className="size-8" />
-                            </a>
+                                <span className="text-xs absolute -bottom-1 bg-base-300 px-1 rounded">
+                                    {speed === 'slow' ? 'S' : speed === 'classic' ? 'C' : 'F'}
+                                </span>
+                            </button>
                         </li>
                         <li>
-                            <a className="tooltip" data-tip="Change View">
-                                <ViewColumnsIcon className="size-8" />
-                            </a>
+                            <button
+                                onClick={handlePositionToggle}
+                                className="tooltip"
+                                data-tip={`Position: ${position === 'top' ? 'Top' : 'Bottom'}`}
+                            >
+                                {position === 'top' ? 
+                                    <ArrowUpIcon className="size-8" /> : 
+                                    <ArrowDownIcon className="size-8" />
+                                }
+                            </button>
                         </li>
                         <li>
                             <button

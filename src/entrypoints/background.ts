@@ -14,9 +14,11 @@ export default defineBackground(() => {
 
   void initializeStore();
 
-  browser.runtime.onMessage.addListener((message: { type: string; action: any; layout?: string; power?: boolean; }, sender: any, sendResponse: (arg0: {
+  browser.runtime.onMessage.addListener((message: { type: string; action: any; layout?: string; power?: boolean; speed?: string; position?: string; }, sender: any, sendResponse: (arg0: {
     layout: any;
     power: boolean;
+    speed?: string;
+    position?: string;
     error?: string;
     state?: any;
     success?: boolean;
@@ -42,10 +44,22 @@ export default defineBackground(() => {
       store.dispatch(setPower(message.power));
       sendResponse({ layout: 'success', power: true, success: true });
       notifyContentScripts();
+    } else if (message.type === 'SPEED_CHANGED') {
+      const { setSpeed } = require('@/entrypoints/store/layoutSlice');
+      store.dispatch(setSpeed(message.speed));
+      sendResponse({ layout: 'success', power: true, success: true });
+      notifyContentScripts();
+    } else if (message.type === 'POSITION_CHANGED') {
+      const { setPosition } = require('@/entrypoints/store/layoutSlice');
+      store.dispatch(setPosition(message.position));
+      sendResponse({ layout: 'success', power: true, success: true });
+      notifyContentScripts();
     } else if (message.type === 'GET_IFRAME_STATE') {
       const state = store.getState();
       sendResponse({
         layout: state.layout?.mode || 'compact',
+        speed: state.layout?.speed || 'classic',
+        position: state.layout?.position || 'top',
         power: state.power?.mode !== false
       });
     }
@@ -59,6 +73,8 @@ export default defineBackground(() => {
     const state = store.getState();
     const iframeState = {
       layout: state.layout?.mode || 'compact',
+      speed: state.layout?.speed || 'classic',
+      position: state.layout?.position || 'top',
       power: state.power?.mode !== false
     };
 

@@ -368,7 +368,7 @@ export default function AccountsTab() {
                             <div className="text-center py-4">
                                 <div className="avatar placeholder mb-3">
                                     <div className="bg-base-300 text-base-content rounded-full w-16">
-                                        <UserCircleIcon className="w-8 h-8" />
+                                        <UserCircleIcon className="size-full" />
                                     </div>
                                 </div>
                                 <h3 className="font-semibold text-lg">Welcome</h3>
