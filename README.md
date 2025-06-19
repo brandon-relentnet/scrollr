@@ -313,32 +313,11 @@ Have an idea? We'd love to hear it! Please include:
 - Use cases and benefits
 - Mockups or examples if available
 - Implementation suggestions
+## 🚧 Coming Soon (Roadmap)
 
-## 📈 Roadmap
+Exciting new features and enhancements are on the way!
 
-### v2.1.0 - Enhanced Analytics
-- [ ] Advanced portfolio tracking
-- [ ] Custom chart visualization
-- [ ] Export functionality for data
-- [ ] Advanced filtering options
-
-### v2.2.0 - Social Features
-- [ ] Public ticker sharing
-- [ ] Community watchlists
-- [ ] Social trading insights
-- [ ] User-generated content
-
-### v2.3.0 - AI Integration
-- [ ] Predictive analytics
-- [ ] Smart notifications
-- [ ] Automated portfolio rebalancing
-- [ ] Natural language queries
-
-### v3.0.0 - Platform Expansion
-- [ ] Mobile app companion
-- [ ] Desktop application
-- [ ] Web dashboard
-- [ ] API for third-party integrations
+Follow our updates for detailed release plans and progress.
 
 ## 🔗 Links
 
@@ -350,7 +329,7 @@ Have an idea? We'd love to hear it! Please include:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Mozilla Public License v2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
