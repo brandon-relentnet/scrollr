@@ -38,16 +38,19 @@
 ### 👤 User Management
 - **Secure Authentication** - JWT-based login system with PostgreSQL backend
 - **User Profiles** - Customizable user accounts with preferences
-- **Data Synchronization** - Sync settings across devices
-- **Privacy First** - Local data storage with optional cloud sync
+- **Settings Synchronization** - Automatic cross-device sync of all preferences
+- **Cloud Storage** - Server-side settings backup with local fallback
+- **Privacy First** - Optional account creation, local-only mode available
 - **Role-Based Access** - Admin and user permission levels
 
 ### 🎨 Customization
 - **Theme System** - Multiple built-in themes with custom color schemes
-- **Layout Options** - Flexible ticker positioning and sizing
-- **Display Modes** - Carousel, list, grid, and custom layout modes
-- **Notification Settings** - Customizable alerts and updates
-- **Widget Configuration** - Drag-and-drop interface customization
+- **Layout Options** - Compact/comfort modes with flexible ticker sizing
+- **Speed Control** - Three-speed ticker animation (slow/classic/fast)
+- **Position Control** - Top or bottom browser positioning with smooth transitions
+- **Display Modes** - Carousel scrolling with responsive breakpoints
+- **Settings Management** - Export/import settings with backup functionality
+- **Data Privacy** - Local storage management and comprehensive data clearing
 
 ## 🚀 Quick Start
 
@@ -128,25 +131,39 @@ scrollr/
 
 #### State Management (`src/entrypoints/store/`)
 - **financeSlice.js** - Financial data state with Redux Toolkit
+- **layoutSlice.js** - Speed, position, and layout mode state management
+- **powerSlice.js** - Extension visibility and power controls
 - **Optimized Actions** - Efficient state updates for real-time data
 - **Persistence** - Automatic state persistence across sessions
 
 #### UI Components (`src/entrypoints/popup/`)
-- **DisplayTab.jsx** - Main ticker display interface
+- **DisplayTab.jsx** - Main ticker display and data source toggles
+- **PowerTab.jsx** - Quick settings for speed, position, and layout controls
 - **AccountsTab.tsx** - User authentication and profile management
+- **SettingsTab.tsx** - Settings backup/restore and privacy management
 - **ThemeTab.tsx** - Theme customization controls
 - **Responsive Design** - Mobile-first approach with desktop optimization
 
 #### Data Layer (`src/entrypoints/iframe/`)
 - **useFinanceData.js** - Real-time data fetching with WebSocket connections
 - **GameCard.jsx** - Sports data display with performance optimization
-- **Carousel.jsx** - Smooth scrolling ticker with dynamic breakpoints
+- **Carousel.jsx** - Variable-speed scrolling ticker with responsive breakpoints
+- **content.ts** - Dynamic iframe positioning and visibility management
 
 #### Backend (`backend/accounts/`)
 - **JWT Authentication** - Secure token-based authentication
-- **PostgreSQL Integration** - Scalable user data storage
+- **PostgreSQL Integration** - Scalable user data storage with settings sync
+- **Settings API** - GET/POST endpoints for cross-device settings synchronization
 - **RESTful APIs** - Clean, documented API endpoints
 - **Security Features** - bcrypt hashing, CORS protection, input validation
+- **Data Management** - JSONB storage for flexible settings with UPSERT operations
+
+#### Authentication & Sync (`src/entrypoints/popup/hooks/`)
+- **useAuth.tsx** - Complete authentication and settings sync management
+- **Automatic Sync** - Debounced settings save (2s delay) when logged in
+- **Conflict Resolution** - Server settings take precedence on login
+- **Fallback Strategy** - Local storage when offline or not authenticated
+- **Cross-device** - Settings sync across all browser tabs and devices
 
 ## 🛠️ Development
 
@@ -209,6 +226,35 @@ Scrollr includes several performance optimizations:
 - **CORS Protection** - Cross-origin request filtering
 - **Input Validation** - Comprehensive data sanitization
 - **SQL Injection Prevention** - Parameterized database queries
+
+### ⚙️ Quick Settings & Controls
+
+Scrollr provides intuitive quick settings accessible through the Power tab:
+
+#### 🎛️ **Speed Control**
+- **Three Speed Modes**: Slow (5s intervals), Classic (3s intervals), Fast (1.5s intervals)
+- **Real-time Switching**: Changes apply instantly without refresh
+- **Visual Indicators**: Speed badge (S/C/F) shows current setting
+- **Smooth Transitions**: Configurable animation speeds for optimal experience
+
+#### 📍 **Position Control**
+- **Flexible Positioning**: Toggle between top and bottom of browser window
+- **Smooth Animations**: CSS transitions for seamless position changes
+- **Smart Hiding**: Direction-aware slide animations (up/down based on position)
+- **Cross-tab Sync**: Position changes apply across all browser tabs
+
+#### 🎨 **Layout Modes**
+- **Compact Mode**: Minimal 72px height for unobtrusive viewing
+- **Comfort Mode**: Expanded 176px height with detailed information
+- **Responsive Design**: Automatic adaptation to different screen sizes
+
+#### 💾 **Settings Management**
+- **Cloud Sync**: Automatic settings synchronization when logged in
+- **Cross-device**: All preferences sync across multiple devices
+- **Export/Import**: Manual backup and restore functionality
+- **Privacy Controls**: Clear local storage and cached data
+- **Local Fallback**: Works without account using local storage
+- **Version Control**: Timestamped backups with compatibility checking
 
 ## 🚀 Deployment
 

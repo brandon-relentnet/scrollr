@@ -254,6 +254,78 @@ router.put('/change-password', authenticateToken, async (req, res) => {
     }
 });
 
+// Get user settings
+router.get('/settings', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const result = await pool.query(
+            'SELECT settings_data, version, updated_at FROM user_settings WHERE user_id = $1',
+            [userId]
+        );
+
+        if (result.rows.length === 0) {
+            // No settings found, return empty settings
+            return res.json({ 
+                settings: {},
+                version: '2.0.0-beta.1',
+                updated_at: null
+            });
+        }
+
+        const { settings_data, version, updated_at } = result.rows[0];
+        
+        res.json({ 
+            settings: settings_data,
+            version: version,
+            updated_at: updated_at
+        });
+
+    } catch (error) {
+        console.error('Get settings error:', error);
+        res.status(500).json({ error: 'Server error retrieving settings' });
+    }
+});
+
+// Save user settings
+router.post('/settings', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { settings, version = '2.0.0-beta.1' } = req.body;
+
+        if (!settings || typeof settings !== 'object') {
+            return res.status(400).json({ 
+                error: 'Settings data is required and must be an object' 
+            });
+        }
+
+        // Use UPSERT (INSERT ... ON CONFLICT ... DO UPDATE)
+        const result = await pool.query(`
+            INSERT INTO user_settings (user_id, settings_data, version, updated_at)
+            VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+            ON CONFLICT (user_id) 
+            DO UPDATE SET 
+                settings_data = $2,
+                version = $3,
+                updated_at = CURRENT_TIMESTAMP
+            RETURNING settings_data, version, updated_at
+        `, [userId, JSON.stringify(settings), version]);
+
+        const { settings_data, version: savedVersion, updated_at } = result.rows[0];
+        
+        res.json({ 
+            message: 'Settings saved successfully',
+            settings: settings_data,
+            version: savedVersion,
+            updated_at: updated_at
+        });
+
+    } catch (error) {
+        console.error('Save settings error:', error);
+        res.status(500).json({ error: 'Server error saving settings' });
+    }
+});
+
 // Delete account
 router.delete('/account', authenticateToken, async (req, res) => {
     try {
@@ -286,7 +358,7 @@ router.delete('/account', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'Password is incorrect' });
         }
 
-        // Delete user (linked accounts will be deleted via CASCADE)
+        // Delete user (linked accounts and settings will be deleted via CASCADE)
         await pool.query('DELETE FROM users WHERE id = $1', [userId]);
 
         res.json({ message: 'Account deleted successfully' });

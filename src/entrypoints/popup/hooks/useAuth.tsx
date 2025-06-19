@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -37,6 +38,69 @@ export function useAuth() {
         isLoading: true,
         isAuthenticated: false,
     });
+    
+    const dispatch = useDispatch();
+    const currentSettings = useSelector((state: any) => state);
+
+    // Save current settings to server
+    const saveSettingsToServer = useCallback(async (token: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/settings`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    settings: currentSettings,
+                    version: '2.0.0-beta.1'
+                }),
+            });
+
+            if (!response.ok) {
+                console.error('Failed to save settings to server');
+            }
+        } catch (error) {
+            console.error('Error saving settings to server:', error);
+        }
+    }, [currentSettings]);
+
+    // Load settings from server and apply to Redux store
+    const loadSettingsFromServer = useCallback(async (token: string) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/auth/settings`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const { settings } = await response.json();
+                
+                // Only apply server settings if they exist and are not empty
+                if (settings && Object.keys(settings).length > 0) {
+                    // Apply each slice of settings to Redux store
+                    Object.keys(settings).forEach(key => {
+                        if (settings[key] && typeof settings[key] === 'object') {
+                            const actionType = `${key}/setState`;
+                            dispatch({ type: actionType, payload: settings[key] });
+                        }
+                    });
+                    
+                    console.log('Settings loaded from server and applied');
+                } else {
+                    // If no server settings exist, save current local settings to server
+                    await saveSettingsToServer(token);
+                    console.log('No server settings found, saved current local settings');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading settings from server:', error);
+            // If there's an error loading settings, save current local settings as backup
+            await saveSettingsToServer(token);
+        }
+    }, [dispatch, saveSettingsToServer]);
 
     // Initialize auth state from storage
     useEffect(() => {
@@ -64,6 +128,9 @@ export function useAuth() {
                             isLoading: false,
                             isAuthenticated: true,
                         });
+                        
+                        // Load user settings from server
+                        await loadSettingsFromServer(token);
                     } else {
                         // Token is invalid, clear storage
                         localStorage.removeItem('auth_token');
@@ -93,7 +160,25 @@ export function useAuth() {
         };
 
         initializeAuth();
-    }, []);
+    }, [loadSettingsFromServer]);
+
+    // Auto-save settings to server when they change (debounced)
+    useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+        
+        if (authState.isAuthenticated && authState.token) {
+            // Debounce settings saves to avoid too many API calls
+            timeoutId = setTimeout(() => {
+                saveSettingsToServer(authState.token!);
+            }, 2000); // Save 2 seconds after last change
+        }
+        
+        return () => {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+        };
+    }, [currentSettings, authState.isAuthenticated, authState.token, saveSettingsToServer]);
 
     const login = useCallback(async (credentials: LoginCredentials): Promise<{ success: boolean; error?: string }> => {
         try {
@@ -121,6 +206,9 @@ export function useAuth() {
                     isAuthenticated: true,
                 });
 
+                // Load user settings from server after successful login
+                await loadSettingsFromServer(token);
+
                 return { success: true };
             } else {
                 return { success: false, error: data.error || 'Login failed' };
@@ -129,7 +217,7 @@ export function useAuth() {
             console.error('Login error:', error);
             return { success: false, error: 'Network error during login' };
         }
-    }, []);
+    }, [loadSettingsFromServer]);
 
     const register = useCallback(async (credentials: RegisterCredentials): Promise<{ success: boolean; error?: string }> => {
         try {
@@ -157,6 +245,9 @@ export function useAuth() {
                     isAuthenticated: true,
                 });
 
+                // For new registrations, save current local settings to server
+                await saveSettingsToServer(token);
+
                 return { success: true };
             } else {
                 return { success: false, error: data.error || 'Registration failed' };
@@ -165,9 +256,14 @@ export function useAuth() {
             console.error('Registration error:', error);
             return { success: false, error: 'Network error during registration' };
         }
-    }, []);
+    }, [saveSettingsToServer]);
 
-    const logout = useCallback(() => {
+    const logout = useCallback(async () => {
+        // Save current settings to server before logging out
+        if (authState.token) {
+            await saveSettingsToServer(authState.token);
+        }
+        
         localStorage.removeItem('auth_token');
         localStorage.removeItem('auth_user');
         setAuthState({
@@ -176,7 +272,7 @@ export function useAuth() {
             isLoading: false,
             isAuthenticated: false,
         });
-    }, []);
+    }, [authState.token, saveSettingsToServer]);
 
     const updateProfile = useCallback(async (profileData: Partial<Pick<User, 'email' | 'phone'>>): Promise<{ success: boolean; error?: string }> => {
         try {

@@ -69,6 +69,8 @@ Accounts server running on port 5000
 3. Open extension popup → Accounts tab
 4. Create account or sign in
 
+**Settings Sync**: When logged in, your extension settings (themes, speed, position, toggles) are automatically saved to your account and synced across devices. When you log out, settings are saved. When you log in, your saved settings are restored.
+
 ## 5. Testing the API
 
 ```bash
