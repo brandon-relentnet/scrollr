@@ -188,7 +188,7 @@ export default function AccountsTab() {
                                 <div className="flex items-center gap-3">
                                     <div className="avatar placeholder">
                                         <div className="bg-primary text-primary-content rounded-full w-12">
-                                            <span className="text-lg font-semibold">{user?.username.charAt(0).toUpperCase()}</span>
+                                            <span className="text-2xl font-semibold flex items-center justify-center h-full">{user?.username.charAt(0).toUpperCase()}</span>
                                         </div>
                                     </div>
                                     <div className="flex-1">
@@ -249,7 +249,7 @@ export default function AccountsTab() {
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
-                                                className="input input-md"
+                                                className="input input-md w-full"
                                                 placeholder="mail@site.com"
                                             />
                                         </label>
@@ -261,7 +261,7 @@ export default function AccountsTab() {
                                                 name="phone"
                                                 value={formData.phone}
                                                 onChange={handleInputChange}
-                                                className="input input-md"
+                                                className="input input-md w-full"
                                                 placeholder="+1 (555) 123-4567"
                                             />
                                         </label>
@@ -305,7 +305,7 @@ export default function AccountsTab() {
                                                 name="currentPassword"
                                                 value={formData.currentPassword}
                                                 onChange={handleInputChange}
-                                                className="input input-md"
+                                                className="input input-md w-full"
                                                 placeholder="Enter current password"
                                                 required
                                             />
@@ -318,7 +318,7 @@ export default function AccountsTab() {
                                                 name="newPassword"
                                                 value={formData.newPassword}
                                                 onChange={handleInputChange}
-                                                className="input input-md"
+                                                className="input input-md w-full"
                                                 placeholder="Create new password"
                                                 required
                                             />
@@ -331,7 +331,7 @@ export default function AccountsTab() {
                                                 name="confirmPassword"
                                                 value={formData.confirmPassword}
                                                 onChange={handleInputChange}
-                                                className="input input-md"
+                                                className="input input-md w-full"
                                                 placeholder="Confirm new password"
                                                 required
                                             />
@@ -412,7 +412,7 @@ export default function AccountsTab() {
                                             name="identifier"
                                             value={formData.identifier}
                                             onChange={handleInputChange}
-                                            className="input input-md"
+                                            className="input input-md w-full"
                                             placeholder="user@example.com"
                                             required
                                         />
@@ -425,7 +425,7 @@ export default function AccountsTab() {
                                             name="password"
                                             value={formData.password}
                                             onChange={handleInputChange}
-                                            className="input input-md"
+                                            className="input input-md w-full"
                                             placeholder="Enter your password"
                                             required
                                         />
@@ -454,7 +454,7 @@ export default function AccountsTab() {
                                             name="username"
                                             value={formData.username}
                                             onChange={handleInputChange}
-                                            className="input input-md"
+                                            className="input input-md w-full"
                                             placeholder="Choose a username"
                                             required
                                         />
@@ -467,7 +467,7 @@ export default function AccountsTab() {
                                             name="email"
                                             value={formData.email}
                                             onChange={handleInputChange}
-                                            className="input input-md"
+                                            className="input input-md w-full"
                                             placeholder="mail@site.com"
                                             required
                                         />
@@ -480,7 +480,7 @@ export default function AccountsTab() {
                                             name="phone"
                                             value={formData.phone}
                                             onChange={handleInputChange}
-                                            className="input input-md"
+                                            className="input input-md w-full"
                                             placeholder="+1 (555) 123-4567"
                                         />
                                     </label>
@@ -492,7 +492,7 @@ export default function AccountsTab() {
                                             name="password"
                                             value={formData.password}
                                             onChange={handleInputChange}
-                                            className="input input-md"
+                                            className="input input-md w-full"
                                             placeholder="Create a password"
                                             required
                                         />
@@ -505,7 +505,7 @@ export default function AccountsTab() {
                                             name="confirmPassword"
                                             value={formData.confirmPassword}
                                             onChange={handleInputChange}
-                                            className="input input-md"
+                                            className="input input-md w-full"
                                             placeholder="Confirm your password"
                                             required
                                         />
