@@ -9,8 +9,6 @@ import AccountsTab from "./tabs/AccountsTab.tsx";
 import SettingsTab from "./tabs/SettingsTab.tsx";
 
 export default function Popup() {
-  const [power, setPower] = useState(false);
-
   useEffect(() => {
     themeChange(false);
   }, []);
@@ -28,7 +26,7 @@ export default function Popup() {
           <DisplayTab/>
 
           {/* TAB #3 POWER */}
-          <PowerTab power={power} setPower={setPower} />
+          <PowerTab />
 
           {/* TAB #4 ACCOUNTS */}
           <AccountsTab/>
