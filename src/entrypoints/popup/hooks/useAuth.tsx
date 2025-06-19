@@ -39,12 +39,19 @@ export function useAuth() {
         isAuthenticated: false,
     });
     
+    const [isInitialized, setIsInitialized] = useState(false);
     const dispatch = useDispatch();
-    const currentSettings = useSelector((state: any) => state);
+    
+    // Get settings with a stable reference to prevent infinite loops
+    const currentSettings = useSelector((state: any) => {
+        const { theme, layout, finance, power, toggles } = state;
+        return { theme, layout, finance, power, toggles };
+    });
 
     // Save current settings to server
-    const saveSettingsToServer = useCallback(async (token: string) => {
+    const saveSettingsToServer = useCallback(async (token: string, settingsToSave?: any) => {
         try {
+            const settings = settingsToSave || currentSettings;
             const response = await fetch(`${API_BASE_URL}/auth/settings`, {
                 method: 'POST',
                 headers: {
@@ -52,7 +59,7 @@ export function useAuth() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    settings: currentSettings,
+                    settings: settings,
                     version: '2.0.0-beta.1'
                 }),
             });
@@ -100,7 +107,7 @@ export function useAuth() {
             // If there's an error loading settings, save current local settings as backup
             await saveSettingsToServer(token);
         }
-    }, [dispatch, saveSettingsToServer]);
+    }, [dispatch]);
 
     // Initialize auth state from storage
     useEffect(() => {
@@ -156,29 +163,18 @@ export function useAuth() {
                     isLoading: false,
                     isAuthenticated: false,
                 });
+            } finally {
+                setIsInitialized(true);
             }
         };
 
-        initializeAuth();
-    }, [loadSettingsFromServer]);
-
-    // Auto-save settings to server when they change (debounced)
-    useEffect(() => {
-        let timeoutId: NodeJS.Timeout;
-        
-        if (authState.isAuthenticated && authState.token) {
-            // Debounce settings saves to avoid too many API calls
-            timeoutId = setTimeout(() => {
-                saveSettingsToServer(authState.token!);
-            }, 2000); // Save 2 seconds after last change
+        if (!isInitialized) {
+            initializeAuth();
         }
-        
-        return () => {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-        };
-    }, [currentSettings, authState.isAuthenticated, authState.token, saveSettingsToServer]);
+    }, [isInitialized]);
+
+    // Note: Auto-save removed to prevent infinite loops
+    // Settings are saved explicitly on login/logout and can be manually saved
 
     const login = useCallback(async (credentials: LoginCredentials): Promise<{ success: boolean; error?: string }> => {
         try {
@@ -332,6 +328,13 @@ export function useAuth() {
         }
     }, [authState.token]);
 
+    // Manual settings sync function for UI use
+    const syncSettings = useCallback(async () => {
+        if (authState.isAuthenticated && authState.token) {
+            await saveSettingsToServer(authState.token);
+        }
+    }, [authState.isAuthenticated, authState.token, saveSettingsToServer]);
+
     return {
         ...authState,
         login,
@@ -339,5 +342,6 @@ export function useAuth() {
         logout,
         updateProfile,
         changePassword,
+        syncSettings,
     };
 }
