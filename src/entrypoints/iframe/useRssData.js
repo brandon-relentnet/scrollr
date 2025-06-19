@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { useAuth } from '../popup/hooks/useAuth.tsx';
 
 // Debounce utility for RSS feed updates
 function useDebounce(value, delay) {
@@ -147,9 +146,9 @@ export default function useRssData() {
     const fetchTimeoutRef = useRef(null);
     const lastFetchRef = useRef(0);
 
-    // Get Redux state and auth
+    // Get Redux state - check if user is authenticated by checking if RSS feeds exist
     const rssState = useSelector((state) => state.rss);
-    const { isAuthenticated } = useAuth();
+    const isAuthenticated = rssState?.feeds && rssState.feeds.length > 0;
 
     // Check if RSS is enabled and we have selected feeds
     const hasActiveRssFeeds = useMemo(() => {

@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import {Carousel} from "@/entrypoints/iframe/Carousel";
 
 export default function App() {
-    const currentTheme = useSelector((state: { theme: string }) => state.theme);
+    const currentTheme = useSelector((state: any) => state.theme);
 
     useEffect(() => {
         // Initialize theme-change library
@@ -14,7 +14,12 @@ export default function App() {
     }, []);
 
     useEffect(() => {
-        document.documentElement.setAttribute("data-theme", currentTheme);
+        // Handle both string and object theme formats to match popup behavior
+        if (currentTheme && typeof currentTheme === 'string') {
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        } else if (currentTheme && currentTheme.mode) {
+            document.documentElement.setAttribute('data-theme', currentTheme.mode);
+        }
     }, [currentTheme]);
 
     return (
