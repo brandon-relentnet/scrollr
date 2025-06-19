@@ -5,25 +5,36 @@ import GameCard from './GameCard';
 import TradeCard from './TradeCard';
 import useSportsData from './useSportsData';
 import useFinanceData from './useFinanceData';
+import { memo, useMemo } from 'react';
 
-const breakpointsArray = {};
-const startBreakpoint = 0;
-const endBreakpoint = 8000;
-const breakpointStep = 320;
-for (let i = startBreakpoint; i <= endBreakpoint; i += breakpointStep) {
-    breakpointsArray[i] = {
-        slidesPerView: Math.floor(i / 320),
-    };
-}
+// Pre-computed breakpoints - moved outside component to prevent recreation
+const BREAKPOINTS = (() => {
+    const breakpoints = {};
+    for (let i = 0; i <= 8000; i += 320) {
+        breakpoints[i] = {
+            slidesPerView: Math.max(1, Math.floor(i / 320)),
+        };
+    }
+    return breakpoints;
+})();
 
-export function Carousel() {
+export const Carousel = memo(function Carousel() {
     // Use both custom hooks to get data
     const {sportsData, connectionStatus: sportsConnectionStatus, hasActiveSportsToggles} = useSportsData();
     const {tradesData, connectionStatus: financeConnectionStatus, hasFinanceFilters} = useFinanceData();
 
+    // Memoize expensive computations
+    const hasData = useMemo(() => {
+        return (tradesData?.data?.length > 0 || sportsData?.length > 0);
+    }, [tradesData?.data?.length, sportsData?.length]);
+
+    const showEmptyMessage = useMemo(() => {
+        return !hasFinanceFilters && !hasActiveSportsToggles;
+    }, [hasFinanceFilters, hasActiveSportsToggles]);
+
     return (
         <div className="flex-grow overflow-hidden">
-            {(tradesData?.data?.length > 0 || sportsData?.length > 0) && (
+            {hasData && (
                 <Swiper
                     modules={[Autoplay]}
                     autoplay={{delay: 3000, disableOnInteraction: false}}
@@ -31,7 +42,7 @@ export function Carousel() {
                     loop={true}
                     speed={600}
                     spaceBetween={8}
-                    breakpoints={breakpointsArray}
+                    breakpoints={BREAKPOINTS}
                     watchSlidesProgress={true}
                 >
                     {tradesData?.data?.length > 0 &&
@@ -49,7 +60,7 @@ export function Carousel() {
                 </Swiper>
             )}
             {/* Show message when no filters are selected */}
-            {!hasFinanceFilters && !hasActiveSportsToggles && (
+            {showEmptyMessage && (
                 <div className="mt-4">
                     <div className="text-center py-8 text-gray-500">
                         Select finance or sports options to see data
@@ -57,5 +68,5 @@ export function Carousel() {
                 </div>
             )}
         </div>
-    )
-}
+    );
+});

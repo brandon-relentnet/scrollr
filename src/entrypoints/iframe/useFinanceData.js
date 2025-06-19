@@ -95,9 +95,11 @@ function useStableFinanceFilters(financeState) {
         ]
     );
 
-    // Only update stable filters if content actually changed
+    // Optimized filter comparison - avoid JSON.stringify in hot path
     useEffect(() => {
-        const filtersChanged = JSON.stringify(currentFilters) !== JSON.stringify(stableFilters);
+        // Fast array comparison - much faster than JSON.stringify
+        const filtersChanged = currentFilters.length !== stableFilters.length ||
+            currentFilters.some((filter, index) => filter !== stableFilters[index]);
 
         if (filtersChanged) {
             console.log('Finance filters changed:', {
@@ -155,7 +157,9 @@ export default function useFinanceData() {
             f.startsWith('price_')
         );
 
-        const filtersString = JSON.stringify(financeOnlyFilters.sort());
+        // Optimized filter comparison - avoid JSON.stringify overhead
+        const sortedFilters = financeOnlyFilters.sort();
+        const filtersString = sortedFilters.join(',');
         if (filtersString === lastSentFiltersRef.current) {
             console.log('Skipping duplicate filter request');
             return;

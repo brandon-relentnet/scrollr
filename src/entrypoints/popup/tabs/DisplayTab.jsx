@@ -1,4 +1,4 @@
-import { ComputerDesktopIcon } from "@heroicons/react/24/solid/index.js";
+import { ComputerDesktopIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { SPORTS_OPTIONS, STOCK_PRESETS, CRYPTO_PRESETS, STOCK_OPTIONS, CRYPTO_OPTIONS } from "./data.jsx";
 import { useDispatch, useSelector } from 'react-redux';
@@ -41,11 +41,20 @@ export default function DisplayTab() {
     }, [dispatch, reduxToggles]);
 
 
-    // Memoized computations
-    const getSelected = useCallback((type) =>
-        Object.entries(financeState[type]?.customSelections || {})
+    // Memoized computations - split by type to prevent unnecessary recalculations
+    const stocksSelected = useMemo(() =>
+        Object.entries(financeState.stocks?.customSelections || {})
             .filter(([, enabled]) => enabled)
-            .map(([key]) => key), [financeState]);
+            .map(([key]) => key), [financeState.stocks?.customSelections]);
+
+    const cryptoSelected = useMemo(() =>
+        Object.entries(financeState.crypto?.customSelections || {})
+            .filter(([, enabled]) => enabled)
+            .map(([key]) => key), [financeState.crypto?.customSelections]);
+
+    const getSelected = useCallback((type) => 
+        type === 'stocks' ? stocksSelected : cryptoSelected, 
+        [stocksSelected, cryptoSelected]);
 
     const getFilteredOptions = useMemo(() => {
         const filterOptions = (type) => {

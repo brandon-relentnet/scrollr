@@ -1,41 +1,57 @@
 import {LockOpenIcon, LockClosedIcon, InformationCircleIcon} from "@heroicons/react/24/solid";
-import {useState} from "react";
+import {useState, memo, useMemo, useCallback} from "react";
 import {useSelector} from "react-redux";
 
-export default function GameCard({game}) {
+// Status map moved outside component to prevent recreation
+const STATUS_MAP = {
+    pre: {
+        icon: 'text-primary/70 hover:text-primary',
+        badge: 'badge-primary bg-primary/70 hover:bg-primary',
+        text: 'Upcoming',
+        btn: 'btn-primary'
+    },
+    in: {
+        icon: 'text-success',
+        badge: 'badge-success',
+        text: 'Live',
+        btn: 'btn-success'
+    },
+    post: {
+        icon: 'text-error',
+        badge: 'badge-error',
+        text: 'Final',
+        btn: 'btn-error'
+    }
+};
+
+function GameCard({game}) {
     const [pinned, setPinned] = useState(false);
     const layout = useSelector((state) => state.layout?.mode || 'compact');
-    const isCompact = layout === 'compact';
-    const isLive = game.state === 'in';
+    
+    // Memoized computations
+    const isCompact = useMemo(() => layout === 'compact', [layout]);
+    const isLive = useMemo(() => game.state === 'in', [game.state]);
+    const status = useMemo(() => STATUS_MAP[game.state] || STATUS_MAP.post, [game.state]);
+    
+    // Expensive date formatting memoized
+    const tooltipContent = useMemo(() => {
+        if (!game.start_time) return '';
+        return `${new Date(game.start_time).toLocaleString()} - ${game.league}`;
+    }, [game.start_time, game.league]);
 
-    const statusMap = {
-        pre: {
-            icon: 'text-primary/70 hover:text-primary',
-            badge: 'badge-primary bg-primary/70 hover:bg-primary',
-            text: 'Upcoming',
-            btn: 'btn-primary'
-        },
-        in: {
-            icon: 'text-success',
-            badge: 'badge-success',
-            text: 'Live',
-            btn: 'btn-success'
-        },
-        post: {
-            icon: 'text-error',
-            badge: 'badge-error',
-            text: 'Final',
-            btn: 'btn-error'
-        }
-    };
-
-    const status = statusMap[game.state] || statusMap.post;
-    const tooltipContent = game.start_time ? `${new Date(game.start_time).toLocaleString()} - ${game.league}` : '';
-
-    const handlePinClick = (e) => {
+    // Memoized event handlers
+    const handlePinClick = useCallback((e) => {
         e.stopPropagation();
         setPinned(!pinned);
-    };
+    }, [pinned]);
+
+    const handleImageError = useCallback((e) => {
+        e.target.style.display = 'none';
+    }, []);
+
+    const handleCardClick = useCallback(() => {
+        window.open(game.link, '_blank');
+    }, [game.link]);
 
     const StatusDisplay = () => (
             <div className="tooltip tooltip-primary tooltip-right" data-tip={tooltipContent}>
@@ -80,7 +96,7 @@ export default function GameCard({game}) {
         return (
             <div
                 className="card bg-base-200 group cursor-pointer border border-base-300 transition duration-150 h-14"
-                onClick={() => window.open(game.link, '_blank')}
+                onClick={handleCardClick}
             >
                 <div className="card-body py-2 px-2 flex-row justify-evenly">
                     <div className="absolute top-1 left-1 flex items-center justify-evenly gap-2">
@@ -95,7 +111,7 @@ export default function GameCard({game}) {
                                     src={game.away_team_logo}
                                     alt={game.away_team_name}
                                     className="size-8"
-                                    onError={(e) => e.target.style.display = 'none'}
+                                    onError={handleImageError}
                                 />
                                 <span className="font-semibold">{game.away_team_name}</span>
                             </div>
@@ -109,7 +125,7 @@ export default function GameCard({game}) {
                                     src={game.home_team_logo}
                                     alt={game.home_team_name}
                                     className="size-8"
-                                    onError={(e) => e.target.style.display = 'none'}
+                                    onError={handleImageError}
                                 />
                                 <span className="font-semibold">{game.home_team_name}</span>
                             </div>
@@ -126,7 +142,7 @@ export default function GameCard({game}) {
     return (
         <div
             className="card bg-base-200 group cursor-pointer card-border border-base-300 hover:border-base-content/20 transition-all duration-150 h-40 shadow-sm hover:shadow-md"
-            onClick={() => window.open(game.link, '_blank')}
+            onClick={handleCardClick}
         >
             <div className="card-body flex justify-center gap-0 p-3">
                 {/* Header */}
@@ -146,7 +162,7 @@ export default function GameCard({game}) {
                                     <img
                                         src={game.away_team_logo}
                                         alt={game.away_team_name}
-                                        onError={(e) => e.target.style.display = 'none'}
+                                        onError={handleImageError}
                                     />
                                 </div>
                             </div>
@@ -168,7 +184,7 @@ export default function GameCard({game}) {
                                     <img
                                         src={game.home_team_logo}
                                         alt={game.home_team_name}
-                                        onError={(e) => e.target.style.display = 'none'}
+                                        onError={handleImageError}
                                     />
                                 </div>
                             </div>
@@ -186,3 +202,16 @@ export default function GameCard({game}) {
         </div>
     );
 }
+
+// Memoized export with custom comparison
+export default memo(GameCard, (prevProps, nextProps) => {
+    const prev = prevProps.game;
+    const next = nextProps.game;
+    
+    // Only re-render if key game properties change
+    return prev.id === next.id &&
+           prev.state === next.state &&
+           prev.away_team_score === next.away_team_score &&
+           prev.home_team_score === next.home_team_score &&
+           prev.start_time === next.start_time;
+});
