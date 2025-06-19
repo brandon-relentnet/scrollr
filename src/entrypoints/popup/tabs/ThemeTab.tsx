@@ -1,9 +1,10 @@
 import {SwatchIcon} from "@heroicons/react/24/solid";
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setTheme } from '@/entrypoints/store/themeSlice';
 
 export default function ThemeTab() {
     const dispatch = useDispatch();
+    const currentTheme = useSelector((state: any) => state.theme);
     const themes = [
         { label: "Light", value: "light" },
         { label: "Dark", value: "dark" },
@@ -42,9 +43,21 @@ export default function ThemeTab() {
         { label: "Silk", value: "silk" },
     ];
 
+    // Get the current theme value (handle both string and object formats)
+    const getCurrentTheme = () => {
+        if (typeof currentTheme === 'string') {
+            return currentTheme;
+        } else if (currentTheme && currentTheme.mode) {
+            return currentTheme.mode;
+        }
+        return 'dark'; // default
+    };
+
     function themeChange(theme: string) {
         console.log('Selected theme:', theme)
         dispatch(setTheme(theme));
+        // Also apply immediately to DOM
+        document.documentElement.setAttribute('data-theme', theme);
     }
 
     return (
@@ -65,7 +78,8 @@ export default function ThemeTab() {
                                 aria-label={label}
                                 value={value}
                                 data-set-theme={value}
-                                onClick={() => {themeChange(value)}}
+                                checked={getCurrentTheme() === value}
+                                onChange={() => {themeChange(value)}}
                             />
                         ))}
                     </div>

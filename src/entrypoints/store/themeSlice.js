@@ -6,7 +6,14 @@ const themeSlice = createSlice({
         mode: "dark", // Default theme mode
     },
     reducers: {
-        setTheme: (state, action) => action.payload,
+        setTheme: (state, action) => {
+            // Handle both string and object formats
+            if (typeof action.payload === 'string') {
+                state.mode = action.payload;
+            } else {
+                return action.payload;
+            }
+        },
         setState: (state, action) => action.payload,
     },
 });
