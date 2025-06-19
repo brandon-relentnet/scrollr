@@ -35,6 +35,21 @@
 - **Schedule Tracking** - Upcoming games and event calendars
 - **Team Customization** - Follow your favorite teams and leagues
 
+### 📡 RSS Feed Management
+- **Custom RSS Feeds** - Add and manage personal RSS subscriptions
+- **Authentication Required** - Secure feed management with user accounts
+- **Multi-Format Support** - RSS 2.0 and Atom feed compatibility
+- **Auto-Refresh** - Feeds update automatically every 5 minutes
+- **Category Organization** - Organize feeds by category (Tech, News, Sports, etc.)
+- **Reliable Fetching** - Multiple CORS proxy fallbacks for maximum uptime
+- **Real-Time Display** - RSS articles appear seamlessly in the ticker carousel
+
+### 🎮 Fantasy Sports Integration
+- **Coming Soon** - Yahoo, ESPN, Sleeper, and CBS integrations
+- **League Management** - Track multiple fantasy leagues
+- **Player Statistics** - Real-time player performance data
+- **Matchup Alerts** - Notifications for important lineup decisions
+
 ### 👤 User Management
 - **Secure Authentication** - JWT-based login system with PostgreSQL backend
 - **User Profiles** - Customizable user accounts with preferences
@@ -133,6 +148,7 @@ scrollr/
 - **financeSlice.js** - Financial data state with Redux Toolkit
 - **layoutSlice.js** - Speed, position, and layout mode state management
 - **powerSlice.js** - Extension visibility and power controls
+- **rssSlice.js** - RSS feed management and selection state
 - **Optimized Actions** - Efficient state updates for real-time data
 - **Persistence** - Automatic state persistence across sessions
 
@@ -146,7 +162,10 @@ scrollr/
 
 #### Data Layer (`src/entrypoints/iframe/`)
 - **useFinanceData.js** - Real-time data fetching with WebSocket connections
+- **useRssData.js** - RSS feed fetching with multiple CORS proxy fallbacks
 - **GameCard.jsx** - Sports data display with performance optimization
+- **TradeCard.jsx** - Financial data display with memoization
+- **RssCard.jsx** - RSS article display with compact/comfort modes
 - **Carousel.jsx** - Variable-speed scrolling ticker with responsive breakpoints
 - **content.ts** - Dynamic iframe positioning and visibility management
 
@@ -154,12 +173,14 @@ scrollr/
 - **JWT Authentication** - Secure token-based authentication
 - **PostgreSQL Integration** - Scalable user data storage with settings sync
 - **Settings API** - GET/POST endpoints for cross-device settings synchronization
+- **RSS Feed API** - CRUD endpoints for user RSS feed management
 - **RESTful APIs** - Clean, documented API endpoints
 - **Security Features** - bcrypt hashing, CORS protection, input validation
 - **Data Management** - JSONB storage for flexible settings with UPSERT operations
 
 #### Authentication & Sync (`src/entrypoints/popup/hooks/`)
 - **useAuth.tsx** - Complete authentication and settings sync management
+- **useRssFeeds.tsx** - RSS feed management with server API integration
 - **Automatic Sync** - Debounced settings save (2s delay) when logged in
 - **Conflict Resolution** - Server settings take precedence on login
 - **Fallback Strategy** - Local storage when offline or not authenticated

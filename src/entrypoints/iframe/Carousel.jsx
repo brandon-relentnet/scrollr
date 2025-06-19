@@ -3,8 +3,10 @@ import {Swiper, SwiperSlide} from 'swiper/react';
 import 'swiper/css';
 import GameCard from './GameCard';
 import TradeCard from './TradeCard';
+import RssCard from './RssCard';
 import useSportsData from './useSportsData';
 import useFinanceData from './useFinanceData';
+import useRssData from './useRssData';
 import { memo, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
@@ -27,21 +29,22 @@ const SPEED_CONFIG = {
 };
 
 export const Carousel = memo(function Carousel() {
-    // Use both custom hooks to get data
+    // Use all custom hooks to get data
     const {sportsData, connectionStatus: sportsConnectionStatus, hasActiveSportsToggles} = useSportsData();
     const {tradesData, connectionStatus: financeConnectionStatus, hasFinanceFilters} = useFinanceData();
+    const {rssItems, connectionStatus: rssConnectionStatus, hasActiveRssFeeds} = useRssData();
     
     // Get speed setting from Redux
     const speed = useSelector((state) => state.layout?.speed || 'classic');
 
     // Memoize expensive computations
     const hasData = useMemo(() => {
-        return (tradesData?.data?.length > 0 || sportsData?.length > 0);
-    }, [tradesData?.data?.length, sportsData?.length]);
+        return (tradesData?.data?.length > 0 || sportsData?.length > 0 || rssItems?.length > 0);
+    }, [tradesData?.data?.length, sportsData?.length, rssItems?.length]);
 
     const showEmptyMessage = useMemo(() => {
-        return !hasFinanceFilters && !hasActiveSportsToggles;
-    }, [hasFinanceFilters, hasActiveSportsToggles]);
+        return !hasFinanceFilters && !hasActiveSportsToggles && !hasActiveRssFeeds;
+    }, [hasFinanceFilters, hasActiveSportsToggles, hasActiveRssFeeds]);
 
     // Get speed configuration based on current speed setting
     const speedConfig = useMemo(() => {
@@ -73,13 +76,19 @@ export const Carousel = memo(function Carousel() {
                                 <GameCard game={game}/>
                             </SwiperSlide>
                         ))}
+                    {rssItems?.length > 0 &&
+                        rssItems.map((rssItem) => (
+                            <SwiperSlide key={rssItem.id} className="h-full py-2">
+                                <RssCard rssItem={rssItem}/>
+                            </SwiperSlide>
+                        ))}
                 </Swiper>
             )}
             {/* Show message when no filters are selected */}
             {showEmptyMessage && (
                 <div className="mt-4">
                     <div className="text-center py-8 text-gray-500">
-                        Select finance or sports options to see data
+                        Select finance, sports, or RSS options to see data
                     </div>
                 </div>
             )}

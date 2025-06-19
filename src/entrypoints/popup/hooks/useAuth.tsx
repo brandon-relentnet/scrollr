@@ -40,6 +40,7 @@ export function useAuth() {
     });
     
     const [isInitialized, setIsInitialized] = useState(false);
+    const [isLoadingSettings, setIsLoadingSettings] = useState(false);
     const dispatch = useDispatch();
     
     // Get settings with a stable reference to prevent infinite loops
@@ -80,6 +81,7 @@ export function useAuth() {
 
     // Load settings from server and apply to Redux store
     const loadSettingsFromServer = useCallback(async (token: string) => {
+        setIsLoadingSettings(true);
         try {
             const response = await fetch(`${API_BASE_URL}/auth/settings`, {
                 headers: {
@@ -112,6 +114,9 @@ export function useAuth() {
             console.error('Error loading settings from server:', error);
             // If there's an error loading settings, save current local settings as backup
             await saveSettingsToServer(token);
+        } finally {
+            // Small delay to ensure Redux state has updated before allowing auto-save
+            setTimeout(() => setIsLoadingSettings(false), 1000);
         }
     }, [dispatch, saveSettingsToServer]);
 
@@ -179,8 +184,25 @@ export function useAuth() {
         }
     }, [isInitialized]);
 
-    // Note: Auto-save removed to prevent infinite loops
-    // Settings are saved explicitly on login/logout and can be manually saved
+    // Auto-save settings when they change (with safeguards to prevent infinite loops)
+    useEffect(() => {
+        // Don't auto-save during initialization, settings loading, or if not authenticated
+        if (!isInitialized || isLoadingSettings || !authState.isAuthenticated || !authState.token) {
+            return;
+        }
+
+        // Debounce auto-save to prevent excessive API calls
+        const timeoutId = setTimeout(async () => {
+            try {
+                console.log('Auto-saving settings to server');
+                await saveSettingsToServer(authState.token);
+            } catch (error) {
+                console.error('Auto-save failed:', error);
+            }
+        }, 2000); // 2 second debounce
+
+        return () => clearTimeout(timeoutId);
+    }, [currentSettings, isInitialized, isLoadingSettings, authState.isAuthenticated, authState.token, saveSettingsToServer]);
 
     const login = useCallback(async (credentials: LoginCredentials): Promise<{ success: boolean; error?: string }> => {
         try {
