@@ -1,4 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { STOCK_OPTIONS, CRYPTO_OPTIONS } from '@/entrypoints/popup/tabs/data';
+
+// Helper to create default selections from options
+const createDefaultSelections = (options) => 
+    options.reduce((acc, opt) => ({ ...acc, [opt.key]: opt.enabled }), {});
 
 const financeSlice = createSlice({
     name: "finance",
@@ -6,44 +11,61 @@ const financeSlice = createSlice({
         stocks: {
             enabled: false,
             activePreset: null,
-            customSelections: {},
+            customSelections: createDefaultSelections(STOCK_OPTIONS),
             searchTerm: ''
         },
         crypto: {
             enabled: false,
             activePreset: null,
-            customSelections: {},
+            customSelections: createDefaultSelections(CRYPTO_OPTIONS),
             searchTerm: ''
         }
     },
     reducers: {
         setFinance: (state, action) => {
-            // Replace the entire finance state
             return action.payload;
         },
-        updateFinanceCategory: (state, action) => {
-            // Update a specific category (stocks or crypto)
-            const { category, data } = action.payload;
-            state[category] = { ...state[category], ...data };
-        },
         toggleFinanceCategory: (state, action) => {
-            // Toggle enabled state for a category
             const { category } = action.payload;
             state[category].enabled = !state[category].enabled;
         },
         setFinancePreset: (state, action) => {
-            // Set active preset for a category
             const { category, preset } = action.payload;
             state[category].activePreset = preset;
+        },
+        toggleFinanceSelection: (state, action) => {
+            const { category, key } = action.payload;
+            state[category].customSelections[key] = !state[category].customSelections[key];
+        },
+        setFinanceSearch: (state, action) => {
+            const { category, term } = action.payload;
+            state[category].searchTerm = term;
+        },
+        resetFinanceSelections: (state, action) => {
+            const { category } = action.payload;
+            const options = category === 'stocks' ? STOCK_OPTIONS : CRYPTO_OPTIONS;
+            state[category].customSelections = createDefaultSelections(options);
+        },
+        toggleAllFinanceSelections: (state, action) => {
+            const { category, selectAll } = action.payload;
+            const options = category === 'stocks' ? STOCK_OPTIONS : CRYPTO_OPTIONS;
+            const newSelections = {};
+            for (const opt of options) {
+                newSelections[opt.key] = selectAll;
+            }
+            state[category].customSelections = newSelections;
         }
     },
 });
 
 export const {
     setFinance,
-    updateFinanceCategory,
     toggleFinanceCategory,
-    setFinancePreset
+    setFinancePreset,
+    toggleFinanceSelection,
+    setFinanceSearch,
+    resetFinanceSelections,
+    toggleAllFinanceSelections
 } = financeSlice.actions;
 
 export default financeSlice.reducer;
