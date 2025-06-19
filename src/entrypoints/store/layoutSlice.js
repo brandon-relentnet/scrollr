@@ -9,8 +9,9 @@ const layoutSlice = createSlice({
         setLayout: (state, action) => {
             state.mode = action.payload;
         },
+        setState: (state, action) => action.payload,
     },
 });
 
-export const { setLayout } = layoutSlice.actions;
+export const { setLayout, setState } = layoutSlice.actions;
 export default layoutSlice.reducer;

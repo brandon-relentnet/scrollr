@@ -7,8 +7,9 @@ const togglesSlice = createSlice({
     },
     reducers: {
         setToggles: (state, action) => action.payload,
+        setState: (state, action) => action.payload,
     },
 });
 
-export const { setToggles } = togglesSlice.actions;
+export const { setToggles, setState } = togglesSlice.actions;
 export default togglesSlice.reducer;

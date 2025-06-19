@@ -54,7 +54,8 @@ const financeSlice = createSlice({
                 newSelections[opt.key] = selectAll;
             }
             state[category].customSelections = newSelections;
-        }
+        },
+        setState: (state, action) => action.payload
     },
 });
 
@@ -65,7 +66,8 @@ export const {
     toggleFinanceSelection,
     setFinanceSearch,
     resetFinanceSelections,
-    toggleAllFinanceSelections
+    toggleAllFinanceSelections,
+    setState
 } = financeSlice.actions;
 
 export default financeSlice.reducer;

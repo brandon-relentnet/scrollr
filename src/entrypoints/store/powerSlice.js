@@ -12,8 +12,9 @@ const powerSlice = createSlice({
         togglePower: (state) => {
             state.mode = !state.mode;
         },
+        setState: (state, action) => action.payload,
     },
 });
 
-export const { setPower, togglePower } = powerSlice.actions;
+export const { setPower, togglePower, setState } = powerSlice.actions;
 export default powerSlice.reducer;
