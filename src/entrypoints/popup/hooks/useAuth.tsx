@@ -209,6 +209,42 @@ export function useAuth() {
     settingsRef.current = currentSettings;
   }, [currentSettings]);
 
+  // Immediate save function for critical changes (like when popup closes)
+  const saveSettingsImmediately = useCallback(async () => {
+    if (
+      !isInitialized ||
+      isLoadingSettings ||
+      !authState.isAuthenticated ||
+      !authState.token
+    ) {
+      return;
+    }
+
+    // Only save if settings have actually changed
+    if (
+      lastSavedSettings &&
+      JSON.stringify(currentSettings) === JSON.stringify(lastSavedSettings)
+    ) {
+      return;
+    }
+
+    try {
+      console.log("Immediately saving settings to server");
+      await saveSettingsToServer(authState.token!);
+      setLastSavedSettings(settingsRef.current);
+    } catch (error) {
+      console.error("Immediate save failed:", error);
+    }
+  }, [
+    currentSettings,
+    isInitialized,
+    isLoadingSettings,
+    authState.isAuthenticated,
+    authState.token,
+    saveSettingsToServer,
+    lastSavedSettings,
+  ]);
+
   // Auto-save settings when they change (with safeguards to prevent infinite loops)
   useEffect(() => {
     // Don't auto-save during initialization, settings loading, or if not authenticated
@@ -238,7 +274,7 @@ export function useAuth() {
       } catch (error) {
         console.error("Auto-save failed:", error);
       }
-    }, 2000); // Back to 2 seconds since we're preventing unnecessary calls
+    }, 500); // Reduced from 2000ms to 500ms for better responsiveness
 
     return () => clearTimeout(timeoutId);
   }, [
@@ -248,6 +284,64 @@ export function useAuth() {
     authState.isAuthenticated,
     authState.token,
     saveSettingsToServer,
+    lastSavedSettings,
+  ]);
+
+  // Save settings immediately when the popup/window is about to close
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (
+        isInitialized &&
+        !isLoadingSettings &&
+        authState.isAuthenticated &&
+        authState.token &&
+        lastSavedSettings &&
+        JSON.stringify(currentSettings) !== JSON.stringify(lastSavedSettings)
+      ) {
+        // For browser extensions, use synchronous fetch with keepalive
+        try {
+          fetch(`${API_BASE_URL}/auth/settings`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${authState.token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              settings: currentSettings,
+              version: "2.0.0-beta.1",
+            }),
+            keepalive: true, // Keep request alive during page unload
+          });
+          console.log("Emergency save triggered on unload");
+        } catch (error) {
+          console.error("Emergency save on unload failed:", error);
+        }
+      }
+    };
+
+    // Use both beforeunload and unload events for maximum coverage
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("unload", handleBeforeUnload);
+
+    // Also handle visibility change (when user switches tabs or minimizes)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleBeforeUnload();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("unload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [
+    currentSettings,
+    isInitialized,
+    isLoadingSettings,
+    authState.isAuthenticated,
+    authState.token,
     lastSavedSettings,
   ]);
 
@@ -448,5 +542,6 @@ export function useAuth() {
     updateProfile,
     changePassword,
     syncSettings,
+    saveSettingsImmediately,
   };
 }

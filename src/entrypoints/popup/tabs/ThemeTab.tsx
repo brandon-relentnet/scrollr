@@ -1,10 +1,12 @@
 import {SwatchIcon} from "@heroicons/react/24/solid";
 import { useDispatch, useSelector } from 'react-redux';
 import { setTheme } from '@/entrypoints/store/themeSlice';
+import { useAuth } from '@/entrypoints/popup/hooks/useAuth';
 
 export default function ThemeTab() {
     const dispatch = useDispatch();
     const currentTheme = useSelector((state: any) => state.theme);
+    const { saveSettingsImmediately } = useAuth();
     const themes = [
         { label: "Light", value: "light" },
         { label: "Dark", value: "dark" },
@@ -58,6 +60,8 @@ export default function ThemeTab() {
         dispatch(setTheme(theme));
         // Also apply immediately to DOM
         document.documentElement.setAttribute('data-theme', theme);
+        // Save settings immediately since theme changes are critical
+        setTimeout(() => saveSettingsImmediately(), 100);
     }
 
     return (
