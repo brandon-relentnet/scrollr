@@ -119,6 +119,19 @@ export default defineContentScript({
         if (message.power !== undefined && message.power !== isVisible) {
           toggleIframeVisibility(message.power);
         }
+      } else if (message.type === 'LOGOUT_REFRESH') {
+        // Refresh the iframe when user logs out
+        if (iframeElement) {
+          console.log('Refreshing iframe due to logout');
+          // Force reload the iframe
+          const currentSrc = iframeElement.src;
+          iframeElement.src = '';
+          setTimeout(() => {
+            if (iframeElement) {
+              iframeElement.src = currentSrc;
+            }
+          }, 100);
+        }
       }
     });
 

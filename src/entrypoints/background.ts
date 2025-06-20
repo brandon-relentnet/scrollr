@@ -62,6 +62,10 @@ export default defineBackground(() => {
         position: state.layout?.position || 'top',
         power: state.power?.mode !== false
       });
+    } else if (message.type === 'LOGOUT_REFRESH') {
+      // Handle logout refresh - notify all contexts and refresh iframe
+      notifyContentScriptsLogout();
+      sendResponse({ layout: 'success', power: true, success: true });
     }
 
     return true;
@@ -95,6 +99,26 @@ export default defineBackground(() => {
       }
     } catch (error) {
       console.error('Failed to notify content scripts:', error);
+    }
+  }
+
+  async function notifyContentScriptsLogout() {
+    try {
+      const tabs = await browser.tabs.query({});
+
+      for (const tab of tabs) {
+        if (tab.id) {
+          try {
+            await browser.tabs.sendMessage(tab.id, {
+              type: 'LOGOUT_REFRESH'
+            });
+          } catch (error) {
+            // Tab might not have content script, ignore error
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to notify content scripts of logout:', error);
     }
   }
 });

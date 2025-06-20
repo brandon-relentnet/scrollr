@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
+// @ts-ignore
+import { browser } from 'wxt/browser';
 
 const API_BASE_URL = "http://localhost:5000/api";
 
@@ -439,14 +441,42 @@ export function useAuth() {
       await saveSettingsToServer(authState.token);
     }
 
+    // Clear authentication data
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
+    
+    // Clear extension storage
+    try {
+      if (typeof browser !== 'undefined' && browser.storage) {
+        await browser.storage.local.clear();
+        await browser.storage.sync?.clear();
+      }
+    } catch (error) {
+      console.error('Failed to clear browser storage:', error);
+    }
+
+    // Update auth state
     setAuthState({
       user: null,
       token: null,
       isLoading: false,
       isAuthenticated: false,
     });
+
+    // Refresh the entire extension to reset all state
+    setTimeout(() => {
+      // Send message to background script to notify all contexts
+      if (typeof browser !== 'undefined' && browser.runtime) {
+        try {
+          browser.runtime.sendMessage({ type: 'LOGOUT_REFRESH' });
+        } catch (error) {
+          console.error('Failed to send logout message:', error);
+        }
+      }
+      
+      // Force refresh of current context (popup)
+      window.location.reload();
+    }, 100);
   }, [authState.token, saveSettingsToServer]);
 
   const updateProfile = useCallback(
