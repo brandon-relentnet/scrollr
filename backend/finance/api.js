@@ -1,12 +1,14 @@
 // trades-api.js - Performance optimized version
-const express = require('express')
-const cors = require('cors')
-const http = require('http')
-const WebSocket = require('ws')
-const tradeService = require('./tradeService')
-const finnhubWS = require('./finnhubWebSocket')
-require('dotenv').config()
-const pool = require('./db')
+import express from 'express';
+import cors from 'cors';
+import http from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
+import tradeService from './tradeService.js';
+import finnhubWS from './finnhubWebSocket.js';
+import dotenv from 'dotenv';
+import pool from './db.js';
+
+dotenv.config();
 
 let wss = null
 const clients = new Set()
@@ -365,7 +367,7 @@ async function startTradesApiServer(port = 4001, options = {}) {
     const httpServer = http.createServer(app)
 
     // WebSocket server
-    wss = new WebSocket.Server({ server: httpServer, path: '/ws' })
+    wss = new WebSocketServer({ server: httpServer, path: '/ws' })
 
     wss.on('connection', (ws) => {
         clients.add(ws)
@@ -515,10 +517,10 @@ function getConnectionStats() {
     }
 }
 
-module.exports = {
+export {
     startTradesApiServer,
     setupGracefulShutdown,
     broadcastUpdatedTrades,
     getConnectionStats,
     clearCaches
-}
+};

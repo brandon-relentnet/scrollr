@@ -1,5 +1,5 @@
 // tradeService.js
-const pool = require('./db');
+import pool from './db.js';
 
 async function getTrades() {
     const { rows } = await pool.query(`
@@ -42,7 +42,7 @@ async function updateTrade(symbol, price, priceChange, percentageChange, directi
     );
 }
 
-module.exports = {
+export default {
     getTrades,
     insertSymbol,
     updatePreviousClose,

@@ -1,10 +1,10 @@
 // api.js - Updated API server with WebSocket filtering instead of Socket.IO
-const express = require('express')
-const cors = require('cors')
-const http = require('http')
-const WebSocket = require('ws')
-const { getAllGames, getGamesByLeague } = require('./dbQueries')
-const pool = require('./db')
+import express from 'express';
+import cors from 'cors';
+import http from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
+import { getAllGames, getGamesByLeague } from './dbQueries.js';
+import pool from './db.js';
 
 let wss = null  // WebSocket server reference
 const clients = new Set()  // Track connected clients and their filters
@@ -131,7 +131,7 @@ function startApiServer(port = 4000) {
     const httpServer = http.createServer(app)
 
     // Create WebSocket server
-    wss = new WebSocket.Server({
+    wss = new WebSocketServer({
         server: httpServer,  // Attach to HTTP server so both REST and WS work
         path: '/ws'  // Optional: specific path for WebSocket connections
     })
@@ -345,9 +345,9 @@ function getConnectionStats() {
     }
 }
 
-module.exports = {
+export {
     startApiServer,
     broadcastUpdatedGames,
     broadcast,
     getConnectionStats
-}
+};

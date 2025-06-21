@@ -1,8 +1,10 @@
 // server.js is the main entry point for the backend. It orchestrates the ingest and daily schedule checks.
-const schedule = require('node-schedule')
-const { startApiServer, broadcastUpdatedGames } = require('./api') 
-const { ingestData } = require('./ingest')
-const { runDailySchedule } = require('./dailySchedule')
+import schedule from 'node-schedule';
+import { startApiServer, broadcastUpdatedGames } from './api.js';
+import { ingestData } from './ingest.js';
+import { runDailySchedule } from './dailySchedule.js';
+import { initializeDatabase } from './db.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 async function main() {
     try {
@@ -10,15 +12,7 @@ async function main() {
 
         // Test database connection first
         console.log('📊 Testing database connection...');
-        try {
-            const pool = require('./db');
-            await pool.query('SELECT 1');
-            console.log('✅ Database connection successful');
-        } catch (dbError) {
-            console.error('❌ Database connection failed:', dbError);
-            console.error('Please ensure your database is running and .env is configured correctly');
-            process.exit(1);
-        }
+        await initializeDatabase();
 
         // 1. Start Express API on port 4000
         console.log('🌐 Starting HTTP server on port 4000...');
@@ -28,7 +22,7 @@ async function main() {
         console.log('⏳ Waiting for server to be fully ready...');
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        console.log('✅ Sports API server is ready!');
+        console.log('✅ Sports API server running on port 4000');
         console.log('📊 WebSocket: ws://localhost:4000/ws');
         console.log('🌐 REST API: http://localhost:4000/api/games');
         console.log('❤️  Health: http://localhost:4000/health');

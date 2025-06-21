@@ -1,8 +1,10 @@
 // ingest.js is a utility file that fetches data from ESPN for the given leagues, transforms the data, and upserts it into the database.
-require('dotenv').config()
-const axios = require('axios')
-const leagueConfigs = require('./leagueConfigs')
-const { upsertGame, clearTable } = require('./dbQueries')
+import dotenv from 'dotenv';
+import axios from 'axios';
+import leagueConfigs from './leagueConfigs.js';
+import { upsertGame, clearTable } from './dbQueries.js';
+
+dotenv.config();
 
 /**
  * Fetch data from ESPN for the given leagues,
@@ -64,4 +66,4 @@ async function ingestData(leaguesToIngest = leagueConfigs) {
   }
 }
 
-module.exports = { ingestData }
+export { ingestData };

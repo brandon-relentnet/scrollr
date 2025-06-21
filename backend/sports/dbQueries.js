@@ -1,4 +1,4 @@
-const pool = require('./db');
+import pool from './db.js';
 
 const excludedStates = ['post', 'completed', 'final'];
 
@@ -160,7 +160,7 @@ async function getGamesByLeague(leagueName) {
   return result.rows; // Return games for the specified league
 }
 
-module.exports = {
+export {
   upsertGame,
   getNotFinalGamesToday,
   areAllGamesFinal,

@@ -1,14 +1,15 @@
 {
-  "name": "backend",
+  "name": "finance-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Finance and trading data backend for browser extension",
   "license": "ISC",
   "author": "",
-  "type": "commonjs",
-  "main": "db.js",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
@@ -18,5 +19,8 @@
     "pg": "^8.13.1",
     "socket.io": "^4.8.1",
     "ws": "^8.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }

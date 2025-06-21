@@ -107,9 +107,8 @@ dev-down:
 	fi
 	@pkill -f "node.*start-all.js" 2>/dev/null || true
 	@pkill -f "node.*server.js" 2>/dev/null || true
-	@pkill -f "node.*app.js" 2>/dev/null || true
 	@sleep 2
-	@if pgrep -f "node.*(start-all|server|app)\.js" > /dev/null; then \
+	@if pgrep -f "node.*(start-all|server)\.js" > /dev/null; then \
 		echo "⚠️  Some processes may still be running"; \
 		echo "   Manual cleanup may be required"; \
 	else \

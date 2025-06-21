@@ -1,12 +1,20 @@
 // finnhubWebSocket.js - Performance optimized version
-const WebSocket = require('ws');
-const fetch = require('node-fetch');
-const cron = require('node-cron');
-const tradeService = require('./tradeService');
-require('dotenv').config();
+import { WebSocket } from 'ws';
+import fetch from 'node-fetch';
+import cron from 'node-cron';
+import tradeService from './tradeService.js';
+import dotenv from 'dotenv';
+import { readFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
-const SUBSCRIPTIONS = require('./subscriptions.json');
+const SUBSCRIPTIONS = JSON.parse(readFileSync(join(__dirname, 'subscriptions.json'), 'utf8'));
 
 // OPTIMIZATION: Enhanced throttling and batching
 let lastLogTime = 0;
@@ -314,4 +322,4 @@ class FinnhubWebSocket {
     }
 }
 
-module.exports = new FinnhubWebSocket();
+export default new FinnhubWebSocket();

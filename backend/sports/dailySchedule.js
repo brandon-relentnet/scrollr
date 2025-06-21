@@ -1,8 +1,11 @@
-require('dotenv').config();
-const schedule = require('node-schedule');
-const { getNotFinalGamesToday, areAllGamesFinal } = require('./dbQueries');
-const { ingestData } = require('./ingest');
-const { broadcastUpdatedGames } = require('./api');
+import dotenv from 'dotenv';
+import schedule from 'node-schedule';
+import { getNotFinalGamesToday, areAllGamesFinal } from './dbQueries.js';
+import { ingestData } from './ingest.js';
+import { broadcastUpdatedGames } from './api.js';
+import leagueConfigs from './leagueConfigs.js';
+
+dotenv.config();
 
 const scheduledLeagueJobs = {};
 
@@ -113,9 +116,8 @@ function startFrequentPoll(league) {
 
 // Helper to find the "slug" given a league name
 function getSlugForLeague(leagueName) {
-    const leagueConfigs = require('./leagueConfigs');
     const found = leagueConfigs.find((cfg) => cfg.name === leagueName);
     return found ? found.slug : null;
 }
 
-module.exports = { runDailySchedule };
+export { runDailySchedule };

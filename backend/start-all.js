@@ -25,17 +25,17 @@ const backends = [
     args: ["server.js"],
     logFile: path.join(logsDir, "accounts.log"),
     port: 5000,
-    readyPattern: /Accounts server running on port \d+/,
+    readyPattern: /✅ Accounts server running on port \d+/,
     urls: (port) => [`http://localhost:${port}`]
   },
   {
     name: "finance",
     dir: path.join(__dirname, "finance"),
     command: "node",
-    args: ["app.js"],
+    args: ["server.js"],
     logFile: path.join(logsDir, "finance.log"),
     port: 4001,
-    readyPattern: /✅ Trades API ready!/,
+    readyPattern: /✅ Finance API server running on port \d+/,
     urls: (port) => [
       `http://localhost:${port}/api/trades`,
       `ws://localhost:${port}/ws`,
@@ -49,7 +49,7 @@ const backends = [
     args: ["server.js"],
     logFile: path.join(logsDir, "sports.log"),
     port: 4000,
-    readyPattern: /✅ Sports API server is ready!/,
+    readyPattern: /✅ Sports API server running on port \d+/,
     urls: (port) => [
       `http://localhost:${port}/api/games`,
       `ws://localhost:${port}/ws`,
