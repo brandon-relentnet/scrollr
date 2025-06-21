@@ -130,13 +130,21 @@ dev-status:
 	fi
 	@echo ""
 	@echo "Individual Services:"
-	@for service in accounts finance sports; do \
-		if pgrep -f "node.*$$service" > /dev/null; then \
-			echo "🟢 $$service: RUNNING"; \
-		else \
-			echo "🔴 $$service: STOPPED"; \
-		fi; \
-	done
+	@if lsof -i :5000 > /dev/null 2>&1; then \
+		echo "🟢 accounts: RUNNING"; \
+	else \
+		echo "🔴 accounts: STOPPED"; \
+	fi
+	@if lsof -i :4001 > /dev/null 2>&1; then \
+		echo "🟢 finance: RUNNING"; \
+	else \
+		echo "🔴 finance: STOPPED"; \
+	fi
+	@if lsof -i :4000 > /dev/null 2>&1; then \
+		echo "🟢 sports: RUNNING"; \
+	else \
+		echo "🔴 sports: STOPPED"; \
+	fi
 	@echo ""
 	@echo "Port Status:"
 	@for port in 5000 4001 4000; do \
