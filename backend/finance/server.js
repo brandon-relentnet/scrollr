@@ -1,6 +1,7 @@
 // server.js - Standardized Finance API Server
 import { startTradesApiServer, setupGracefulShutdown } from './api.js';
 import { initializeDatabase } from './db.js';
+import { initializeDatabase as createTables } from './createTables.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import dotenv from 'dotenv';
 
@@ -52,9 +53,12 @@ async function startServer() {
     try {
         console.log('🚀 Starting Finance API Server...');
 
-        // Test database connection first
+        // Test database connection and create tables
         console.log('📊 Testing database connection...');
         await initializeDatabase();
+        
+        console.log('🗄️ Creating database tables...');
+        await createTables();
 
         // Parse command line arguments
         const options = parseCommandLineArgs();

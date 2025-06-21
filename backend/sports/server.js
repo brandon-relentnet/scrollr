@@ -4,15 +4,19 @@ import { startApiServer, broadcastUpdatedGames } from './api.js';
 import { ingestData } from './ingest.js';
 import { runDailySchedule } from './dailySchedule.js';
 import { initializeDatabase } from './db.js';
+import { initializeDatabase as createTables } from './createTables.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 async function main() {
     try {
         console.log('📌 Starting Sports API Server...');
 
-        // Test database connection first
+        // Test database connection and create tables
         console.log('📊 Testing database connection...');
         await initializeDatabase();
+        
+        console.log('🗄️ Creating database tables...');
+        await createTables();
 
         // 1. Start Express API on port 4000
         console.log('🌐 Starting HTTP server on port 4000...');

@@ -1,7 +1,7 @@
 # Scrollr Development Environment
 # =================================
 
-.PHONY: help dev-up dev-down dev-status dev-logs dev-clean install-deps check-deps container-down container-status
+.PHONY: help dev-up dev-down dev-status dev-logs dev-clean install-deps check-deps container-down container-status create-tables
 
 # Default target
 help:
@@ -22,6 +22,9 @@ help:
 	@echo "Dependencies:"
 	@echo "  make install-deps - Install dependencies for all backend services"
 	@echo "  make check-deps   - Check if dependencies are installed"
+	@echo ""
+	@echo "Database:"
+	@echo "  make create-tables - Create all database tables for backend services"
 	@echo ""
 	@echo "Frontend (WXT Extension):"
 	@echo "  npm run dev       - Start extension development server"
@@ -182,3 +185,20 @@ dev-clean:
 # Quick development cycle
 dev-restart: dev-down dev-up
 	@echo "🔄 Backend services restarted"
+
+# Create all database tables
+create-tables: check-deps
+	@echo "🗄️ Creating database tables for all backend services..."
+	@echo "This will create tables for: accounts, finance, and sports services"
+	@echo ""
+	@echo "📂 Creating accounts service tables..."
+	@cd backend/accounts && node createTables.js 2>/dev/null || echo "⚠️  Accounts service database not accessible (will be created on service startup)"
+	@echo ""
+	@echo "📂 Creating finance service tables..."
+	@cd backend/finance && node createTables.js 2>/dev/null || echo "⚠️  Finance service database not accessible (will be created on service startup)"
+	@echo ""
+	@echo "📂 Creating sports service tables..."
+	@cd backend/sports && node createTables.js 2>/dev/null || echo "⚠️  Sports service database not accessible (will be created on service startup)"
+	@echo ""
+	@echo "✅ Table creation process completed"
+	@echo "💡 Note: Tables are also created automatically when services start"
