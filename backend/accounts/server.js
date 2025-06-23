@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import { accountsConfig, validateConfig } from '../config.js';
 import { initializeDatabase } from './db.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
@@ -9,11 +9,11 @@ import authRoutes from './routes/auth.js';
 import linkedAccountsRoutes from './routes/linkedAccounts.js';
 import adminRoutes from './routes/admin.js';
 
-// Load environment variables
-dotenv.config();
+// Validate configuration
+validateConfig('accounts');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = accountsConfig.port;
 
 // Middleware
 app.use(cors());

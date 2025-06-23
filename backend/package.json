@@ -1,0 +1,10 @@
+{
+  "name": "scrollr-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Centralized configuration for Scrollr backend services",
+  "main": "config.js",
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  }
+}

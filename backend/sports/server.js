@@ -6,6 +6,10 @@ import { runDailySchedule } from './dailySchedule.js';
 import { initializeDatabase } from './db.js';
 import { initializeDatabase as createTables } from './createTables.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { sportsConfig, validateConfig } from '../config.js';
+
+// Validate configuration
+validateConfig('sports');
 
 async function main() {
     try {
@@ -18,16 +22,17 @@ async function main() {
         console.log('🗄️ Creating database tables...');
         await createTables();
 
-        // 1. Start Express API on port 4000
-        console.log('🌐 Starting HTTP server on port 4000...');
-        await startApiServer(4000);
+        // 1. Start Express API
+        const port = sportsConfig.port;
+        console.log(`🌐 Starting HTTP server on port ${port}...`);
+        await startApiServer(port);
 
         // Wait for server to be fully ready
         console.log('⏳ Waiting for server to be fully ready...');
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        console.log('✅ Sports API server running on port 4000');
-        console.log('📊 WebSocket: ws://localhost:4000/ws');
+        console.log(`✅ Sports API server running on port ${port}`);
+        console.log(`📊 WebSocket: ws://localhost:${port}/ws`);
         console.log('🌐 REST API: http://localhost:4000/api/games');
         console.log('❤️  Health: http://localhost:4000/health');
 

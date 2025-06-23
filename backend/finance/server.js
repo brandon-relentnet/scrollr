@@ -3,9 +3,10 @@ import { startTradesApiServer, setupGracefulShutdown } from './api.js';
 import { initializeDatabase } from './db.js';
 import { initializeDatabase as createTables } from './createTables.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import dotenv from 'dotenv';
+import { financeConfig, validateConfig } from '../config.js';
 
-dotenv.config();
+// Validate configuration
+validateConfig('finance');
 
 function parseCommandLineArgs() {
     const args = process.argv.slice(2);
@@ -68,7 +69,7 @@ async function startServer() {
         }
 
         // Start the trades API server
-        const port = process.env.PORT || 4001;
+        const port = financeConfig.port;
         console.log(`🌐 Starting HTTP server on port ${port}...`);
 
         const { httpServer, wss } = await startTradesApiServer(port, options);

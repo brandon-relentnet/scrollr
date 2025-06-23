@@ -3,17 +3,15 @@ import { WebSocket } from 'ws';
 import fetch from 'node-fetch';
 import cron from 'node-cron';
 import tradeService from './tradeService.js';
-import dotenv from 'dotenv';
+import { financeConfig } from '../config.js';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
+const FINNHUB_API_KEY = financeConfig.finnhubApiKey;
 const SUBSCRIPTIONS = JSON.parse(readFileSync(join(__dirname, 'subscriptions.json'), 'utf8'));
 
 // OPTIMIZATION: Enhanced throttling and batching

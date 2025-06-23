@@ -1,20 +1,13 @@
 import pkg from 'pg';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { dbConfig } from '../config.js';
 
 const { Pool } = pkg;
 
 const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_DATABASE,
+    ...dbConfig,
     // Optional pool tuning:
     max: 100,         // maximum number of clients in the pool
     idleTimeoutMillis: 30000, // how long a client is allowed to remain idle before being closed
-    ssl: { rejectUnauthorized: false }
 });
 
 // Initialize database tables

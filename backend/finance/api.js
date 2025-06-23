@@ -5,10 +5,8 @@ import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import tradeService from './tradeService.js';
 import finnhubWS from './finnhubWebSocket.js';
-import dotenv from 'dotenv';
+import { financeConfig } from '../config.js';
 import pool from './db.js';
-
-dotenv.config();
 
 let wss = null
 const clients = new Set()
@@ -304,7 +302,7 @@ async function handleGetAllTrades(ws) {
 /**
  * Server startup (unchanged)
  */
-async function startTradesApiServer(port = 4001, options = {}) {
+async function startTradesApiServer(port = financeConfig.port, options = {}) {
     const app = express()
     app.use(cors())
     app.use(express.json())

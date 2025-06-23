@@ -28,15 +28,13 @@ Three independent Node.js services that provide data to the Scrollr application 
    make install-deps
    ```
 
-2. **Setup environment files:**
+2. **Setup environment file:**
    ```bash
-   # Copy example files to actual .env files
-   cp backend/accounts/.env.example backend/accounts/.env
-   cp backend/finance/.env.example backend/finance/.env  
-   cp backend/sports/.env.example backend/sports/.env
+   # Copy the centralized example file to create your .env
+   cp .env.example .env
    ```
    
-   Edit each `.env` file with your database credentials and API keys.
+   Edit the `.env` file with your database credentials and API keys. All services now use this single configuration file.
 
 3. **Start services:**
    ```bash
