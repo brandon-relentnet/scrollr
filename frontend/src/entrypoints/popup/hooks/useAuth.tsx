@@ -51,6 +51,7 @@ export function useAuth() {
   const power = useSelector((state: any) => state.power);
   const toggles = useSelector((state: any) => state.toggles);
   const rss = useSelector((state: any) => state.rss);
+  const pinned = useSelector((state: any) => state.pinned);
 
   const currentSettings = useMemo(
     () => ({
@@ -60,8 +61,9 @@ export function useAuth() {
       power,
       toggles,
       rss,
+      pinned,
     }),
-    [theme, layout, finance, power, toggles, rss]
+    [theme, layout, finance, power, toggles, rss, pinned]
   );
 
   // Create a stable reference to prevent unnecessary effect triggers
