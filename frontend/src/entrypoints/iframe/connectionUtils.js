@@ -1,3 +1,5 @@
+import { buildUrl, buildWsUrl, SERVICE_CONFIG } from '../config/endpoints.js';
+
 /**
  * Check if a server is ready by hitting its health endpoint
  */
@@ -6,7 +8,15 @@ async function checkServerHealth(port, timeout = 5000) {
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
-        const response = await fetch(`http://localhost:${port}/health`, {
+        // Determine service by port for health check URL
+        const serviceMap = { 5000: 'accounts', 4001: 'finance', 4000: 'sports' };
+        const service = serviceMap[port];
+        if (!service) {
+            throw new Error(`Unknown service port: ${port}`);
+        }
+        const healthUrl = buildUrl(service, '/health');
+        
+        const response = await fetch(healthUrl, {
             signal: controller.signal,
             headers: {
                 'Accept': 'application/json'
@@ -63,8 +73,16 @@ async function createWebSocketConnection(port, path = '/ws') {
         throw new Error(`Server on port ${port} is not ready`);
     }
 
-    console.log(`Creating WebSocket connection to ws://localhost:${port}${path}`);
-    return new WebSocket(`ws://localhost:${port}${path}`);
+    // Determine service by port for WebSocket URL
+    const serviceMap = { 5000: 'accounts', 4001: 'finance', 4000: 'sports' };
+    const service = serviceMap[port];
+    if (!service) {
+        throw new Error(`Unknown service port: ${port}`);
+    }
+    const wsUrl = buildWsUrl(service, path);
+    
+    console.log(`Creating WebSocket connection to ${wsUrl}`);
+    return new WebSocket(wsUrl);
 }
 
 export { checkServerHealth, waitForServerReady, createWebSocketConnection };

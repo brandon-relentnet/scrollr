@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 // @ts-ignore
 import { browser } from 'wxt/browser';
-
-const API_BASE_URL = "http://localhost:5000/api";
+import { API_ENDPOINTS } from '../../config/endpoints.js';
 
 interface User {
   id: number;
@@ -74,7 +73,7 @@ export function useAuth() {
     async (token: string, settingsToSave?: any) => {
       try {
         const settings = settingsToSave || currentSettings;
-        const response = await fetch(`${API_BASE_URL}/auth/settings`, {
+        const response = await fetch(API_ENDPOINTS.accounts.auth.settings, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -101,7 +100,7 @@ export function useAuth() {
     async (token: string) => {
       setIsLoadingSettings(true);
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/settings`, {
+        const response = await fetch(API_ENDPOINTS.accounts.auth.settings, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -153,7 +152,7 @@ export function useAuth() {
           const user = JSON.parse(userData);
 
           // Verify token is still valid by fetching current user
-          const response = await fetch(`${API_BASE_URL}/auth/me`, {
+          const response = await fetch(API_ENDPOINTS.accounts.auth.me, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
@@ -302,7 +301,7 @@ export function useAuth() {
       ) {
         // For browser extensions, use synchronous fetch with keepalive
         try {
-          fetch(`${API_BASE_URL}/auth/settings`, {
+          fetch(API_ENDPOINTS.accounts.auth.settings, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${authState.token}`,
@@ -352,7 +351,7 @@ export function useAuth() {
       credentials: LoginCredentials
     ): Promise<{ success: boolean; error?: string }> => {
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        const response = await fetch(API_ENDPOINTS.accounts.auth.login, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -396,7 +395,7 @@ export function useAuth() {
       credentials: RegisterCredentials
     ): Promise<{ success: boolean; error?: string }> => {
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        const response = await fetch(API_ENDPOINTS.accounts.auth.register, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -484,7 +483,7 @@ export function useAuth() {
       profileData: Partial<Pick<User, "email" | "phone">>
     ): Promise<{ success: boolean; error?: string }> => {
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+        const response = await fetch(API_ENDPOINTS.accounts.auth.profile, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${authState.token}`,
@@ -527,7 +526,7 @@ export function useAuth() {
       newPassword: string
     ): Promise<{ success: boolean; error?: string }> => {
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/change-password`, {
+        const response = await fetch(API_ENDPOINTS.accounts.auth.changePassword, {
           method: "PUT",
           headers: {
             Authorization: `Bearer ${authState.token}`,

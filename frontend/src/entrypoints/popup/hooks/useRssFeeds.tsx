@@ -2,8 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setRssFeeds, addRssFeed, removeRssFeed, updateRssFeed } from '@/entrypoints/store/rssSlice.js';
 import { useAuth } from './useAuth.tsx';
-
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_ENDPOINTS } from '../../config/endpoints.js';
 
 interface RssFeed {
     id: number;
@@ -39,7 +38,7 @@ export function useRssFeeds() {
         setError(null);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/rss-feeds`, {
+            const response = await fetch(API_ENDPOINTS.accounts.auth.rssFeeds, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -70,7 +69,7 @@ export function useRssFeeds() {
         setError(null);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/rss-feeds`, {
+            const response = await fetch(API_ENDPOINTS.accounts.auth.rssFeeds, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -105,7 +104,7 @@ export function useRssFeeds() {
         setError(null);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/rss-feeds/${feedId}`, {
+            const response = await fetch(`${API_ENDPOINTS.accounts.auth.rssFeeds}/${feedId}`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -140,7 +139,7 @@ export function useRssFeeds() {
         setError(null);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/rss-feeds/${feedId}`, {
+            const response = await fetch(`${API_ENDPOINTS.accounts.auth.rssFeeds}/${feedId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,

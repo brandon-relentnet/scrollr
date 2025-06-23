@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useSelector } from "react-redux";
+import { WS_ENDPOINTS } from '../config/endpoints.js';
 
 // Custom hook to handle sports data and WebSocket connection
 export default function useSportsData() {
@@ -102,8 +103,8 @@ export default function useSportsData() {
             }
 
             try {
-                // Connect to sports server on port 4000
-                const ws = new WebSocket("ws://localhost:4000/ws");
+                // Connect to sports server
+                const ws = new WebSocket(WS_ENDPOINTS.sports);
                 wsRef.current = ws;
 
                 ws.onopen = function open() {

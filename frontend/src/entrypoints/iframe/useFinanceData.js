@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { STOCK_PRESETS, CRYPTO_PRESETS } from "@/entrypoints/popup/tabs/data";
 import { createWebSocketConnection } from "./connectionUtils";
+import { SERVICE_CONFIG } from '../config/endpoints.js';
 
 // OPTIMIZATION: Debounce utility
 function useDebounce(value, delay) {
@@ -263,7 +264,7 @@ export default function useFinanceData() {
       try {
         setConnectionStatus("Connecting");
 
-        const ws = await createWebSocketConnection(4001);
+        const ws = await createWebSocketConnection(SERVICE_CONFIG.finance.port);
         if (!isComponentMounted) {
           ws.close();
           return;
