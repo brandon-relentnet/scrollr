@@ -1,10 +1,8 @@
 // ingest.js is a utility file that fetches data from ESPN for the given leagues, transforms the data, and upserts it into the database.
-import dotenv from 'dotenv';
 import axios from 'axios';
 import leagueConfigs from './leagueConfigs.js';
 import { upsertGame, clearTable } from './dbQueries.js';
-
-dotenv.config();
+import { sportsConfig } from '../config.js';
 
 /**
  * Fetch data from ESPN for the given leagues,
@@ -19,7 +17,7 @@ async function ingestData(leaguesToIngest = leagueConfigs) {
   
   try {
     for (const { name, slug } of leaguesToIngest) {
-      const url = `${process.env.ESPN_API_URL}/${slug}/scoreboard`
+      const url = `${sportsConfig.espnApiUrl}/${slug}/scoreboard`
       console.log(`\x1b[34m\nFetching data for ${name} (${slug})...\x1b[0m`)
 
       const response = await axios.get(url)

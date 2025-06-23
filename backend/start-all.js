@@ -16,7 +16,7 @@ if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir);
 }
 
-// Configuration for each backend
+// Configuration for each backend service
 const backends = [
   {
     name: "accounts",
@@ -26,7 +26,10 @@ const backends = [
     logFile: path.join(logsDir, "accounts.log"),
     port: 5000,
     readyPattern: /✅ Accounts server running on port \d+/,
-    urls: (port) => [`http://localhost:${port}`]
+    urls: (port) => [
+      `http://localhost:${port}`,
+      `http://localhost:${port}/health`
+    ]
   },
   {
     name: "finance",
@@ -61,7 +64,7 @@ const backends = [
 const processes = [];
 const serverStatus = new Map(); // Track server status
 
-// Function to start a backend
+// Function to start a backend service
 function startBackend(backend) {
   console.log(`🚀 Starting ${backend.name} backend...`);
   
@@ -73,9 +76,11 @@ function startBackend(backend) {
     port: backend.port
   });
 
-  const child = spawn(backend.command, backend.args, {
+  // Start the service using npm start (which runs "node server.js")
+  const child = spawn("npm", ["start"], {
     cwd: backend.dir,
     stdio: ["pipe", "pipe", "pipe"],
+    env: { ...process.env, NODE_ENV: process.env.NODE_ENV || 'development' }
   });
 
   // Create log file streams
@@ -154,14 +159,14 @@ function startBackend(backend) {
   return child;
 }
 
-// Start all backends
+// Start all backend services
 console.log("🎯 Starting all backends...\n");
 
 backends.forEach((backend) => {
   startBackend(backend);
 });
 
-// Graceful shutdown
+// Graceful shutdown handler
 process.on("SIGINT", () => {
   console.log("\n⚡ Shutting down all backends...");
 

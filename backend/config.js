@@ -43,6 +43,8 @@ export const financeConfig = {
 export const sportsConfig = {
   port: parseInt(process.env.SPORTS_PORT) || 4000,
   nodeEnv: process.env.NODE_ENV || 'development',
+  // ESPN API configuration
+  espnApiUrl: process.env.ESPN_API_URL || 'https://site.api.espn.com/apis/site/v2/sports',
   // Optional ESPN API settings
   espnApiKey: process.env.ESPN_API_KEY,
   espnApiSecret: process.env.ESPN_API_SECRET,
@@ -67,7 +69,7 @@ export function validateConfig(serviceName) {
   const requiredByService = {
     accounts: ['JWT_SECRET', 'ACCOUNTS_PORT'],
     finance: ['FINNHUB_API_KEY', 'FINANCE_PORT'],
-    sports: ['SPORTS_PORT']
+    sports: ['ESPN_API_URL', 'SPORTS_PORT']
   };
 
   const missing = [];
