@@ -12,6 +12,7 @@ node_modules
 stats.html
 stats-*.json
 .wxt
+.claude
 web-ext.config.ts
 
 .env
