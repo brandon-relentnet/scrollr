@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scrollr API Gateway</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: white;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+      }
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+      .services {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin: 40px 0;
+      }
+      .service {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+      }
+      .service h3 {
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+      }
+      .service a {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        text-decoration: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        margin: 5px;
+        transition: background 0.3s;
+      }
+      .service a:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🚀 Scrollr API Gateway</h1>
+      <p>Welcome to the Scrollr API ecosystem</p>
+
+      <div class="services">
+        <div class="service">
+          <h3>📊 Accounts</h3>
+          <p>User authentication and management</p>
+          <a href="/api/accounts/health">Health Check</a>
+        </div>
+
+        <div class="service">
+          <h3>💰 Finance</h3>
+          <p>Market data and financial services</p>
+          <a href="/api/finance/health">Health Check</a>
+        </div>
+
+        <div class="service">
+          <h3>⚽ Sports</h3>
+          <p>Live sports data and scores</p>
+          <a href="/api/sports/health">Health Check</a>
+        </div>
+      </div>
+
+      <p>API Base URL: <strong>https://scrollr.olvyx.com</strong></p>
+    </div>
+  </body>
+</html>

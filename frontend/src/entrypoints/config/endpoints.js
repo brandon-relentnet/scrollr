@@ -7,31 +7,31 @@
 const isDevelopment = () => {
   // For browser extensions, we generally use development settings
   // unless explicitly configured otherwise
-  return true;
+  return false;
 };
 
 // Base configuration
 const BASE_CONFIG = {
   development: {
-    protocol: 'http',
-    wsProtocol: 'ws',
-    host: 'localhost',
+    protocol: "http",
+    wsProtocol: "ws",
+    host: "localhost",
     ports: {
       accounts: 5000,
       finance: 4001,
-      sports: 4000
-    }
+      sports: 4000,
+    },
   },
   production: {
-    protocol: 'https',
-    wsProtocol: 'wss',
-    host: 'your-production-domain.com', // Replace with actual production domain
+    protocol: "https",
+    wsProtocol: "wss",
+    host: import.meta.env.VITE_API_URL, // Replace with actual production domain
     ports: {
-      accounts: 443,
-      finance: 443,
-      sports: 443
-    }
-  }
+      accounts: import.meta.env.VITE_ACCOUNTS_PORT || 5000,
+      finance: import.meta.env.VITE_FINANCE_PORT || 4001,
+      sports: import.meta.env.VITE_SPORTS_PORT || 4000,
+    },
+  },
 };
 
 // Get current environment configuration
@@ -52,26 +52,26 @@ export const API_ENDPOINTS = {
       settings: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/settings`,
       profile: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/profile`,
       changePassword: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/change-password`,
-      rssFeeds: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/rss-feeds`
+      rssFeeds: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/rss-feeds`,
     },
-    health: `${config.protocol}://${config.host}:${config.ports.accounts}/health`
+    health: `${config.protocol}://${config.host}:${config.ports.accounts}/health`,
   },
   finance: {
     base: `${config.protocol}://${config.host}:${config.ports.finance}/api`,
     trades: `${config.protocol}://${config.host}:${config.ports.finance}/api/trades`,
-    health: `${config.protocol}://${config.host}:${config.ports.finance}/health`
+    health: `${config.protocol}://${config.host}:${config.ports.finance}/health`,
   },
   sports: {
     base: `${config.protocol}://${config.host}:${config.ports.sports}/api`,
     games: `${config.protocol}://${config.host}:${config.ports.sports}/api/games`,
-    health: `${config.protocol}://${config.host}:${config.ports.sports}/health`
-  }
+    health: `${config.protocol}://${config.host}:${config.ports.sports}/health`,
+  },
 };
 
 // WebSocket URLs
 export const WS_ENDPOINTS = {
   finance: `${config.wsProtocol}://${config.host}:${config.ports.finance}/ws`,
-  sports: `${config.wsProtocol}://${config.host}:${config.ports.sports}/ws`
+  sports: `${config.wsProtocol}://${config.host}:${config.ports.sports}/ws`,
 };
 
 // Service configuration for health checks and connection utils
@@ -79,39 +79,39 @@ export const SERVICE_CONFIG = {
   accounts: {
     port: config.ports.accounts,
     host: config.host,
-    protocol: config.protocol
+    protocol: config.protocol,
   },
   finance: {
     port: config.ports.finance,
     host: config.host,
     protocol: config.protocol,
-    wsProtocol: config.wsProtocol
+    wsProtocol: config.wsProtocol,
   },
   sports: {
     port: config.ports.sports,
     host: config.host,
     protocol: config.protocol,
-    wsProtocol: config.wsProtocol
-  }
+    wsProtocol: config.wsProtocol,
+  },
 };
 
 // Helper function to build custom URLs if needed
-export const buildUrl = (service, path = '') => {
+export const buildUrl = (service, path = "") => {
   const serviceConfig = SERVICE_CONFIG[service];
   if (!serviceConfig) {
     throw new Error(`Unknown service: ${service}`);
   }
-  
+
   return `${serviceConfig.protocol}://${serviceConfig.host}:${serviceConfig.port}${path}`;
 };
 
 // Helper function to build WebSocket URLs
-export const buildWsUrl = (service, path = '/ws') => {
+export const buildWsUrl = (service, path = "/ws") => {
   const serviceConfig = SERVICE_CONFIG[service];
   if (!serviceConfig) {
     throw new Error(`Unknown service: ${service}`);
   }
-  
+
   return `${serviceConfig.wsProtocol}://${serviceConfig.host}:${serviceConfig.port}${path}`;
 };
 
@@ -125,5 +125,5 @@ export default {
   SERVICE_CONFIG,
   buildUrl,
   buildWsUrl,
-  API_BASE_URL
+  API_BASE_URL,
 };
