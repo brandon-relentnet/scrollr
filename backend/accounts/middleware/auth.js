@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import pool from '../db.js';
-import { accountsConfig } from '../../config.js';
+import { accountsConfig } from '../config.js';
 
 export function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];

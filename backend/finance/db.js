@@ -1,6 +1,6 @@
 // db.js is a utility file that creates a connection pool to the database using the 'pg' library.
 import pkg from 'pg';
-import { dbConfig } from '../config.js';
+import { dbConfig } from './config.js';
 
 const { Pool } = pkg;
 

@@ -2,7 +2,7 @@
 import axios from 'axios';
 import leagueConfigs from './leagueConfigs.js';
 import { upsertGame, clearTable } from './dbQueries.js';
-import { sportsConfig } from '../config.js';
+import { sportsConfig } from './config.js';
 
 /**
  * Fetch data from ESPN for the given leagues,

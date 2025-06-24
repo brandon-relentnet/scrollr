@@ -3,7 +3,7 @@ import { startTradesApiServer, setupGracefulShutdown } from './api.js';
 import { initializeDatabase } from './db.js';
 import { initializeDatabase as createTables } from './createTables.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import { financeConfig, validateConfig } from '../config.js';
+import { financeConfig, validateConfig } from './config.js';
 
 // Validate configuration
 validateConfig('finance');

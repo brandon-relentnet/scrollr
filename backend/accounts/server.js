@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { accountsConfig, validateConfig } from '../config.js';
+import { accountsConfig, validateConfig } from './config.js';
 import { initializeDatabase } from './db.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 

@@ -3,7 +3,7 @@ import { WebSocket } from 'ws';
 import fetch from 'node-fetch';
 import cron from 'node-cron';
 import tradeService from './tradeService.js';
-import { financeConfig } from '../config.js';
+import { financeConfig } from './config.js';
 import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';

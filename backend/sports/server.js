@@ -6,7 +6,7 @@ import { runDailySchedule } from './dailySchedule.js';
 import { initializeDatabase } from './db.js';
 import { initializeDatabase as createTables } from './createTables.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import { sportsConfig, validateConfig } from '../config.js';
+import { sportsConfig, validateConfig } from './config.js';
 
 // Validate configuration
 validateConfig('sports');

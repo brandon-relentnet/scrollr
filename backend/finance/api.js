@@ -5,7 +5,7 @@ import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import tradeService from './tradeService.js';
 import finnhubWS from './finnhubWebSocket.js';
-import { financeConfig } from '../config.js';
+import { financeConfig } from './config.js';
 import pool from './db.js';
 
 let wss = null

@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import pool from '../db.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { accountsConfig } from '../../config.js';
+import { accountsConfig } from '../config.js';
 
 const router = express.Router();
 
