@@ -17,6 +17,7 @@ CLAUDE.md
 web-ext.config.ts
 
 .env
+.env.production
 
 # Editor directories and files
 .vscode/*

@@ -1,7 +1,7 @@
 # Scrollr Development Environment
 # =================================
 
-.PHONY: help dev-up dev-down dev-status dev-logs dev-clean install-deps check-deps container-down container-status create-tables
+.PHONY: help dev-up dev-down dev-status dev-logs dev-clean install-deps check-deps container-down container-status create-tables prod-up prod-down prod-status prod-logs prod-build prod-clean prod-restart
 
 # Default target
 help:
@@ -14,6 +14,15 @@ help:
 	@echo "  make dev-status  - Check status of running services"
 	@echo "  make dev-logs    - Tail logs from all services"
 	@echo "  make dev-clean   - Clean logs and reset environment"
+	@echo ""
+	@echo "Production (Docker):"
+	@echo "  make prod-build  - Build all Docker images"
+	@echo "  make prod-up     - Start production environment with Docker"
+	@echo "  make prod-down   - Stop production environment"
+	@echo "  make prod-status - Check production container status"
+	@echo "  make prod-logs   - View production logs"
+	@echo "  make prod-clean  - Clean production environment and images"
+	@echo "  make prod-restart- Restart production environment"
 	@echo ""
 	@echo "Container Management:"
 	@echo "  make container-down   - Stop and remove all containers"
@@ -202,3 +211,75 @@ create-tables: check-deps
 	@echo ""
 	@echo "✅ Table creation process completed"
 	@echo "💡 Note: Tables are also created automatically when services start"
+
+# Production Docker Commands
+# =========================
+
+# Build all Docker images
+prod-build:
+	@echo "🐳 Building Docker images for production..."
+	@echo "This will build images for: accounts, finance, and sports services"
+	@cd backend && docker-compose build --no-cache
+	@echo "✅ All Docker images built successfully"
+
+# Start production environment
+prod-up:
+	@echo "🚀 Starting Scrollr production environment with Docker..."
+	@if [ ! -f backend/.env ]; then \
+		echo "❌ Environment file backend/.env not found"; \
+		echo "   Copy backend/.env.example to backend/.env and configure it"; \
+		exit 1; \
+	fi
+	@echo "📦 Starting containers..."
+	@cd backend && docker-compose up -d
+	@echo "⏳ Waiting for services to be ready..."
+	@sleep 10
+	@echo "✅ Production environment started successfully"
+	@echo ""
+	@echo "🌐 Service URLs:"
+	@echo "   Accounts API: http://localhost:5000"
+	@echo "   Finance API:  http://localhost:4001"
+	@echo "   Sports API:   http://localhost:4000"
+	@echo "   Database:     localhost:5432"
+	@echo ""
+	@echo "💡 Use 'make prod-logs' to monitor output"
+	@echo "💡 Use 'make prod-status' to check health"
+
+# Stop production environment
+prod-down:
+	@echo "⚡ Stopping Scrollr production environment..."
+	@cd backend && docker-compose down
+	@echo "✅ Production environment stopped"
+
+# Check production status
+prod-status:
+	@echo "📊 Scrollr Production Environment Status"
+	@echo "======================================="
+	@cd backend && docker-compose ps
+	@echo ""
+	@echo "🏥 Health Checks:"
+	@echo "Testing service endpoints..."
+	@curl -s -f http://localhost:5000/health > /dev/null && echo "🟢 Accounts: HEALTHY" || echo "🔴 Accounts: UNHEALTHY"
+	@curl -s -f http://localhost:4001/health > /dev/null && echo "🟢 Finance: HEALTHY" || echo "🔴 Finance: UNHEALTHY"
+	@curl -s -f http://localhost:4000/health > /dev/null && echo "🟢 Sports: HEALTHY" || echo "🔴 Sports: UNHEALTHY"
+
+# View production logs
+prod-logs:
+	@echo "📜 Scrollr Production Logs (Ctrl+C to stop)"
+	@echo "=========================================="
+	@cd backend && docker-compose logs -f
+
+# Clean production environment
+prod-clean:
+	@echo "🧹 Cleaning Scrollr production environment..."
+	@cd backend && docker-compose down -v --remove-orphans
+	@cd backend && docker-compose rm -f
+	@echo "Removing Docker images..."
+	@docker rmi $$(docker images | grep 'backend' | awk '{print $$3}') 2>/dev/null || echo "No images to remove"
+	@echo "Cleaning Docker system..."
+	@docker system prune -f
+	@echo "✅ Production environment cleaned"
+
+# Restart production environment
+prod-restart: prod-down prod-up
+	@echo "🔄 Production environment restarted"
