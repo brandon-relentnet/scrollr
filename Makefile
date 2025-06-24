@@ -215,7 +215,7 @@ create-tables: check-deps
 prod-build:
 	@echo "🐳 Building Docker images for production..."
 	@echo "This will build images for: accounts, finance, and sports services"
-	@cd backend && docker-compose build --no-cache
+	@cd backend && docker compose build --no-cache
 	@echo "✅ All Docker images built successfully"
 
 # Start production environment
@@ -227,7 +227,7 @@ prod-up:
 		exit 1; \
 	fi
 	@echo "📦 Starting containers..."
-	@cd backend && docker-compose up -d
+	@cd backend && docker compose up -d
 	@echo "⏳ Waiting for services to be ready..."
 	@sleep 10
 	@echo "✅ Production environment started successfully"
@@ -244,14 +244,14 @@ prod-up:
 # Stop production environment
 prod-down:
 	@echo "⚡ Stopping Scrollr production environment..."
-	@cd backend && docker-compose down
+	@cd backend && docker compose down
 	@echo "✅ Production environment stopped"
 
 # Check production status
 prod-status:
 	@echo "📊 Scrollr Production Environment Status"
 	@echo "======================================="
-	@cd backend && docker-compose ps
+	@cd backend && docker compose ps
 	@echo ""
 	@echo "🏥 Health Checks:"
 	@echo "Testing service endpoints..."
@@ -263,15 +263,15 @@ prod-status:
 prod-logs:
 	@echo "📜 Scrollr Production Logs (Ctrl+C to stop)"
 	@echo "=========================================="
-	@cd backend && docker-compose logs -f
+	@cd backend && docker compose logs -f
 
 # Clean production environment
 prod-clean:
 	@echo "🧹 Cleaning Scrollr production environment..."
 	@echo "Stopping any processes on ports 4000, 4001, 5000..."
 	@sudo lsof -ti:4000,4001,5000 | xargs sudo kill -9 2>/dev/null || echo "No processes found on target ports"
-	@cd backend && docker-compose down -v --remove-orphans
-	@cd backend && docker-compose rm -f
+	@cd backend && docker compose down -v --remove-orphans
+	@cd backend && docker compose rm -f
 	@echo "Removing Docker images..."
 	@docker rmi $$(docker images | grep 'backend' | awk '{print $$3}') 2>/dev/null || echo "No images to remove"
 	@echo "Cleaning Docker system..."

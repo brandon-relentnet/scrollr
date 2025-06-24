@@ -15,6 +15,8 @@ stats-*.json
 .claude
 CLAUDE.md
 web-ext.config.ts
+letsencrypt
+/backend/data
 
 .env
 .env.production
