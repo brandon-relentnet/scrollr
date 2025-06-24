@@ -41,7 +41,7 @@ export default defineContentScript({
         iframe.style.width = "100%";
         iframe.style.position = "fixed";
         iframe.style.left = "0";
-        iframe.style.zIndex = "999999";
+        iframe.style.zIndex = "2147483647";
         iframe.style.transition = "all 0.3s ease-out";
         iframe.style.opacity = isVisible ? "1" : "0";
         iframe.style.pointerEvents = isVisible ? "auto" : "none";

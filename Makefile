@@ -268,6 +268,8 @@ prod-logs:
 # Clean production environment
 prod-clean:
 	@echo "🧹 Cleaning Scrollr production environment..."
+	@echo "Stopping any processes on ports 4000, 4001, 5000..."
+	@sudo lsof -ti:4000,4001,5000 | xargs sudo kill -9 2>/dev/null || echo "No processes found on target ports"
 	@cd backend && docker-compose down -v --remove-orphans
 	@cd backend && docker-compose rm -f
 	@echo "Removing Docker images..."
