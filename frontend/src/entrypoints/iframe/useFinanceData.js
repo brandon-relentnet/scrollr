@@ -264,7 +264,7 @@ export default function useFinanceData() {
       try {
         setConnectionStatus("Connecting");
 
-        const ws = await createWebSocketConnection(SERVICE_CONFIG.finance.port);
+        const ws = await createWebSocketConnection('finance');
         if (!isComponentMounted) {
           ws.close();
           return;

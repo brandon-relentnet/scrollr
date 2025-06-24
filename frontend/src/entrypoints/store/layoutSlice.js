@@ -5,7 +5,7 @@ const layoutSlice = createSlice({
     initialState: {
         mode: 'compact',
         speed: 'classic', // slow, classic, fast
-        position: 'top', // top, bottom
+        position: 'bottom', // top, bottom
     },
     reducers: {
         setLayout: (state, action) => {

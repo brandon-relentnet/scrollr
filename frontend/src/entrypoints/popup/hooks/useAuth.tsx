@@ -352,42 +352,83 @@ export function useAuth() {
     async (
       credentials: LoginCredentials
     ): Promise<{ success: boolean; error?: string }> => {
-      try {
-        const response = await fetch(API_ENDPOINTS.accounts.auth.login, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(credentials),
-        });
+      const maxRetries = 3;
+      let lastError: any = null;
 
-        const data = await response.json();
-
-        if (response.ok) {
-          const { token, user } = data;
-
-          // Store auth data
-          localStorage.setItem("auth_token", token);
-          localStorage.setItem("auth_user", JSON.stringify(user));
-
-          setAuthState({
-            user,
-            token,
-            isLoading: false,
-            isAuthenticated: true,
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`Login attempt ${attempt}/${maxRetries} to:`, API_ENDPOINTS.accounts.auth.login);
+          
+          const response = await fetch(API_ENDPOINTS.accounts.auth.login, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(credentials),
           });
 
-          // Load user settings from server after successful login
-          await loadSettingsFromServer(token);
+          console.log(`Login response status: ${response.status}`);
 
-          return { success: true };
-        } else {
-          return { success: false, error: data.error || "Login failed" };
+          // Handle 502/503 errors with retry
+          if (response.status >= 502 && response.status <= 504) {
+            console.warn(`Server error ${response.status} on attempt ${attempt}, retrying...`);
+            if (attempt < maxRetries) {
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // exponential backoff
+              continue;
+            }
+            return { success: false, error: `Server temporarily unavailable (${response.status}). Please try again.` };
+          }
+
+          let data;
+          try {
+            data = await response.json();
+          } catch (parseError) {
+            console.error("Failed to parse response as JSON:", parseError);
+            const text = await response.text();
+            console.error("Response text:", text.substring(0, 200));
+            
+            if (attempt < maxRetries) {
+              console.warn(`JSON parse error on attempt ${attempt}, retrying...`);
+              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+              continue;
+            }
+            return { success: false, error: "Server returned invalid response. Please try again." };
+          }
+
+          if (response.ok) {
+            const { token, user } = data;
+
+            // Store auth data
+            localStorage.setItem("auth_token", token);
+            localStorage.setItem("auth_user", JSON.stringify(user));
+
+            setAuthState({
+              user,
+              token,
+              isLoading: false,
+              isAuthenticated: true,
+            });
+
+            // Load user settings from server after successful login
+            await loadSettingsFromServer(token);
+
+            return { success: true };
+          } else {
+            return { success: false, error: data.error || "Login failed" };
+          }
+        } catch (error) {
+          console.error(`Login error on attempt ${attempt}:`, error);
+          lastError = error;
+          
+          if (attempt < maxRetries) {
+            console.warn(`Network error on attempt ${attempt}, retrying...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            continue;
+          }
         }
-      } catch (error) {
-        console.error("Login error:", error);
-        return { success: false, error: "Network error during login" };
       }
+
+      return { success: false, error: "Network error during login. Please check your connection and try again." };
     },
     [loadSettingsFromServer]
   );

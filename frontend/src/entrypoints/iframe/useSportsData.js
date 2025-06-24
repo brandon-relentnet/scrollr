@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useSelector } from "react-redux";
-import { WS_ENDPOINTS } from '../config/endpoints.js';
+import { createWebSocketConnection } from "./connectionUtils";
 
 // Custom hook to handle sports data and WebSocket connection
 export default function useSportsData() {
@@ -93,7 +93,7 @@ export default function useSportsData() {
             return;
         }
 
-        const connectWebSocket = () => {
+        const connectWebSocket = async () => {
             if (!isComponentMounted) return;
 
             // Clear any existing reconnection timeout
@@ -103,8 +103,15 @@ export default function useSportsData() {
             }
 
             try {
-                // Connect to sports server
-                const ws = new WebSocket(WS_ENDPOINTS.sports);
+                setConnectionStatus('Connecting');
+                
+                // Connect to sports server with health check
+                const ws = await createWebSocketConnection('sports');
+                if (!isComponentMounted) {
+                    ws.close();
+                    return;
+                }
+                
                 wsRef.current = ws;
 
                 ws.onopen = function open() {
@@ -152,14 +159,17 @@ export default function useSportsData() {
             } catch (error) {
                 if (!isComponentMounted) return;
                 console.error('Failed to create sports WebSocket:', error);
-                setConnectionStatus('Connection Error');
+                setConnectionStatus('Server Not Ready');
+
+                const attempt = (reconnectTimeoutRef.attempts || 0) + 1;
+                const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
 
                 reconnectTimeoutRef.current = setTimeout(() => {
                     if (isComponentMounted && hasActiveSportsToggles) {
-                        setConnectionStatus('Reconnecting');
+                        reconnectTimeoutRef.attempts = attempt;
                         connectWebSocket();
                     }
-                }, 2000);
+                }, delay);
             }
         };
 

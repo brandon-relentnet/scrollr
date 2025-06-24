@@ -5,9 +5,16 @@
 
 // Environment detection
 const isDevelopment = () => {
-  // For browser extensions, we generally use development settings
-  // unless explicitly configured otherwise
-  return false;
+  // Check if we're in development by looking for localhost or dev environment
+  if (typeof window !== 'undefined') {
+    return window.location?.hostname === 'localhost' || window.location?.hostname === '127.0.0.1';
+  }
+  
+  // For build-time/extension context, check environment variables
+  const apiUrl = import.meta.env.VITE_API_URL;
+  
+  // If API_URL contains localhost or is not set, assume development
+  return !apiUrl || apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1');
 };
 
 // Base configuration
@@ -25,11 +32,11 @@ const BASE_CONFIG = {
   production: {
     protocol: "https",
     wsProtocol: "wss",
-    host: import.meta.env.VITE_API_URL, // Replace with actual production domain
-    ports: {
-      accounts: import.meta.env.VITE_ACCOUNTS_PORT || 5000,
-      finance: import.meta.env.VITE_FINANCE_PORT || 4001,
-      sports: import.meta.env.VITE_SPORTS_PORT || 4000,
+    host: import.meta.env.VITE_API_URL, // scrollr.olvyx.com
+    paths: {
+      accounts: import.meta.env.VITE_ACCOUNTS_PORT || "/api/accounts",
+      finance: import.meta.env.VITE_FINANCE_PORT || "/api/finance",
+      sports: import.meta.env.VITE_SPORTS_PORT || "/api/sports",
     },
   },
 };
@@ -41,54 +48,69 @@ const getConfig = () => {
 
 const config = getConfig();
 
+// Helper function to build service base URL
+const buildServiceUrl = (service) => {
+  if (isDevelopment()) {
+    return `${config.protocol}://${config.host}:${config.ports[service]}`;
+  } else {
+    // Remove trailing slash from path to prevent double slashes
+    const path = config.paths[service].replace(/\/$/, '');
+    return `${config.protocol}://${config.host}${path}`;
+  }
+};
+
 // API Base URLs
 export const API_ENDPOINTS = {
   accounts: {
-    base: `${config.protocol}://${config.host}:${config.ports.accounts}/api`,
+    base: `${buildServiceUrl('accounts')}/api`,
     auth: {
-      login: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/login`,
-      register: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/register`,
-      me: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/me`,
-      settings: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/settings`,
-      profile: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/profile`,
-      changePassword: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/change-password`,
-      rssFeeds: `${config.protocol}://${config.host}:${config.ports.accounts}/api/auth/rss-feeds`,
+      login: `${buildServiceUrl('accounts')}/api/auth/login`,
+      register: `${buildServiceUrl('accounts')}/api/auth/register`,
+      me: `${buildServiceUrl('accounts')}/api/auth/me`,
+      settings: `${buildServiceUrl('accounts')}/api/auth/settings`,
+      profile: `${buildServiceUrl('accounts')}/api/auth/profile`,
+      changePassword: `${buildServiceUrl('accounts')}/api/auth/change-password`,
+      rssFeeds: `${buildServiceUrl('accounts')}/api/auth/rss-feeds`,
     },
-    health: `${config.protocol}://${config.host}:${config.ports.accounts}/health`,
+    health: `${buildServiceUrl('accounts')}/health`,
   },
   finance: {
-    base: `${config.protocol}://${config.host}:${config.ports.finance}/api`,
-    trades: `${config.protocol}://${config.host}:${config.ports.finance}/api/trades`,
-    health: `${config.protocol}://${config.host}:${config.ports.finance}/health`,
+    base: `${buildServiceUrl('finance')}/api`,
+    trades: `${buildServiceUrl('finance')}/api/trades`,
+    health: `${buildServiceUrl('finance')}/health`,
   },
   sports: {
-    base: `${config.protocol}://${config.host}:${config.ports.sports}/api`,
-    games: `${config.protocol}://${config.host}:${config.ports.sports}/api/games`,
-    health: `${config.protocol}://${config.host}:${config.ports.sports}/health`,
+    base: `${buildServiceUrl('sports')}/api`,
+    games: `${buildServiceUrl('sports')}/api/games`,
+    health: `${buildServiceUrl('sports')}/health`,
   },
 };
 
 // WebSocket URLs
 export const WS_ENDPOINTS = {
-  finance: `${config.wsProtocol}://${config.host}:${config.ports.finance}/ws`,
-  sports: `${config.wsProtocol}://${config.host}:${config.ports.sports}/ws`,
+  finance: isDevelopment() 
+    ? `${config.wsProtocol}://${config.host}:${config.ports.finance}/ws`
+    : `${config.wsProtocol}://${config.host}${config.paths.finance.replace(/\/$/, '')}/ws`,
+  sports: isDevelopment()
+    ? `${config.wsProtocol}://${config.host}:${config.ports.sports}/ws` 
+    : `${config.wsProtocol}://${config.host}${config.paths.sports.replace(/\/$/, '')}/ws`,
 };
 
 // Service configuration for health checks and connection utils
 export const SERVICE_CONFIG = {
   accounts: {
-    port: config.ports.accounts,
+    ...(isDevelopment() ? { port: config.ports.accounts } : { path: config.paths.accounts }),
     host: config.host,
     protocol: config.protocol,
   },
   finance: {
-    port: config.ports.finance,
+    ...(isDevelopment() ? { port: config.ports.finance } : { path: config.paths.finance }),
     host: config.host,
     protocol: config.protocol,
     wsProtocol: config.wsProtocol,
   },
   sports: {
-    port: config.ports.sports,
+    ...(isDevelopment() ? { port: config.ports.sports } : { path: config.paths.sports }),
     host: config.host,
     protocol: config.protocol,
     wsProtocol: config.wsProtocol,
@@ -102,7 +124,13 @@ export const buildUrl = (service, path = "") => {
     throw new Error(`Unknown service: ${service}`);
   }
 
-  return `${serviceConfig.protocol}://${serviceConfig.host}:${serviceConfig.port}${path}`;
+  if (isDevelopment()) {
+    return `${serviceConfig.protocol}://${serviceConfig.host}:${serviceConfig.port}${path}`;
+  } else {
+    // Remove trailing slash from service path to prevent double slashes
+    const cleanPath = serviceConfig.path.replace(/\/$/, '');
+    return `${serviceConfig.protocol}://${serviceConfig.host}${cleanPath}${path}`;
+  }
 };
 
 // Helper function to build WebSocket URLs
@@ -112,7 +140,13 @@ export const buildWsUrl = (service, path = "/ws") => {
     throw new Error(`Unknown service: ${service}`);
   }
 
-  return `${serviceConfig.wsProtocol}://${serviceConfig.host}:${serviceConfig.port}${path}`;
+  if (isDevelopment()) {
+    return `${serviceConfig.wsProtocol}://${serviceConfig.host}:${serviceConfig.port}${path}`;
+  } else {
+    // Remove trailing slash from service path to prevent double slashes
+    const cleanPath = serviceConfig.path.replace(/\/$/, '');
+    return `${serviceConfig.wsProtocol}://${serviceConfig.host}${cleanPath}${path}`;
+  }
 };
 
 // Legacy compatibility - for files that expect just the base URL

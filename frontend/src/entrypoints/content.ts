@@ -5,7 +5,7 @@ export default defineContentScript({
     let iframeElement: HTMLIFrameElement | null = null;
     let isVisible = true;
     let currentLayout = "compact";
-    let currentPosition = "top";
+    let currentPosition = "bottom";
 
     // Height configurations based on layout mode
     const heightConfig: { [key: string]: string } = {
@@ -28,7 +28,7 @@ export default defineContentScript({
           });
           if (response && !response.error) {
             currentLayout = response.layout;
-            currentPosition = response.position || "top";
+            currentPosition = response.position || "bottom";
             isVisible = response.power;
           }
         } catch (error) {

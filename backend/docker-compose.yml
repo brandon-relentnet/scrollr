@@ -1,16 +1,23 @@
 services:
-  nginx-proxy-manager:
-    image: "jc21/nginx-proxy-manager:latest"
-    restart: unless-stopped
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: scrollr-nginx
     ports:
       - "80:80"
-      - "81:81"
       - "443:443"
     volumes:
-      - ./data:/data
-      - ./letsencrypt:/etc/letsencrypt
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     networks:
       - scrollr-network
+    depends_on:
+      - accounts
+      - finance
+      - sports
+      - landing
+    restart: unless-stopped
 
   # Simple static landing page
   landing:
