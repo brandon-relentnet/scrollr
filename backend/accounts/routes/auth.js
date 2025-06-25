@@ -89,13 +89,17 @@ router.post('/register', async (req, res) => {
 
 // Login user
 router.post('/login', async (req, res) => {
-    console.log('🔑 LOGIN ROUTE HIT!');
-    console.log('🔑 Request body:', req.body);
+    if (accountsConfig.nodeEnv === 'development') {
+        console.log('🔑 LOGIN ROUTE HIT!');
+    }
     
     try {
         const { identifier, password } = req.body; // identifier can be email or username
-        console.log('🔑 Parsed identifier:', identifier);
-        console.log('🔑 Parsed password:', password ? '[REDACTED]' : 'undefined');
+        
+        if (accountsConfig.nodeEnv === 'development') {
+            console.log('🔑 Parsed identifier:', identifier);
+            console.log('🔑 Password provided:', password ? 'Yes' : 'No');
+        }
 
         if (!identifier || !password) {
             console.log('🔑 Missing credentials');
@@ -104,7 +108,10 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        console.log('🔑 Querying database for user...');
+        if (accountsConfig.nodeEnv === 'development') {
+            console.log('🔑 Querying database for user...');
+        }
+        
         // Find user by email or username
         const result = await pool.query(
             `SELECT id, username, email, password, phone, role_id, is_active 
@@ -113,36 +120,58 @@ router.post('/login', async (req, res) => {
             [identifier]
         );
 
-        console.log('🔑 Database query result:', result.rows.length, 'users found');
+        if (accountsConfig.nodeEnv === 'development') {
+            console.log('🔑 Database query result:', result.rows.length, 'users found');
+        }
 
         if (result.rows.length === 0) {
-            console.log('🔑 No user found with identifier:', identifier);
+            if (accountsConfig.nodeEnv === 'development') {
+                console.log('🔑 No user found with identifier:', identifier);
+            }
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         const user = result.rows[0];
-        console.log('🔑 User found:', { id: user.id, username: user.username, email: user.email, is_active: user.is_active });
+        if (accountsConfig.nodeEnv === 'development') {
+            console.log('🔑 User found:', { id: user.id, username: user.username, email: user.email, is_active: user.is_active });
+        }
 
         if (!user.is_active) {
-            console.log('🔑 User account is deactivated');
+            if (accountsConfig.nodeEnv === 'development') {
+                console.log('🔑 User account is deactivated');
+            }
             return res.status(401).json({ error: 'Account is deactivated' });
         }
 
-        console.log('🔑 Checking password...');
+        if (accountsConfig.nodeEnv === 'development') {
+            console.log('🔑 Checking password...');
+        }
+        
         // Check password
         const isValidPassword = await bcrypt.compare(password, user.password);
-        console.log('🔑 Password valid:', isValidPassword);
+        
+        if (accountsConfig.nodeEnv === 'development') {
+            console.log('🔑 Password valid:', isValidPassword);
+        }
         
         if (!isValidPassword) {
-            console.log('🔑 Invalid password for user:', identifier);
+            if (accountsConfig.nodeEnv === 'development') {
+                console.log('🔑 Invalid password for user:', identifier);
+            }
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        console.log('🔑 Generating token...');
+        if (accountsConfig.nodeEnv === 'development') {
+            console.log('🔑 Generating token...');
+        }
         const token = generateToken(user);
-        console.log('🔑 Token generated successfully');
+        if (accountsConfig.nodeEnv === 'development') {
+            console.log('🔑 Token generated successfully');
+        }
 
-        console.log('🔑 Sending successful response');
+        if (accountsConfig.nodeEnv === 'development') {
+            console.log('🔑 Sending successful response');
+        }
         res.json({
             message: 'Login successful',
             token,

@@ -86,6 +86,27 @@ export function validateConfig(serviceName) {
     });
   }
   
+  // Security validation for JWT secret
+  if (serviceName === 'accounts' && process.env.JWT_SECRET) {
+    const insecureSecrets = [
+      'your-super-secret-jwt-key-change-this-in-production',
+      'CHANGE_THIS_TO_A_SECURE_64_CHARACTER_HEX_STRING_IN_PRODUCTION',
+      'secret',
+      'jwt-secret',
+      'default'
+    ];
+    
+    if (insecureSecrets.includes(process.env.JWT_SECRET) || 
+        process.env.JWT_SECRET.length < 32) {
+      console.error('🚨 SECURITY WARNING: Insecure JWT_SECRET detected!');
+      console.error('Generate a secure secret with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+      console.error('Current JWT_SECRET is too weak and must be changed before production deployment.');
+      if (process.env.NODE_ENV === 'production') {
+        process.exit(1);
+      }
+    }
+  }
+  
   if (missing.length > 0) {
     console.error(`Missing required environment variables: ${missing.join(', ')}`);
     console.error('Please check your .env file in the backend directory');

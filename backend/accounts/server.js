@@ -19,13 +19,25 @@ const PORT = accountsConfig.port;
 app.use(cors());
 app.use(express.json());
 
-// ADD DEBUG LOGGING - This will show us exactly what requests are being received
-app.use((req, res, next) => {
-    console.log(`🔍 [${new Date().toISOString()}] ${req.method} ${req.url}`);
-    console.log(`🔍 Headers:`, JSON.stringify(req.headers, null, 2));
-    console.log(`🔍 Body:`, req.body);
-    next();
-});
+// Debug logging - only in development
+if (accountsConfig.nodeEnv === 'development') {
+    app.use((req, res, next) => {
+        console.log(`🔍 [${new Date().toISOString()}] ${req.method} ${req.url}`);
+        // Only log non-sensitive headers in development
+        const safeHeaders = { ...req.headers };
+        delete safeHeaders.authorization;
+        delete safeHeaders.cookie;
+        console.log(`🔍 Headers:`, JSON.stringify(safeHeaders, null, 2));
+        
+        // Don't log request body as it may contain passwords/tokens
+        if (req.url.includes('/auth/') || req.url.includes('/admin/')) {
+            console.log(`🔍 Body: [REDACTED - contains sensitive data]`);
+        } else {
+            console.log(`🔍 Body:`, req.body);
+        }
+        next();
+    });
+}
 
 // Routes - REMOVED /api prefix since nginx strips /api/accounts/
 app.get('/', (req, res) => {
