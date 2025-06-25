@@ -62,26 +62,26 @@ const buildServiceUrl = (service) => {
 // API Base URLs
 export const API_ENDPOINTS = {
   accounts: {
-    base: `${buildServiceUrl('accounts')}/api`,
+    base: `${buildServiceUrl('accounts')}`,
     auth: {
-      login: `${buildServiceUrl('accounts')}/api/auth/login`,
-      register: `${buildServiceUrl('accounts')}/api/auth/register`,
-      me: `${buildServiceUrl('accounts')}/api/auth/me`,
-      settings: `${buildServiceUrl('accounts')}/api/auth/settings`,
-      profile: `${buildServiceUrl('accounts')}/api/auth/profile`,
-      changePassword: `${buildServiceUrl('accounts')}/api/auth/change-password`,
-      rssFeeds: `${buildServiceUrl('accounts')}/api/auth/rss-feeds`,
+      login: `${buildServiceUrl('accounts')}/auth/login`,
+      register: `${buildServiceUrl('accounts')}/auth/register`,
+      me: `${buildServiceUrl('accounts')}/auth/me`,
+      settings: `${buildServiceUrl('accounts')}/auth/settings`,
+      profile: `${buildServiceUrl('accounts')}/auth/profile`,
+      changePassword: `${buildServiceUrl('accounts')}/auth/change-password`,
+      rssFeeds: `${buildServiceUrl('accounts')}/auth/rss-feeds`,
     },
     health: `${buildServiceUrl('accounts')}/health`,
   },
   finance: {
     base: `${buildServiceUrl('finance')}/api`,
-    trades: `${buildServiceUrl('finance')}/api/trades`,
+    trades: `${buildServiceUrl('finance')}/trades`,
     health: `${buildServiceUrl('finance')}/health`,
   },
   sports: {
     base: `${buildServiceUrl('sports')}/api`,
-    games: `${buildServiceUrl('sports')}/api/games`,
+    games: `${buildServiceUrl('sports')}/games`,
     health: `${buildServiceUrl('sports')}/health`,
   },
 };

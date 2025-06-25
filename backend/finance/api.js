@@ -308,7 +308,7 @@ async function startTradesApiServer(port = financeConfig.port, options = {}) {
     app.use(express.json())
 
     // REST API routes
-    app.get('/api/trades', async (req, res) => {
+    app.get('/trades', async (req, res) => {
         try {
             const trades = await getCachedTrades()
             res.json(trades)
@@ -318,7 +318,7 @@ async function startTradesApiServer(port = financeConfig.port, options = {}) {
         }
     })
 
-    app.get('/api/trades/symbol/:symbol', async (req, res) => {
+    app.get('/trades/symbol/:symbol', async (req, res) => {
         try {
             const symbol = req.params.symbol.toUpperCase()
             const allTrades = await getCachedTrades()

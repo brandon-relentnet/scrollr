@@ -84,7 +84,7 @@ function startApiServer(port = 4000) {
     app.use(express.json())
 
     // Optional: Keep REST API routes if you still need them
-    app.get('/api/games', async (req, res) => {
+    app.get('/games', async (req, res) => {
         try {
             const games = await getAllGamesForAPI()
             res.json(games)
@@ -94,7 +94,7 @@ function startApiServer(port = 4000) {
         }
     })
 
-    app.get('/api/games/:league', async (req, res) => {
+    app.get('/games/:league', async (req, res) => {
         try {
             const leagueName = req.params.league
             const games = await getGamesByLeague(leagueName)
