@@ -6,6 +6,7 @@ import { browser } from 'wxt/browser';
 // Import actions statically for better performance
 import { setLayout, setSpeed, setPosition } from '@/entrypoints/store/layoutSlice.js';
 import { setPower } from '@/entrypoints/store/powerSlice.js';
+import debugLogger, { DEBUG_CATEGORIES } from '@/entrypoints/utils/debugLogger.js';
 
 type RootState = ReturnType<typeof rootReducer>;
 type AppStore = EnhancedStore<RootState>;
@@ -13,7 +14,7 @@ type AppStore = EnhancedStore<RootState>;
 let store: AppStore | undefined;
 
 export default defineBackground(() => {
-  console.log('Hello background!', { id: browser.runtime.id });
+  debugLogger.info(DEBUG_CATEGORIES.STORAGE, 'Background script initialized', { id: browser.runtime.id });
 
   void initializeStore();
 
@@ -97,7 +98,7 @@ export default defineBackground(() => {
         }
       }
     } catch (error) {
-      console.error('Failed to notify content scripts:', error);
+      debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Failed to notify content scripts', error);
     }
   }
 
@@ -117,7 +118,7 @@ export default defineBackground(() => {
         }
       }
     } catch (error) {
-      console.error('Failed to notify content scripts of logout:', error);
+      debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Failed to notify content scripts of logout', error);
     }
   }
 });
@@ -137,13 +138,13 @@ async function initializeStore() {
         const state = store!.getState();
         await storage.setItem('local:appState', state);
       } catch (error) {
-        console.error('Failed to save state to storage:', error);
+        debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Failed to save state to storage', error);
       }
     });
 
-    console.log('Store initialized successfully');
+    debugLogger.info(DEBUG_CATEGORIES.STORAGE, 'Store initialized successfully');
   } catch (error) {
-    console.error('Failed to initialize store:', error);
+    debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Failed to initialize store', error);
     store = configureStore({ reducer: rootReducer });
   }
 }

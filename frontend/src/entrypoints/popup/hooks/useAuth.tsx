@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 // @ts-ignore
 import { browser } from 'wxt/browser';
 import { API_ENDPOINTS } from '../../config/endpoints.js';
+import debugLogger, { DEBUG_CATEGORIES } from "../../utils/debugLogger.js";
 
 interface User {
   id: number;
@@ -88,10 +89,10 @@ export function useAuth() {
         });
 
         if (!response.ok) {
-          console.error("Failed to save settings to server");
+          debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Failed to save settings to server');
         }
       } catch (error) {
-        console.error("Error saving settings to server:", error);
+        debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Error saving settings to server', error);
       }
     },
     [currentSettings]
@@ -122,7 +123,7 @@ export function useAuth() {
               }
             });
 
-            console.log("Settings loaded from server and applied");
+            debugLogger.authEvent('Settings loaded from server and applied');
           } else {
             // If no server settings exist, save current local settings to server
             await saveSettingsToServer(token);
@@ -132,7 +133,7 @@ export function useAuth() {
           }
         }
       } catch (error) {
-        console.error("Error loading settings from server:", error);
+        debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Error loading settings from server', error);
         // If there's an error loading settings, save current local settings as backup
         await saveSettingsToServer(token);
       } finally {
@@ -190,7 +191,7 @@ export function useAuth() {
           }));
         }
       } catch (error) {
-        console.error("Auth initialization error:", error);
+        debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Auth initialization error', error);
         setAuthState({
           user: null,
           token: null,
@@ -232,11 +233,11 @@ export function useAuth() {
     }
 
     try {
-      console.log("Immediately saving settings to server");
+      debugLogger.authEvent('Immediately saving settings to server');
       await saveSettingsToServer(authState.token!);
       setLastSavedSettings(settingsRef.current);
     } catch (error) {
-      console.error("Immediate save failed:", error);
+      debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Immediate save failed', error);
     }
   }, [
     currentSettings,
@@ -271,11 +272,11 @@ export function useAuth() {
     // Debounce auto-save to prevent excessive API calls
     const timeoutId = setTimeout(async () => {
       try {
-        console.log("Auto-saving settings to server");
+        debugLogger.authEvent('Auto-saving settings to server');
         await saveSettingsToServer(authState.token!);
         setLastSavedSettings(settingsRef.current);
       } catch (error) {
-        console.error("Auto-save failed:", error);
+        debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Auto-save failed', error);
       }
     }, 500); // Reduced from 2000ms to 500ms for better responsiveness
 

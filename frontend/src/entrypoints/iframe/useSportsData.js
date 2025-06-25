@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useSelector } from "react-redux";
 import { createWebSocketConnection } from "./connectionUtils";
+import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
 
 // Custom hook to handle sports data and WebSocket connection
 export default function useSportsData() {
@@ -124,7 +125,7 @@ export default function useSportsData() {
                 ws.onclose = function close(event) {
                     if (!isComponentMounted) return;
 
-                    console.log("Sports WebSocket disconnected", event.code);
+                    debugLogger.websocketEvent('Sports WebSocket disconnected', { code: event.code });
                     setConnectionStatus('Disconnected');
 
                     // Only try to reconnect if we still have active sports toggles and it wasn't a manual close
@@ -142,30 +143,32 @@ export default function useSportsData() {
                     if (!isComponentMounted) return;
                     try {
                         const receivedData = JSON.parse(event.data);
-                        console.log("Received Sports WebSocket data:", {
+                        debugLogger.websocketEvent('Received Sports data', {
                             type: receivedData.type,
                             count: receivedData.data?.length || receivedData.count,
                             dataPreview: receivedData.data?.slice(0, 2),
                         });
                         
                         if (receivedData.type === "filtered_data") {
-                            console.log("Updating sportsData with:", receivedData.data?.length, "items");
+                            debugLogger.stateChange('Updating sportsData', {
+                                itemCount: receivedData.data?.length
+                            });
                             setSportsData(receivedData.data || []);
                         }
                     } catch (error) {
-                        console.error('Sports WebSocket message parse error:', error);
+                        debugLogger.error(DEBUG_CATEGORIES.WEBSOCKET, 'Sports WebSocket message parse error', error);
                     }
                 };
 
                 ws.onerror = function error(err) {
                     if (!isComponentMounted) return;
-                    console.error('Sports WebSocket error:', err);
+                    debugLogger.error(DEBUG_CATEGORIES.WEBSOCKET, 'Sports WebSocket error', err);
                     setConnectionStatus('Connection Error');
                 };
 
             } catch (error) {
                 if (!isComponentMounted) return;
-                console.error('Failed to create sports WebSocket:', error);
+                debugLogger.error(DEBUG_CATEGORIES.WEBSOCKET, 'Failed to create sports WebSocket', error);
                 setConnectionStatus('Server Not Ready');
 
                 const attempt = (reconnectTimeoutRef.attempts || 0) + 1;

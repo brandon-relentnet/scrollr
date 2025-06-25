@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { STOCK_PRESETS, CRYPTO_PRESETS } from "@/entrypoints/popup/tabs/data";
 import { createWebSocketConnection } from "./connectionUtils";
 import { SERVICE_CONFIG } from '../config/endpoints.js';
+import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
 
 // OPTIMIZATION: Debounce utility
 function useDebounce(value, delay) {
@@ -115,7 +116,7 @@ function useStableFinanceFilters(financeState) {
       currentFilters.some((filter, index) => filter !== stableFilters[index]);
 
     if (filtersChanged) {
-      console.log("Finance filters changed:", {
+      debugLogger.stateChange('Finance filters', {
         from: stableFilters.length,
         to: currentFilters.length,
         new: currentFilters.slice(0, 3), // First 3 for debugging
@@ -189,7 +190,7 @@ export default function useFinanceData() {
       }
 
       lastSentFiltersRef.current = filtersString;
-      console.log("Sending filter request:", {
+      debugLogger.websocketEvent('Sending filter request', {
         count: financeOnlyFilters.length,
         first3: financeOnlyFilters.slice(0, 3),
       });
@@ -274,7 +275,7 @@ export default function useFinanceData() {
 
         ws.onopen = () => {
           if (!isComponentMounted) return;
-          console.log("WebSocket connected, sending initial request");
+          debugLogger.websocketEvent('Connected, sending initial request');
           setConnectionStatus("Connected");
           reconnectTimeoutRef.attempts = 0;
           lastSentFiltersRef.current = "";
@@ -307,7 +308,7 @@ export default function useFinanceData() {
 
           try {
             const receivedData = JSON.parse(event.data);
-            console.log("Received WebSocket data:", {
+            debugLogger.websocketEvent('Received data', {
               type: receivedData.type,
               count: receivedData.data?.length || receivedData.count,
               dataPreview: receivedData.data?.slice(0, 2),
@@ -318,11 +319,14 @@ export default function useFinanceData() {
               case "filtered_data":
               case "financial_update":
               case "all_trades_data":
-                console.log("Updating tradesData with:", receivedData.type, receivedData.data?.length, "items");
+                debugLogger.stateChange('Updating tradesData', {
+                  type: receivedData.type,
+                  itemCount: receivedData.data?.length
+                });
                 setTradesData(receivedData);
                 break;
               case "connection_confirmed":
-                console.log("Connection confirmed, sending current filters");
+                debugLogger.websocketEvent('Connection confirmed, sending current filters');
                 // FIX: Send current filters immediately, not debounced ones
                 if (financeFilters.length > 0) {
                   sendFilterRequest(financeFilters);
@@ -330,18 +334,18 @@ export default function useFinanceData() {
                 break;
             }
           } catch (err) {
-            console.error("Message parse error:", err);
+            debugLogger.error(DEBUG_CATEGORIES.WEBSOCKET, 'Message parse error', err);
           }
         };
 
         ws.onerror = (error) => {
           if (!isComponentMounted) return;
-          console.error("WebSocket error:", error);
+          debugLogger.error(DEBUG_CATEGORIES.WEBSOCKET, 'WebSocket error', error);
           setConnectionStatus("Connection Error");
         };
       } catch (error) {
         if (!isComponentMounted) return;
-        console.error("Failed to create WebSocket connection:", error);
+        debugLogger.error(DEBUG_CATEGORIES.WEBSOCKET, 'Failed to create WebSocket connection', error);
         setConnectionStatus("Server Not Ready");
 
         const attempt = (reconnectTimeoutRef.attempts || 0) + 1;
@@ -372,7 +376,7 @@ export default function useFinanceData() {
 
   // FIX: Add debug logging for state changes
   useEffect(() => {
-    console.log("useFinanceData state:", {
+    debugLogger.stateChange('useFinanceData', {
       hasFilters: hasFinanceFilters,
       filterCount: financeFilters.length,
       debouncedCount: debouncedFinanceFilters.length,
