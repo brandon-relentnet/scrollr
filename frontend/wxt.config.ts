@@ -13,7 +13,7 @@ export default defineConfig({
     ],
     permissions: ['storage']
   },
-  modules: ["@wxt-dev/module-react", '@wxt-dev/webextension-polyfill'],
+  modules: ["@wxt-dev/module-react"],
   srcDir: 'src',
   vite: () => ({
     plugins: [tailwindcss()],

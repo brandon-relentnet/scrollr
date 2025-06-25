@@ -1,13 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
 import loadState, { saveState } from './extensionStorage.js';
+import rootReducer from '@/entrypoints/store/rootReducer.js';
 
-import themeReducer from '@/entrypoints/store/themeSlice.js';
-
-// Create store with default state first
+// Create store with all reducers
 const store = configureStore({
-    reducer: {
-        theme: themeReducer,
-    },
+    reducer: rootReducer,
     // No preloadedState - we'll load it asynchronously
 });
 

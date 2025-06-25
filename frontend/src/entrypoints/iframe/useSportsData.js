@@ -142,7 +142,14 @@ export default function useSportsData() {
                     if (!isComponentMounted) return;
                     try {
                         const receivedData = JSON.parse(event.data);
+                        console.log("Received Sports WebSocket data:", {
+                            type: receivedData.type,
+                            count: receivedData.data?.length || receivedData.count,
+                            dataPreview: receivedData.data?.slice(0, 2),
+                        });
+                        
                         if (receivedData.type === "filtered_data") {
+                            console.log("Updating sportsData with:", receivedData.data?.length, "items");
                             setSportsData(receivedData.data || []);
                         }
                     } catch (error) {

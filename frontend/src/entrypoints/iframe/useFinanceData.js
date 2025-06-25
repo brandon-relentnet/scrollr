@@ -307,16 +307,18 @@ export default function useFinanceData() {
 
           try {
             const receivedData = JSON.parse(event.data);
-            //console.log("Received data:", {
-            //  type: receivedData.type,
-            //  count: receivedData.count,
-            //});
+            console.log("Received WebSocket data:", {
+              type: receivedData.type,
+              count: receivedData.data?.length || receivedData.count,
+              dataPreview: receivedData.data?.slice(0, 2),
+            });
 
             switch (receivedData.type) {
               case "initial_data":
               case "filtered_data":
               case "financial_update":
               case "all_trades_data":
+                console.log("Updating tradesData with:", receivedData.type, receivedData.data?.length, "items");
                 setTradesData(receivedData);
                 break;
               case "connection_confirmed":

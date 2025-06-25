@@ -3,6 +3,9 @@ import { storage } from '#imports';
 import rootReducer from '@/entrypoints/store/rootReducer.js';
 // @ts-ignore
 import { browser } from 'wxt/browser';
+// Import actions statically for better performance
+import { setLayout, setSpeed, setPosition } from '@/entrypoints/store/layoutSlice.js';
+import { setPower } from '@/entrypoints/store/powerSlice.js';
 
 type RootState = ReturnType<typeof rootReducer>;
 type AppStore = EnhancedStore<RootState>;
@@ -35,22 +38,18 @@ export default defineBackground(() => {
       sendResponse({ layout: 'state', power: true, state: store.getState() });
       notifyContentScripts();
     } else if (message.type === 'LAYOUT_CHANGED') {
-      const { setLayout } = require('@/entrypoints/store/layoutSlice');
       store.dispatch(setLayout(message.layout));
       sendResponse({ layout: 'success', power: true, success: true });
       notifyContentScripts();
     } else if (message.type === 'POWER_TOGGLED') {
-      const { setPower } = require('@/entrypoints/store/powerSlice');
       store.dispatch(setPower(message.power));
       sendResponse({ layout: 'success', power: true, success: true });
       notifyContentScripts();
     } else if (message.type === 'SPEED_CHANGED') {
-      const { setSpeed } = require('@/entrypoints/store/layoutSlice');
       store.dispatch(setSpeed(message.speed));
       sendResponse({ layout: 'success', power: true, success: true });
       notifyContentScripts();
     } else if (message.type === 'POSITION_CHANGED') {
-      const { setPosition } = require('@/entrypoints/store/layoutSlice');
       store.dispatch(setPosition(message.position));
       sendResponse({ layout: 'success', power: true, success: true });
       notifyContentScripts();
