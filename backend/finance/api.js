@@ -331,25 +331,36 @@ async function startTradesApiServer(port = financeConfig.port, options = {}) {
     })
 
     // Health check endpoint
-    app.get('/health', (req, res) => {
+    app.get('/health', async (req, res) => {
         const health = {
             status: 'healthy',
             timestamp: Date.now(),
+            service: 'finance',
+            version: '1.0.0',
             message: 'Trades API server is running',
+            uptime: process.uptime(),
+            memory_usage: process.memoryUsage(),
             websocket_clients: clients.size,
             cache_size: filterCache.size,
             trades_cache_age: tradesCache.timestamp ? Date.now() - tradesCache.timestamp : 0,
-            database_connected: false, // Add DB health check
-            finnhub_connected: false   // Add Finnhub connection status
+            database_connected: false,
+            finnhub_connected: false,
+            finnhub_api_key_configured: false,
+            environment: process.env.NODE_ENV || 'development'
         };
 
-        // Check database connection
-        pool.query('SELECT 1', (err) => {
-            health.database_connected = !err;
+        try {
+            // Check database connection
+            await pool.query('SELECT 1');
+            health.database_connected = true;
 
             // Check Finnhub connection
             health.finnhub_connected = finnhubWS.socket &&
                 finnhubWS.socket.readyState === WebSocket.OPEN;
+
+            // Check Finnhub API key configuration
+            const { financeConfig } = await import('./config.js');
+            health.finnhub_api_key_configured = !!(financeConfig.finnhubApiKey && financeConfig.finnhubApiKey.length > 0);
 
             // Set status based on critical components
             if (!health.database_connected) {
@@ -358,8 +369,25 @@ async function startTradesApiServer(port = financeConfig.port, options = {}) {
                 return res.status(503).json(health);
             }
 
+            if (!health.finnhub_api_key_configured) {
+                health.status = 'degraded';
+                health.message = 'Finnhub API key not configured - real-time data unavailable';
+                return res.status(200).json(health);
+            }
+
+            if (!health.finnhub_connected && health.finnhub_api_key_configured) {
+                health.status = 'degraded';
+                health.message = 'Finnhub WebSocket disconnected - real-time data may be delayed';
+            }
+
             res.json(health);
-        });
+            
+        } catch (error) {
+            health.status = 'unhealthy';
+            health.database_connected = false;
+            health.message = `Health check failed: ${error.message}`;
+            res.status(503).json(health);
+        }
     });
 
     const httpServer = http.createServer(app)

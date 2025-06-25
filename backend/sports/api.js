@@ -109,20 +109,54 @@ function startApiServer(port = 4000) {
         const health = {
             status: 'healthy',
             timestamp: Date.now(),
+            service: 'sports',
+            version: '1.0.0',
             message: 'Sports API server is running',
+            uptime: process.uptime(),
+            memory_usage: process.memoryUsage(),
             websocket_clients: clients.size,
-            database_connected: false
+            database_connected: false,
+            espn_api_accessible: false,
+            environment: process.env.NODE_ENV || 'development'
         };
 
         try {
             // Test database connection
             await pool.query('SELECT 1');
             health.database_connected = true;
+
+            // Test ESPN API connectivity
+            try {
+                const { sportsConfig } = await import('./config.js');
+                const testUrl = `${sportsConfig.espnApiUrl}/basketball/nba/scoreboard`;
+                const response = await fetch(testUrl, {
+                    method: 'HEAD',
+                    timeout: 5000
+                });
+                health.espn_api_accessible = response.ok;
+            } catch (espnError) {
+                console.warn('ESPN API connectivity test failed:', espnError.message);
+                health.espn_api_accessible = false;
+            }
+
+            // Set overall status based on critical components
+            if (!health.database_connected) {
+                health.status = 'unhealthy';
+                health.message = 'Database connection failed';
+                return res.status(503).json(health);
+            }
+
+            if (!health.espn_api_accessible) {
+                health.status = 'degraded';
+                health.message = 'ESPN API not accessible - some features may be limited';
+            }
+
             res.json(health);
+            
         } catch (error) {
             health.status = 'unhealthy';
             health.database_connected = false;
-            health.message = 'Database connection failed';
+            health.message = `Health check failed: ${error.message}`;
             res.status(503).json(health);
         }
     });

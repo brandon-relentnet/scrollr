@@ -646,17 +646,20 @@
           <span class="environment-badge" id="environment">Production</span>
         </div>
         <div class="health-monitor" id="health-monitor">
-          <div class="health-item" data-service="accounts">
+          <div class="health-item" data-service="accounts" title="Accounts Service Status">
             <span class="health-dot" id="health-accounts"></span>
             <span>Accounts</span>
+            <span class="health-details" id="health-accounts-details" style="font-size: 0.75rem; color: #999; margin-left: 0.25rem;"></span>
           </div>
-          <div class="health-item" data-service="finance">
+          <div class="health-item" data-service="finance" title="Finance Service Status">
             <span class="health-dot" id="health-finance"></span>
             <span>Finance</span>
+            <span class="health-details" id="health-finance-details" style="font-size: 0.75rem; color: #999; margin-left: 0.25rem;"></span>
           </div>
-          <div class="health-item" data-service="sports">
+          <div class="health-item" data-service="sports" title="Sports Service Status">
             <span class="health-dot" id="health-sports"></span>
             <span>Sports</span>
+            <span class="health-details" id="health-sports-details" style="font-size: 0.75rem; color: #999; margin-left: 0.25rem;"></span>
           </div>
         </div>
       </div>
@@ -965,24 +968,134 @@ Click "Send Request" to test an API endpoint...</pre
           </div>
 
           <div class="section-title" style="margin-top: 2rem">
-            Quick Examples
+            Quick Commands - Health & Status
           </div>
           <div class="examples-grid">
-            <div class="example-card" onclick="loadExample('health-check')">
-              <div class="example-title">Health Check</div>
+            <div class="example-card" onclick="loadExample('accounts-health')">
+              <div class="example-title">Accounts Health</div>
               <div class="example-code">GET /api/accounts/health</div>
+            </div>
+            <div class="example-card" onclick="loadExample('finance-health')">
+              <div class="example-title">Finance Health</div>
+              <div class="example-code">GET /api/finance/health</div>
+            </div>
+            <div class="example-card" onclick="loadExample('sports-health')">
+              <div class="example-title">Sports Health</div>
+              <div class="example-code">GET /api/sports/health</div>
+            </div>
+            <div class="example-card" onclick="loadExample('accounts-root')">
+              <div class="example-title">Accounts Service</div>
+              <div class="example-code">GET /api/accounts/</div>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem">
+            Quick Commands - Authentication
+          </div>
+          <div class="examples-grid">
+            <div class="example-card" onclick="loadExample('register')">
+              <div class="example-title">Register User</div>
+              <div class="example-code">POST /api/accounts/auth/register</div>
             </div>
             <div class="example-card" onclick="loadExample('login')">
               <div class="example-title">User Login</div>
               <div class="example-code">POST /api/accounts/auth/login</div>
             </div>
-            <div class="example-card" onclick="loadExample('trades')">
-              <div class="example-title">Get Trades</div>
+            <div class="example-card" onclick="loadExample('profile')">
+              <div class="example-title">Get Profile</div>
+              <div class="example-code">GET /api/accounts/auth/me</div>
+            </div>
+            <div class="example-card" onclick="loadExample('update-profile')">
+              <div class="example-title">Update Profile</div>
+              <div class="example-code">PUT /api/accounts/auth/profile</div>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem">
+            Quick Commands - Finance Data
+          </div>
+          <div class="examples-grid">
+            <div class="example-card" onclick="loadExample('all-trades')">
+              <div class="example-title">All Trades</div>
               <div class="example-code">GET /api/finance/trades</div>
             </div>
-            <div class="example-card" onclick="loadExample('games')">
-              <div class="example-title">Get Games</div>
+            <div class="example-card" onclick="loadExample('aapl-trades')">
+              <div class="example-title">AAPL Trades</div>
+              <div class="example-code">GET /api/finance/trades/symbol/AAPL</div>
+            </div>
+            <div class="example-card" onclick="loadExample('googl-trades')">
+              <div class="example-title">GOOGL Trades</div>
+              <div class="example-code">GET /api/finance/trades/symbol/GOOGL</div>
+            </div>
+            <div class="example-card" onclick="loadExample('tsla-trades')">
+              <div class="example-title">TSLA Trades</div>
+              <div class="example-code">GET /api/finance/trades/symbol/TSLA</div>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem">
+            Quick Commands - Sports Data
+          </div>
+          <div class="examples-grid">
+            <div class="example-card" onclick="loadExample('all-games')">
+              <div class="example-title">All Games</div>
               <div class="example-code">GET /api/sports/games</div>
+            </div>
+            <div class="example-card" onclick="loadExample('nfl-games')">
+              <div class="example-title">NFL Games</div>
+              <div class="example-code">GET /api/sports/games/NFL</div>
+            </div>
+            <div class="example-card" onclick="loadExample('nba-games')">
+              <div class="example-title">NBA Games</div>
+              <div class="example-code">GET /api/sports/games/NBA</div>
+            </div>
+            <div class="example-card" onclick="loadExample('mlb-games')">
+              <div class="example-title">MLB Games</div>
+              <div class="example-code">GET /api/sports/games/MLB</div>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem">
+            Quick Commands - User Settings
+          </div>
+          <div class="examples-grid">
+            <div class="example-card" onclick="loadExample('get-settings')">
+              <div class="example-title">Get Settings</div>
+              <div class="example-code">GET /api/accounts/auth/settings</div>
+            </div>
+            <div class="example-card" onclick="loadExample('update-settings')">
+              <div class="example-title">Update Settings</div>
+              <div class="example-code">POST /api/accounts/auth/settings</div>
+            </div>
+            <div class="example-card" onclick="loadExample('get-rss')">
+              <div class="example-title">Get RSS Feeds</div>
+              <div class="example-code">GET /api/accounts/auth/rss-feeds</div>
+            </div>
+            <div class="example-card" onclick="loadExample('add-rss')">
+              <div class="example-title">Add RSS Feed</div>
+              <div class="example-code">POST /api/accounts/auth/rss-feeds</div>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem">
+            Quick Commands - Admin (Auth Required)
+          </div>
+          <div class="examples-grid">
+            <div class="example-card" onclick="loadExample('admin-users')">
+              <div class="example-title">All Users</div>
+              <div class="example-code">GET /api/accounts/admin/users</div>
+            </div>
+            <div class="example-card" onclick="loadExample('admin-stats')">
+              <div class="example-title">System Stats</div>
+              <div class="example-code">GET /api/accounts/admin/stats</div>
+            </div>
+            <div class="example-card" onclick="loadExample('linked-accounts')">
+              <div class="example-title">Linked Accounts</div>
+              <div class="example-code">GET /api/accounts/linked-accounts</div>
+            </div>
+            <div class="example-card" onclick="loadExample('change-password')">
+              <div class="example-title">Change Password</div>
+              <div class="example-code">PUT /api/accounts/auth/change-password</div>
             </div>
           </div>
         </div>
@@ -1066,62 +1179,71 @@ Click "Send Request" to test an API endpoint...</pre
       <!-- Documentation Tab -->
       <div id="documentation" class="tab-content">
         <div class="doc-section">
-          <h2 style="margin-bottom: 1.5rem">API Documentation</h2>
+          <h2 style="margin-bottom: 1.5rem">Complete API Documentation</h2>
+          <p style="color: #999; margin-bottom: 2rem;">Comprehensive documentation for all 35 endpoints across all services</p>
 
           <div class="section-title" style="margin-bottom: 1rem">
-            Authentication
+            🏥 Health & Status Endpoints
+          </div>
+          <div class="endpoint-docs">
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/accounts/health</span>
+              </div>
+              <p class="endpoint-description">Comprehensive accounts service health check with database connectivity, JWT configuration, uptime metrics, and memory usage</p>
+              <div style="margin-top: 0.5rem; color: #4ade80; font-family: monospace; font-size: 0.875rem;">
+                Status States: healthy | degraded | unhealthy<br>
+                Dependencies: PostgreSQL database, JWT secret validation<br>
+                Returns: service info, uptime, memory usage, environment details
+              </div>
+            </div>
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/finance/health</span>
+              </div>
+              <p class="endpoint-description">Advanced finance service health with database, Finnhub WebSocket status, cache metrics, and real-time client monitoring</p>
+              <div style="margin-top: 0.5rem; color: #4ade80; font-family: monospace; font-size: 0.875rem;">
+                Status States: healthy | degraded | unhealthy<br>
+                Dependencies: PostgreSQL database, Finnhub API, WebSocket connections<br>
+                Returns: client count, cache metrics, trade data age, connection status
+              </div>
+            </div>
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/sports/health</span>
+              </div>
+              <p class="endpoint-description">Enhanced sports service health with database, ESPN API accessibility, and WebSocket client tracking</p>
+              <div style="margin-top: 0.5rem; color: #4ade80; font-family: monospace; font-size: 0.875rem;">
+                Status States: healthy | degraded | unhealthy<br>
+                Dependencies: PostgreSQL database, ESPN API access<br>
+                Returns: client count, API accessibility status, service metrics
+              </div>
+            </div>
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/sports/health</span>
+              </div>
+              <p class="endpoint-description">Sports service health with database connection status</p>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem; margin-bottom: 1rem">
+            👤 Authentication Endpoints
           </div>
           <div class="endpoint-docs">
             <div class="endpoint-doc">
               <div class="endpoint-header">
                 <span class="method-badge post">POST</span>
-                <span class="endpoint-path">/api/accounts/auth/login</span>
-              </div>
-              <p class="endpoint-description">
-                Authenticate user and receive JWT token
-              </p>
-              <table class="param-table">
-                <thead>
-                  <tr>
-                    <th>Parameter</th>
-                    <th>Type</th>
-                    <th>Required</th>
-                    <th>Description</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="param-name">identifier</td>
-                    <td class="param-type">string</td>
-                    <td><span class="param-required">Required</span></td>
-                    <td>Email or username</td>
-                  </tr>
-                  <tr>
-                    <td class="param-name">password</td>
-                    <td class="param-type">string</td>
-                    <td><span class="param-required">Required</span></td>
-                    <td>User password</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="endpoint-doc">
-              <div class="endpoint-header">
-                <span class="method-badge post">POST</span>
-                <span class="endpoint-path"
-                  >/api/accounts/auth/register</span
-                >
+                <span class="endpoint-path">/api/accounts/auth/register</span>
               </div>
               <p class="endpoint-description">Create a new user account</p>
               <table class="param-table">
                 <thead>
-                  <tr>
-                    <th>Parameter</th>
-                    <th>Type</th>
-                    <th>Required</th>
-                    <th>Description</th>
-                  </tr>
+                  <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
                 </thead>
                 <tbody>
                   <tr>
@@ -1151,27 +1273,256 @@ Click "Send Request" to test an API endpoint...</pre
                 </tbody>
               </table>
             </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge post">POST</span>
+                <span class="endpoint-path">/api/accounts/auth/login</span>
+              </div>
+              <p class="endpoint-description">Authenticate user and receive JWT token</p>
+              <table class="param-table">
+                <thead>
+                  <tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="param-name">identifier</td>
+                    <td class="param-type">string</td>
+                    <td><span class="param-required">Required</span></td>
+                    <td>Email or username</td>
+                  </tr>
+                  <tr>
+                    <td class="param-name">password</td>
+                    <td class="param-type">string</td>
+                    <td><span class="param-required">Required</span></td>
+                    <td>User password</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/accounts/auth/me</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Get current user profile information</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge put">PUT</span>
+                <span class="endpoint-path">/api/accounts/auth/profile</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Update user profile information</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge put">PUT</span>
+                <span class="endpoint-path">/api/accounts/auth/change-password</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Change user password</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge delete">DELETE</span>
+                <span class="endpoint-path">/api/accounts/auth/account</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Delete user account (requires password confirmation)</p>
+            </div>
           </div>
 
-          <div
-            class="section-title"
-            style="margin-top: 2rem; margin-bottom: 1rem"
-          >
-            WebSocket Events
+          <div class="section-title" style="margin-top: 2rem; margin-bottom: 1rem">
+            ⚙️ User Settings & RSS Endpoints
+          </div>
+          <div class="endpoint-docs">
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/accounts/auth/settings</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Get user settings and preferences</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge post">POST</span>
+                <span class="endpoint-path">/api/accounts/auth/settings</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Save user settings and preferences</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/accounts/auth/rss-feeds</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Get user's RSS feed list</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge post">POST</span>
+                <span class="endpoint-path">/api/accounts/auth/rss-feeds</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Add new RSS feed to user's list</p>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem; margin-bottom: 1rem">
+            🔗 Linked Accounts Endpoints
+          </div>
+          <div class="endpoint-docs">
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/accounts/linked-accounts</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Get user's linked external accounts</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge post">POST</span>
+                <span class="endpoint-path">/api/accounts/linked-accounts</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Add/update linked external account</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge delete">DELETE</span>
+                <span class="endpoint-path">/api/accounts/linked-accounts/:serviceName</span>
+                <span style="background: #764ba2; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">AUTH</span>
+              </div>
+              <p class="endpoint-description">Remove linked external account</p>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem; margin-bottom: 1rem">
+            🛡️ Admin Endpoints
+          </div>
+          <div class="endpoint-docs">
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/accounts/admin/users</span>
+                <span style="background: #ef4444; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">ADMIN</span>
+              </div>
+              <p class="endpoint-description">Get all users with pagination and search</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/accounts/admin/stats</span>
+                <span style="background: #ef4444; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">ADMIN</span>
+              </div>
+              <p class="endpoint-description">Get system statistics and metrics</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/accounts/admin/users/:userId</span>
+                <span style="background: #ef4444; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">ADMIN</span>
+              </div>
+              <p class="endpoint-description">Get specific user details</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge put">PUT</span>
+                <span class="endpoint-path">/api/accounts/admin/users/:userId/status</span>
+                <span style="background: #ef4444; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">ADMIN</span>
+              </div>
+              <p class="endpoint-description">Update user active status</p>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem; margin-bottom: 1rem">
+            💰 Finance Endpoints
+          </div>
+          <div class="endpoint-docs">
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/finance/trades</span>
+              </div>
+              <p class="endpoint-description">Get all trade records</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/finance/trades/symbol/:symbol</span>
+              </div>
+              <p class="endpoint-description">Get trades for specific symbol (e.g., AAPL, GOOGL)</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge post">POST</span>
+                <span class="endpoint-path">/api/finance/trades</span>
+              </div>
+              <p class="endpoint-description">Insert new symbol for tracking</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge put">PUT</span>
+                <span class="endpoint-path">/api/finance/trades/:symbol</span>
+              </div>
+              <p class="endpoint-description">Update trade record (price, previous close, etc.)</p>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem; margin-bottom: 1rem">
+            ⚽ Sports Endpoints
+          </div>
+          <div class="endpoint-docs">
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/sports/games</span>
+              </div>
+              <p class="endpoint-description">Get all games across all leagues</p>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge get">GET</span>
+                <span class="endpoint-path">/api/sports/games/:league</span>
+              </div>
+              <p class="endpoint-description">Get games by league (NFL, NBA, MLB, NHL)</p>
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top: 2rem; margin-bottom: 1rem">
+            🔌 WebSocket Endpoints
           </div>
           <div class="endpoint-docs">
             <div class="endpoint-doc">
               <div class="endpoint-header">
                 <span class="method-badge" style="background: #8b5cf6">WS</span>
-                <span class="endpoint-path">Finance WebSocket Events</span>
+                <span class="endpoint-path">wss://scrollr.olvyx.com/api/finance/ws</span>
               </div>
+              <p class="endpoint-description">Real-time financial data WebSocket</p>
               <table class="param-table">
                 <thead>
-                  <tr>
-                    <th>Event Type</th>
-                    <th>Direction</th>
-                    <th>Description</th>
-                  </tr>
+                  <tr><th>Event Type</th><th>Direction</th><th>Description</th></tr>
                 </thead>
                 <tbody>
                   <tr>
@@ -1185,6 +1536,16 @@ Click "Send Request" to test an API endpoint...</pre
                     <td>Request filtered data with specific symbols</td>
                   </tr>
                   <tr>
+                    <td class="param-name">get_all_trades</td>
+                    <td class="param-type">Client → Server</td>
+                    <td>Request all available trades</td>
+                  </tr>
+                  <tr>
+                    <td class="param-name">ping</td>
+                    <td class="param-type">Client → Server</td>
+                    <td>Heartbeat message</td>
+                  </tr>
+                  <tr>
                     <td class="param-name">filtered_data</td>
                     <td class="param-type">Server → Client</td>
                     <td>Filtered trade data based on request</td>
@@ -1193,6 +1554,46 @@ Click "Send Request" to test an API endpoint...</pre
                     <td class="param-name">financial_update</td>
                     <td class="param-type">Server → Client</td>
                     <td>Real-time market updates</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="endpoint-doc">
+              <div class="endpoint-header">
+                <span class="method-badge" style="background: #8b5cf6">WS</span>
+                <span class="endpoint-path">wss://scrollr.olvyx.com/api/sports/ws</span>
+              </div>
+              <p class="endpoint-description">Real-time sports data WebSocket</p>
+              <table class="param-table">
+                <thead>
+                  <tr><th>Event Type</th><th>Direction</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="param-name">connection</td>
+                    <td class="param-type">Client → Server</td>
+                    <td>Initial connection handshake</td>
+                  </tr>
+                  <tr>
+                    <td class="param-name">filter_request</td>
+                    <td class="param-type">Client → Server</td>
+                    <td>Request games by league (NFL, NBA, MLB, NHL)</td>
+                  </tr>
+                  <tr>
+                    <td class="param-name">get_all_games</td>
+                    <td class="param-type">Client → Server</td>
+                    <td>Request all available games</td>
+                  </tr>
+                  <tr>
+                    <td class="param-name">filtered_data</td>
+                    <td class="param-type">Server → Client</td>
+                    <td>Filtered games data based on request</td>
+                  </tr>
+                  <tr>
+                    <td class="param-name">games_updated</td>
+                    <td class="param-type">Server → Client</td>
+                    <td>Notification when game data is updated</td>
                   </tr>
                 </tbody>
               </table>
@@ -1356,14 +1757,72 @@ curl -X GET https://scrollr.olvyx.com/api/finance/trades/symbol/AAPL</pre
           try {
             const response = await fetch(`${baseUrl}/api/${service}/health`);
             const dot = document.getElementById(`health-${service}`);
+            const details = document.getElementById(`health-${service}-details`);
+            const item = document.querySelector(`[data-service="${service}"]`);
 
             if (response.ok) {
+              const healthData = await response.json();
+              
+              // Update dot color based on status
               dot.classList.remove("error", "warning");
+              if (healthData.status === 'unhealthy') {
+                dot.classList.add("error");
+              } else if (healthData.status === 'degraded') {
+                dot.classList.add("warning");
+              }
+
+              // Update details and tooltip
+              let detailText = '';
+              let tooltipText = `${service.charAt(0).toUpperCase() + service.slice(1)} Service Status:\n`;
+              tooltipText += `Status: ${healthData.status}\n`;
+              tooltipText += `Version: ${healthData.version || 'N/A'}\n`;
+              tooltipText += `Uptime: ${Math.floor((healthData.uptime || 0) / 60)}m\n`;
+
+              if (service === 'accounts') {
+                detailText = healthData.database_connected ? 'DB✓' : 'DB✗';
+                if (healthData.jwt_secret_configured === false) {
+                  detailText += ' JWT✗';
+                }
+                tooltipText += `Database: ${healthData.database_connected ? 'Connected' : 'Disconnected'}\n`;
+                tooltipText += `JWT Secret: ${healthData.jwt_secret_configured ? 'Configured' : 'Not Configured'}`;
+              } else if (service === 'finance') {
+                const dbStatus = healthData.database_connected ? 'DB✓' : 'DB✗';
+                const wsStatus = healthData.finnhub_connected ? 'WS✓' : 'WS✗';
+                detailText = `${dbStatus} ${wsStatus}`;
+                if (healthData.websocket_clients) {
+                  detailText += ` (${healthData.websocket_clients})`;
+                }
+                tooltipText += `Database: ${healthData.database_connected ? 'Connected' : 'Disconnected'}\n`;
+                tooltipText += `Finnhub WebSocket: ${healthData.finnhub_connected ? 'Connected' : 'Disconnected'}\n`;
+                tooltipText += `WebSocket Clients: ${healthData.websocket_clients || 0}\n`;
+                tooltipText += `Cache Size: ${healthData.cache_size || 0}`;
+              } else if (service === 'sports') {
+                const dbStatus = healthData.database_connected ? 'DB✓' : 'DB✗';
+                const espnStatus = healthData.espn_api_accessible ? 'ESPN✓' : 'ESPN✗';
+                detailText = `${dbStatus} ${espnStatus}`;
+                if (healthData.websocket_clients) {
+                  detailText += ` (${healthData.websocket_clients})`;
+                }
+                tooltipText += `Database: ${healthData.database_connected ? 'Connected' : 'Disconnected'}\n`;
+                tooltipText += `ESPN API: ${healthData.espn_api_accessible ? 'Accessible' : 'Not Accessible'}\n`;
+                tooltipText += `WebSocket Clients: ${healthData.websocket_clients || 0}`;
+              }
+
+              details.textContent = detailText;
+              item.title = tooltipText;
             } else {
               dot.classList.add("warning");
+              details.textContent = `${response.status}`;
+              item.title = `${service.charAt(0).toUpperCase() + service.slice(1)} Service: HTTP ${response.status} ${response.statusText}`;
             }
           } catch (error) {
-            document.getElementById(`health-${service}`).classList.add("error");
+            const dot = document.getElementById(`health-${service}`);
+            const details = document.getElementById(`health-${service}-details`);
+            const item = document.querySelector(`[data-service="${service}"]`);
+            
+            dot.classList.add("error");
+            details.textContent = 'Offline';
+            item.title = `${service.charAt(0).toUpperCase() + service.slice(1)} Service: Connection Failed - ${error.message}`;
           }
         }
       }
@@ -1446,39 +1905,124 @@ curl -X GET https://scrollr.olvyx.com/api/finance/trades/symbol/AAPL</pre
 
       function loadExample(example) {
         const examples = {
-          "health-check": {
-            method: "GET",
-            url: "/api/accounts/health",
-            body: "",
+          // Health & Status
+          "accounts-health": { method: "GET", url: "/api/accounts/health", body: "" },
+          "finance-health": { method: "GET", url: "/api/finance/health", body: "" },
+          "sports-health": { method: "GET", url: "/api/sports/health", body: "" },
+          "accounts-root": { method: "GET", url: "/api/accounts/", body: "" },
+
+          // Authentication
+          "register": {
+            method: "POST",
+            url: "/api/accounts/auth/register",
+            body: JSON.stringify({
+              username: "newuser",
+              email: "user@example.com",
+              password: "password123",
+              phone: "+1234567890"
+            }, null, 2)
           },
-          login: {
+          "login": {
             method: "POST",
             url: "/api/accounts/auth/login",
-            body: JSON.stringify(
-              {
-                identifier: "user@example.com",
-                password: "password123",
-              },
-              null,
-              2
-            ),
+            body: JSON.stringify({
+              identifier: "user@example.com",
+              password: "password123"
+            }, null, 2)
           },
-          trades: {
-            method: "GET",
-            url: "/api/finance/trades",
-            body: "",
+          "profile": { method: "GET", url: "/api/accounts/auth/me", body: "" },
+          "update-profile": {
+            method: "PUT",
+            url: "/api/accounts/auth/profile",
+            body: JSON.stringify({
+              username: "updateduser",
+              phone: "+0987654321"
+            }, null, 2)
           },
-          games: {
-            method: "GET",
-            url: "/api/sports/games",
-            body: "",
+
+          // Finance Data
+          "all-trades": { method: "GET", url: "/api/finance/trades", body: "" },
+          "aapl-trades": { method: "GET", url: "/api/finance/trades/symbol/AAPL", body: "" },
+          "googl-trades": { method: "GET", url: "/api/finance/trades/symbol/GOOGL", body: "" },
+          "tsla-trades": { method: "GET", url: "/api/finance/trades/symbol/TSLA", body: "" },
+
+          // Sports Data
+          "all-games": { method: "GET", url: "/api/sports/games", body: "" },
+          "nfl-games": { method: "GET", url: "/api/sports/games/NFL", body: "" },
+          "nba-games": { method: "GET", url: "/api/sports/games/NBA", body: "" },
+          "mlb-games": { method: "GET", url: "/api/sports/games/MLB", body: "" },
+
+          // User Settings
+          "get-settings": { method: "GET", url: "/api/accounts/auth/settings", body: "" },
+          "update-settings": {
+            method: "POST",
+            url: "/api/accounts/auth/settings",
+            body: JSON.stringify({
+              theme: "dark",
+              notifications: true,
+              autoRefresh: 30
+            }, null, 2)
           },
+          "get-rss": { method: "GET", url: "/api/accounts/auth/rss-feeds", body: "" },
+          "add-rss": {
+            method: "POST",
+            url: "/api/accounts/auth/rss-feeds",
+            body: JSON.stringify({
+              name: "Tech News",
+              url: "https://techcrunch.com/feed/",
+              category: "technology"
+            }, null, 2)
+          },
+
+          // Admin & Advanced
+          "admin-users": { method: "GET", url: "/api/accounts/admin/users", body: "" },
+          "admin-stats": { method: "GET", url: "/api/accounts/admin/stats", body: "" },
+          "linked-accounts": { method: "GET", url: "/api/accounts/linked-accounts", body: "" },
+          "change-password": {
+            method: "PUT",
+            url: "/api/accounts/auth/change-password",
+            body: JSON.stringify({
+              currentPassword: "oldpassword123",
+              newPassword: "newpassword456"
+            }, null, 2)
+          },
+
+          // Legacy support
+          "health-check": { method: "GET", url: "/api/accounts/health", body: "" },
+          "trades": { method: "GET", url: "/api/finance/trades", body: "" },
+          "games": { method: "GET", url: "/api/sports/games", body: "" }
         };
 
         const ex = examples[example];
-        document.getElementById("method").value = ex.method;
-        document.getElementById("url").value = ex.url;
-        document.getElementById("request-body").value = ex.body;
+        if (ex) {
+          document.getElementById("method").value = ex.method;
+          document.getElementById("url").value = ex.url;
+          document.getElementById("request-body").value = ex.body;
+          
+          // Auto-add Authorization header for auth-required endpoints
+          if (ex.url.includes('/auth/') || ex.url.includes('/admin/') || ex.url.includes('/linked-accounts')) {
+            const container = document.getElementById("headers-container");
+            const existingHeaders = container.querySelectorAll('.header-input');
+            let hasAuthHeader = false;
+            
+            existingHeaders.forEach(row => {
+              if (row.children[0].value.toLowerCase() === 'authorization') {
+                hasAuthHeader = true;
+              }
+            });
+            
+            if (!hasAuthHeader) {
+              const div = document.createElement("div");
+              div.className = "header-input";
+              div.innerHTML = `
+                <input type="text" placeholder="Header name" value="Authorization">
+                <input type="text" placeholder="Header value" value="Bearer YOUR_JWT_TOKEN_HERE">
+                <button class="add-header-btn" onclick="this.parentElement.remove()">Remove</button>
+              `;
+              container.appendChild(div);
+            }
+          }
+        }
       }
 
       // WebSocket Tester

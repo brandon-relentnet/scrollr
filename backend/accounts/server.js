@@ -56,13 +56,56 @@ console.log('📍 Mounting admin routes at /admin');
 app.use('/admin', adminRoutes);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
     console.log('✅ Health check hit');
-    res.json({
+    
+    const health = {
         status: 'healthy',
         timestamp: Date.now(),
-        message: 'Accounts API server is running'
-    });
+        service: 'accounts',
+        version: '1.0.0',
+        message: 'Accounts API server is running',
+        uptime: process.uptime(),
+        memory_usage: process.memoryUsage(),
+        database_connected: false,
+        jwt_secret_configured: false,
+        environment: accountsConfig.nodeEnv
+    };
+
+    try {
+        // Test database connection
+        const { Pool } = await import('pg');
+        const { dbConfig } = await import('./config.js');
+        const pool = new Pool(dbConfig);
+        
+        await pool.query('SELECT 1');
+        health.database_connected = true;
+        await pool.end();
+        
+        // Check JWT secret configuration
+        health.jwt_secret_configured = !!(accountsConfig.jwtSecret && accountsConfig.jwtSecret.length >= 32);
+        
+        // Set overall status based on critical components
+        if (!health.database_connected) {
+            health.status = 'unhealthy';
+            health.message = 'Database connection failed';
+            return res.status(503).json(health);
+        }
+        
+        if (!health.jwt_secret_configured) {
+            health.status = 'degraded';
+            health.message = 'JWT secret not properly configured';
+            return res.status(200).json(health);
+        }
+        
+        res.json(health);
+        
+    } catch (error) {
+        health.status = 'unhealthy';
+        health.database_connected = false;
+        health.message = `Health check failed: ${error.message}`;
+        res.status(503).json(health);
+    }
 });
 
 // Test route to verify server is receiving requests correctly
