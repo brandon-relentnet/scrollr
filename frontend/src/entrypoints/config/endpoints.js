@@ -6,15 +6,20 @@
 // Environment detection
 const isDevelopment = () => {
   // Check if we're in development by looking for localhost or dev environment
-  if (typeof window !== 'undefined') {
-    return window.location?.hostname === 'localhost' || window.location?.hostname === '127.0.0.1';
+  if (typeof window !== "undefined") {
+    return (
+      window.location?.hostname === "localhost" ||
+      window.location?.hostname === "127.0.0.1"
+    );
   }
-  
+
   // For build-time/extension context, check environment variables
   const apiUrl = import.meta.env.VITE_API_URL;
-  
+
   // If API_URL contains localhost or is not set, assume development
-  return !apiUrl || apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1');
+  return (
+    !apiUrl || apiUrl.includes("localhost") || apiUrl.includes("127.0.0.1")
+  );
 };
 
 // Base configuration
@@ -32,7 +37,7 @@ const BASE_CONFIG = {
   production: {
     protocol: "https",
     wsProtocol: "wss",
-    host: import.meta.env.VITE_API_URL, // scrollr.olvyx.com
+    host: import.meta.env.VITE_API_URL,
     paths: {
       accounts: import.meta.env.VITE_ACCOUNTS_PORT || "/api/accounts",
       finance: import.meta.env.VITE_FINANCE_PORT || "/api/finance",
@@ -54,7 +59,7 @@ const buildServiceUrl = (service) => {
     return `${config.protocol}://${config.host}:${config.ports[service]}`;
   } else {
     // Remove trailing slash from path to prevent double slashes
-    const path = config.paths[service].replace(/\/$/, '');
+    const path = config.paths[service].replace(/\/$/, "");
     return `${config.protocol}://${config.host}${path}`;
   }
 };
@@ -62,55 +67,67 @@ const buildServiceUrl = (service) => {
 // API Base URLs
 export const API_ENDPOINTS = {
   accounts: {
-    base: `${buildServiceUrl('accounts')}`,
+    base: `${buildServiceUrl("accounts")}`,
     auth: {
-      login: `${buildServiceUrl('accounts')}/auth/login`,
-      register: `${buildServiceUrl('accounts')}/auth/register`,
-      me: `${buildServiceUrl('accounts')}/auth/me`,
-      settings: `${buildServiceUrl('accounts')}/auth/settings`,
-      profile: `${buildServiceUrl('accounts')}/auth/profile`,
-      changePassword: `${buildServiceUrl('accounts')}/auth/change-password`,
-      rssFeeds: `${buildServiceUrl('accounts')}/auth/rss-feeds`,
+      login: `${buildServiceUrl("accounts")}/auth/login`,
+      register: `${buildServiceUrl("accounts")}/auth/register`,
+      me: `${buildServiceUrl("accounts")}/auth/me`,
+      settings: `${buildServiceUrl("accounts")}/auth/settings`,
+      profile: `${buildServiceUrl("accounts")}/auth/profile`,
+      changePassword: `${buildServiceUrl("accounts")}/auth/change-password`,
+      rssFeeds: `${buildServiceUrl("accounts")}/auth/rss-feeds`,
     },
-    health: `${buildServiceUrl('accounts')}/health`,
+    health: `${buildServiceUrl("accounts")}/health`,
   },
   finance: {
-    base: `${buildServiceUrl('finance')}/api`,
-    trades: `${buildServiceUrl('finance')}/trades`,
-    health: `${buildServiceUrl('finance')}/health`,
+    base: `${buildServiceUrl("finance")}`,
+    trades: `${buildServiceUrl("finance")}/trades`,
+    health: `${buildServiceUrl("finance")}/health`,
   },
   sports: {
-    base: `${buildServiceUrl('sports')}/api`,
-    games: `${buildServiceUrl('sports')}/games`,
-    health: `${buildServiceUrl('sports')}/health`,
+    base: `${buildServiceUrl("sports")}`,
+    games: `${buildServiceUrl("sports")}/games`,
+    health: `${buildServiceUrl("sports")}/health`,
   },
 };
 
 // WebSocket URLs
 export const WS_ENDPOINTS = {
-  finance: isDevelopment() 
+  finance: isDevelopment()
     ? `${config.wsProtocol}://${config.host}:${config.ports.finance}/ws`
-    : `${config.wsProtocol}://${config.host}${config.paths.finance.replace(/\/$/, '')}/ws`,
+    : `${config.wsProtocol}://${config.host}${config.paths.finance.replace(
+        /\/$/,
+        ""
+      )}/ws`,
   sports: isDevelopment()
-    ? `${config.wsProtocol}://${config.host}:${config.ports.sports}/ws` 
-    : `${config.wsProtocol}://${config.host}${config.paths.sports.replace(/\/$/, '')}/ws`,
+    ? `${config.wsProtocol}://${config.host}:${config.ports.sports}/ws`
+    : `${config.wsProtocol}://${config.host}${config.paths.sports.replace(
+        /\/$/,
+        ""
+      )}/ws`,
 };
 
 // Service configuration for health checks and connection utils
 export const SERVICE_CONFIG = {
   accounts: {
-    ...(isDevelopment() ? { port: config.ports.accounts } : { path: config.paths.accounts }),
+    ...(isDevelopment()
+      ? { port: config.ports.accounts }
+      : { path: config.paths.accounts }),
     host: config.host,
     protocol: config.protocol,
   },
   finance: {
-    ...(isDevelopment() ? { port: config.ports.finance } : { path: config.paths.finance }),
+    ...(isDevelopment()
+      ? { port: config.ports.finance }
+      : { path: config.paths.finance }),
     host: config.host,
     protocol: config.protocol,
     wsProtocol: config.wsProtocol,
   },
   sports: {
-    ...(isDevelopment() ? { port: config.ports.sports } : { path: config.paths.sports }),
+    ...(isDevelopment()
+      ? { port: config.ports.sports }
+      : { path: config.paths.sports }),
     host: config.host,
     protocol: config.protocol,
     wsProtocol: config.wsProtocol,
@@ -128,7 +145,7 @@ export const buildUrl = (service, path = "") => {
     return `${serviceConfig.protocol}://${serviceConfig.host}:${serviceConfig.port}${path}`;
   } else {
     // Remove trailing slash from service path to prevent double slashes
-    const cleanPath = serviceConfig.path.replace(/\/$/, '');
+    const cleanPath = serviceConfig.path.replace(/\/$/, "");
     return `${serviceConfig.protocol}://${serviceConfig.host}${cleanPath}${path}`;
   }
 };
@@ -144,7 +161,7 @@ export const buildWsUrl = (service, path = "/ws") => {
     return `${serviceConfig.wsProtocol}://${serviceConfig.host}:${serviceConfig.port}${path}`;
   } else {
     // Remove trailing slash from service path to prevent double slashes
-    const cleanPath = serviceConfig.path.replace(/\/$/, '');
+    const cleanPath = serviceConfig.path.replace(/\/$/, "");
     return `${serviceConfig.wsProtocol}://${serviceConfig.host}${cleanPath}${path}`;
   }
 };
