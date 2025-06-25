@@ -78,6 +78,7 @@ Make Scrollr truly yours:
 - **Layout Modes**: Compact (72px) or Comfort (176px) views
 - **Theme Selection**: 10+ beautiful themes to match your style
 - **Export/Import**: Backup and restore all your settings
+- **Debug Mode**: Advanced logging for troubleshooting and development
 
 ---
 
@@ -170,9 +171,9 @@ scrollr/
 - **Hot Module Replacement**: See changes instantly without reloading
 - **TypeScript Everywhere**: Full type safety across the stack
 - **Redux DevTools**: Debug state changes in real-time
-- **Structured Logging**: Beautiful logs for easy debugging
-- **Health Checks**: Built-in endpoints for monitoring
-- **API Documentation**: Interactive API hub at http://localhost:5000
+- **Advanced Debug Mode**: Configurable logging with 8 categories (Settings → Debug Settings)
+- **Health Monitoring**: Comprehensive service health checks with real-time status
+- **API Documentation**: Interactive API hub with testing tools at backend landing page
 
 ### 🧪 Advanced Features for Power Users
 
@@ -185,13 +186,17 @@ scrollr/
    {"type": "subscribe", "symbols": ["AAPL", "GOOGL"]}
    ```
 
-2. **Direct API Access**
+2. **Health Monitoring & API Testing**
    ```bash
-   # Check service health
-   curl http://localhost:5000/health
+   # Check comprehensive service health
+   curl http://localhost:5000/health  # Accounts (DB + JWT validation)
+   curl http://localhost:4001/health  # Finance (DB + Finnhub + cache metrics)
+   curl http://localhost:4000/health  # Sports (DB + ESPN API accessibility)
    
    # Get user settings (with auth)
-   curl -H "Authorization: Bearer $TOKEN" http://localhost:5000/api/settings
+   curl -H "Authorization: Bearer $TOKEN" http://localhost:5000/auth/settings
+   
+   # Interactive API testing at backend landing page
    ```
 
 3. **Database Management**
@@ -247,6 +252,23 @@ Services:
 - **CORS Protection**: Configured for your domains
 - **SSL/TLS Ready**: Nginx handles certificates
 - **Input Validation**: Comprehensive sanitization
+
+### 📊 Monitoring & Debugging
+
+Scrollr includes enterprise-grade monitoring and debugging tools:
+
+#### 🏥 Health Monitoring
+- **Comprehensive Health Checks**: All services report `healthy`, `degraded`, or `unhealthy` status
+- **Real-Time Dashboard**: Interactive API hub with live service status and detailed tooltips
+- **Dependency Tracking**: Database connectivity, external API status, configuration validation
+- **Performance Metrics**: Uptime, memory usage, client counts, cache statistics
+
+#### 🐛 Advanced Debug System
+- **Configurable Logging**: Toggle debug mode in extension settings
+- **8 Debug Categories**: WebSocket, Auth, RSS, Storage, UI, Config, Network, State
+- **Smart Filtering**: Show all logs or filter by specific categories
+- **Silent Production**: Only critical errors shown by default
+- **Cross-Context Sync**: Debug settings work across popup, background, and iframe
 
 ---
 
@@ -327,10 +349,10 @@ We love contributions! Scrollr is built by the community, for the community.
 ## 📚 Documentation
 
 ### Quick Links
-- **[API Documentation](http://localhost:5000)**: Interactive API explorer
-- **[Architecture Guide](./docs/ARCHITECTURE.md)**: Deep dive into the system
-- **[Development Guide](./docs/DEVELOPMENT.md)**: Advanced development tips
-- **[Deployment Guide](./backend/README-DOCKER.md)**: Production deployment
+- **[API Documentation & Testing](backend/landing/)**: Interactive API explorer with real-time health monitoring
+- **[Debug System Guide](CLAUDE.md#frontend-debug-system)**: Comprehensive logging and troubleshooting
+- **[Health Monitoring](CLAUDE.md#backend-health-monitoring)**: Service status and dependency checks
+- **[Development Workflow](CLAUDE.md#development-workflow)**: Complete setup and commands
 
 ### Example: Adding a Custom Data Source
 
