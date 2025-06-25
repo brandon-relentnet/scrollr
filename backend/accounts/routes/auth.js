@@ -1,5 +1,5 @@
 import express from 'express';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../db.js';
 import { authenticateToken } from '../middleware/auth.js';
@@ -89,15 +89,22 @@ router.post('/register', async (req, res) => {
 
 // Login user
 router.post('/login', async (req, res) => {
+    console.log('🔑 LOGIN ROUTE HIT!');
+    console.log('🔑 Request body:', req.body);
+    
     try {
         const { identifier, password } = req.body; // identifier can be email or username
+        console.log('🔑 Parsed identifier:', identifier);
+        console.log('🔑 Parsed password:', password ? '[REDACTED]' : 'undefined');
 
         if (!identifier || !password) {
+            console.log('🔑 Missing credentials');
             return res.status(400).json({ 
                 error: 'Email/username and password are required' 
             });
         }
 
+        console.log('🔑 Querying database for user...');
         // Find user by email or username
         const result = await pool.query(
             `SELECT id, username, email, password, phone, role_id, is_active 
@@ -106,24 +113,36 @@ router.post('/login', async (req, res) => {
             [identifier]
         );
 
+        console.log('🔑 Database query result:', result.rows.length, 'users found');
+
         if (result.rows.length === 0) {
+            console.log('🔑 No user found with identifier:', identifier);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         const user = result.rows[0];
+        console.log('🔑 User found:', { id: user.id, username: user.username, email: user.email, is_active: user.is_active });
 
         if (!user.is_active) {
+            console.log('🔑 User account is deactivated');
             return res.status(401).json({ error: 'Account is deactivated' });
         }
 
+        console.log('🔑 Checking password...');
         // Check password
         const isValidPassword = await bcrypt.compare(password, user.password);
+        console.log('🔑 Password valid:', isValidPassword);
+        
         if (!isValidPassword) {
+            console.log('🔑 Invalid password for user:', identifier);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
+        console.log('🔑 Generating token...');
         const token = generateToken(user);
+        console.log('🔑 Token generated successfully');
 
+        console.log('🔑 Sending successful response');
         res.json({
             message: 'Login successful',
             token,
@@ -137,7 +156,8 @@ router.post('/login', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('🔑 Login error:', error);
+        console.error('🔑 Error stack:', error.stack);
         res.status(500).json({ error: 'Server error during login' });
     }
 });
