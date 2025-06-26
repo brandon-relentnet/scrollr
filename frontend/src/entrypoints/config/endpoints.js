@@ -5,8 +5,8 @@
 
 // Environment detection
 const isDevelopment = () => {
-  // Manually set to true for development, false for production
-  return true;
+  const env = import.meta.env.VITE_ENV;
+  return env === "development";
 };
 
 // Base configuration
