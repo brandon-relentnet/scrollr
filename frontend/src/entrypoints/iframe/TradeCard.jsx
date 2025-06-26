@@ -1,4 +1,4 @@
-import React, { useMemo, memo } from "react";
+import React, { useMemo, memo, useEffect } from "react";
 import {
   ArrowUpIcon,
   ArrowDownIcon,
@@ -22,7 +22,26 @@ const TradeCard = memo(
       selectIsItemPinned(state, "finance", trade.symbol)
     );
 
-    // OPTIMIZATION: Pre-calculated values with proper rounding
+    // Debug logging for trade updates
+    useEffect(() => {
+      console.log(`🏷️  TradeCard ${trade.symbol} updated:`, {
+        price: trade.price,
+        change: trade.price_change,
+        percentage: trade.percentage_change,
+        direction: trade.direction,
+        lastUpdated: trade.last_updated,
+        timestamp: Date.now(),
+      });
+    }, [
+      trade.price,
+      trade.price_change,
+      trade.percentage_change,
+      trade.direction,
+      trade.last_updated,
+      trade.symbol,
+    ]);
+
+    // OPTIMIZATION: Pre-calculated values with proper rounding and type conversion
     const formattedPrice = useMemo(() => {
       const price = parseFloat(trade.price);
       return isNaN(price) ? "0.00" : price.toFixed(2);
@@ -64,6 +83,12 @@ const TradeCard = memo(
       }
     };
 
+    // Handle card click to open Yahoo Finance
+    const handleCardClick = () => {
+      const yahooUrl = `https://finance.yahoo.com/quote/${trade.symbol}/`;
+      window.open(yahooUrl, '_blank');
+    };
+
     const DirectionIcon = () => (
       <div
         className={`flex items-center ${
@@ -94,7 +119,10 @@ const TradeCard = memo(
 
     if (isCompact) {
       return (
-        <div className="card bg-base-200 group cursor-pointer border border-base-300 transition duration-150 h-14 relative">
+        <div 
+          className="card bg-base-200 group cursor-pointer border border-base-300 transition duration-150 h-14 relative"
+          onClick={handleCardClick}
+        >
           {/* Pin Button - Top Right */}
           <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
             <PinButton size="size-8" />
@@ -131,7 +159,10 @@ const TradeCard = memo(
 
     // Comfort Mode
     return (
-      <div className="card bg-base-200 group cursor-pointer border border-base-300 hover:border-base-content/20 transition-all duration-150 h-40 shadow-sm hover:shadow-md relative">
+      <div 
+        className="card bg-base-200 group cursor-pointer border border-base-300 hover:border-base-content/20 transition-all duration-150 h-40 shadow-sm hover:shadow-md relative"
+        onClick={handleCardClick}
+      >
         {/* Pin Button - Top Right */}
         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <PinButton size="size-8" />
@@ -188,18 +219,52 @@ const TradeCard = memo(
     );
   },
   (prevProps, nextProps) => {
-    // OPTIMIZATION: Custom comparison for better performance
+    // IMPROVED: More robust comparison that handles type differences
     const prev = prevProps.trade;
     const next = nextProps.trade;
 
-    return (
+    // Convert to strings for comparison to handle type differences
+    const prevPrice = String(prev.price || "0");
+    const nextPrice = String(next.price || "0");
+    const prevChange = String(prev.price_change || "0");
+    const nextChange = String(next.price_change || "0");
+    const prevPercentage = String(prev.percentage_change || "0");
+    const nextPercentage = String(next.percentage_change || "0");
+    const prevDirection = String(prev.direction || "");
+    const nextDirection = String(next.direction || "");
+    const prevUpdated = String(prev.last_updated || "");
+    const nextUpdated = String(next.last_updated || "");
+
+    const areEqual =
       prev.symbol === next.symbol &&
-      prev.price === next.price &&
-      prev.price_change === next.price_change &&
-      prev.percentage_change === next.percentage_change &&
-      prev.direction === next.direction &&
-      prev.last_updated === next.last_updated
-    );
+      prevPrice === nextPrice &&
+      prevChange === nextChange &&
+      prevPercentage === nextPercentage &&
+      prevDirection === nextDirection &&
+      prevUpdated === nextUpdated;
+
+    // Debug logging for memoization decisions
+    if (!areEqual) {
+      console.log(`🔄 TradeCard ${prev.symbol} will re-render:`, {
+        priceChanged: prevPrice !== nextPrice,
+        changeChanged: prevChange !== nextChange,
+        percentageChanged: prevPercentage !== nextPercentage,
+        directionChanged: prevDirection !== nextDirection,
+        timeChanged: prevUpdated !== nextUpdated,
+        prevData: {
+          price: prevPrice,
+          change: prevChange,
+          percentage: prevPercentage,
+        },
+        nextData: {
+          price: nextPrice,
+          change: nextChange,
+          percentage: nextPercentage,
+        },
+      });
+    }
+
+    return areEqual;
   }
 );
 
