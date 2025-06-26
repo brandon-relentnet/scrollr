@@ -1,6 +1,6 @@
-import pool from './db.js';
+import pool from "./db.js";
 
-const excludedStates = ['post', 'completed', 'final'];
+const excludedStates = ["post", "completed", "final"];
 
 async function getTimeInfo() {
   const currentDate = new Date();
@@ -12,20 +12,40 @@ async function getTimeInfo() {
     nextDay: nextDate.toISOString(),
   };
 
-  console.log('TIME INFO', timeInfo);
-  return(timeInfo);
+  console.log("TIME INFO", timeInfo);
+  return timeInfo;
 }
 
 async function clearTable(leaguesToIngest) {
-  const leagueNames = leaguesToIngest.map(league => league.name); // Extract names
-  const placeholders = leagueNames.map((_, index) => `$${index + 1}`).join(', '); // Create placeholders for query
+  const leagueNames = leaguesToIngest.map((league) => league.name); // Extract names
+  const placeholders = leagueNames
+    .map((_, index) => `$${index + 1}`)
+    .join(", "); // Create placeholders for query
 
   const query = `DELETE FROM games WHERE league IN (${placeholders});`;
   await pool.query(query, leagueNames);
 
-  console.log(`All rows with league_type ${JSON.stringify(leagueNames)} have been deleted.`);
+  console.log(
+    `All rows with league_type ${JSON.stringify(
+      leagueNames
+    )} have been deleted.`
+  );
 }
 
+/**
+ * Get live games (state = 'in') for debugging
+ */
+async function getLiveGames() {
+  const query = `
+    SELECT league, COUNT(*) as count
+    FROM games
+    WHERE state = 'in'
+    GROUP BY league;
+  `;
+
+  const result = await pool.query(query);
+  return result.rows;
+}
 
 /**
  * Upsert a single game record into the "games" table.
@@ -58,7 +78,8 @@ async function upsertGame(game) {
           away_team_score  = EXCLUDED.away_team_score,
           start_time       = EXCLUDED.start_time,
           short_detail     = EXCLUDED.short_detail,
-          state            = EXCLUDED.state;
+          state            = EXCLUDED.state,
+          updated_at       = CURRENT_TIMESTAMP;
   `;
 
   const values = [
@@ -81,28 +102,52 @@ async function upsertGame(game) {
 
 /**
  * Returns all "not-final" games scheduled for TODAY (UTC-based).
- * 1. Start Time >= today (00:06:00 UTC)
- * 2. Start Time < tomorrow (00:06:00 UTC)
+ * This includes:
+ * - Games that haven't started yet (pre)
+ * - Games currently in progress (in)
+ * - Any non-final games from today
  */
 async function getNotFinalGamesToday() {
-  const timeInfo = await getTimeInfo();
+  const currentDate = new Date();
+  const startOfToday = new Date(currentDate);
+  startOfToday.setUTCHours(0, 0, 0, 0); // Start of today UTC
+
+  const endOfToday = new Date(currentDate);
+  endOfToday.setUTCHours(23, 59, 59, 999); // End of today UTC
 
   const query = `
     SELECT *
     FROM games
     WHERE
       start_time >= $1
-      AND start_time < $2
+      AND start_time <= $2
       AND state != ALL($3::text[])
-    ORDER BY start_time ASC;
+    ORDER BY 
+      CASE WHEN state = 'in' THEN 0 ELSE 1 END, 
+      start_time ASC;
   `;
 
-  const values = [timeInfo.currentDay, timeInfo.nextDay, excludedStates];
+  const values = [
+    startOfToday.toISOString(),
+    endOfToday.toISOString(),
+    excludedStates,
+  ];
 
-  console.log('SQL Query:', query, 'Params:', values);
+  console.log("SQL Query for today's non-final games:");
+  console.log("Start of today:", startOfToday.toISOString());
+  console.log("End of today:", endOfToday.toISOString());
+  console.log("Excluded states:", excludedStates);
 
   const result = await pool.query(query, values);
-  //console.log('getNotFinalGamesToday:', result.rows);
+  console.log(`Found ${result.rows.length} non-final games for today`);
+
+  // Log game states for debugging
+  const stateCount = {};
+  result.rows.forEach((game) => {
+    stateCount[game.state] = (stateCount[game.state] || 0) + 1;
+  });
+  console.log("Game states:", stateCount);
+
   return result.rows;
 }
 
@@ -110,17 +155,28 @@ async function getNotFinalGamesToday() {
  * Checks if all games for a given league are final today.
  */
 async function areAllGamesFinal(league) {
-  const timeInfo = await getTimeInfo();
+  const currentDate = new Date();
+  const startOfToday = new Date(currentDate);
+  startOfToday.setUTCHours(0, 0, 0, 0);
+
+  const endOfToday = new Date(currentDate);
+  endOfToday.setUTCHours(23, 59, 59, 999);
 
   const query = `
     SELECT COUNT(*) AS cnt
     FROM games
     WHERE league = $1
-      AND DATE(start_time) = $2
-      AND state != ALL($3::text[])
+      AND start_time >= $2
+      AND start_time <= $3
+      AND state != ALL($4::text[])
   `;
 
-  const values = [league, timeInfo.currentDay, excludedStates];
+  const values = [
+    league,
+    startOfToday.toISOString(),
+    endOfToday.toISOString(),
+    excludedStates,
+  ];
 
   const res = await pool.query(query, values);
   const countNonFinal = parseInt(res.rows[0].cnt, 10);
@@ -167,4 +223,5 @@ export {
   getAllGames,
   getGamesByLeague,
   clearTable,
+  getLiveGames,
 };

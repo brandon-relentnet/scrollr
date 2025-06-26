@@ -23,6 +23,7 @@
     "ws": "^8.18.2"
   },
   "devDependencies": {
+    "@types/node-schedule": "^2.1.7",
     "nodemon": "^3.0.1"
   }
 }

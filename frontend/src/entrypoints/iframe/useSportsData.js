@@ -10,6 +10,7 @@ export default function useSportsData() {
   const [sportsData, setSportsData] = useState(null);
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
+  const isConnectingRef = useRef(false);
 
   // OPTIMIZATION: Debounce hook
   function useDebounce(value, delay) {
@@ -41,7 +42,7 @@ export default function useSportsData() {
   }, [toggles]);
 
   // Debounce sports toggles to prevent rapid WebSocket requests
-  const debouncedSportsToggles = useDebounce(sportsToggles, 300);
+  const debouncedSportsToggles = useDebounce(sportsToggles, 500); // Increased from 300ms to 500ms
 
   // Helper function to check if any sports toggles are active
   const hasActiveSportsToggles = useMemo(() => {
@@ -70,6 +71,14 @@ export default function useSportsData() {
         .filter(([key, value]) => value)
         .map(([key]) => key);
 
+      // Skip if we already sent this exact filter set
+      const filterKey = activeFilters.sort().join(",");
+      if (wsRef.current._lastFilterKey === filterKey) {
+        console.log("Skipping duplicate filter request:", filterKey);
+        return;
+      }
+      wsRef.current._lastFilterKey = filterKey;
+
       const filterData = {
         type: "filter_request",
         filters: activeFilters,
@@ -77,7 +86,7 @@ export default function useSportsData() {
       };
 
       throttledSendMessage(filterData);
-      //console.log('Sent sports filter request:', filterData);
+      console.log("Sent sports filter request:", filterData);
     },
     [hasActiveSportsToggles, throttledSendMessage]
   );
@@ -100,7 +109,10 @@ export default function useSportsData() {
     }
 
     const connectWebSocket = async () => {
-      if (!isComponentMounted) return;
+      if (!isComponentMounted || isConnectingRef.current) return;
+
+      // Prevent multiple simultaneous connections
+      isConnectingRef.current = true;
 
       // Clear any existing reconnection timeout
       if (reconnectTimeoutRef.current) {
@@ -115,6 +127,7 @@ export default function useSportsData() {
         const ws = await createWebSocketConnection("sports");
         if (!isComponentMounted) {
           ws.close();
+          isConnectingRef.current = false;
           return;
         }
 
@@ -123,6 +136,12 @@ export default function useSportsData() {
         ws.onopen = function open() {
           if (!isComponentMounted) return;
           setConnectionStatus("Connected");
+          isConnectingRef.current = false;
+          reconnectTimeoutRef.attempts = 0;
+          // Clear last filter key on new connection
+          if (wsRef.current) {
+            wsRef.current._lastFilterKey = null;
+          }
           // Send initial connection message
           throttledSendMessage({ type: "connection", timestamp: Date.now() });
         };
@@ -130,6 +149,7 @@ export default function useSportsData() {
         ws.onclose = function close(event) {
           if (!isComponentMounted) return;
 
+          isConnectingRef.current = false;
           debugLogger.websocketEvent("Sports WebSocket disconnected", {
             code: event.code,
           });
@@ -161,6 +181,23 @@ export default function useSportsData() {
                 itemCount: receivedData.data?.length,
               });
               setSportsData(receivedData.data || []);
+            } else if (receivedData.type === "games_updated") {
+              // Handle real-time updates
+              console.log(
+                `Sports data updated for league: ${receivedData.league}`
+              );
+              // Don't request fresh data here - the server already sent the update notification
+              // The server will send the actual data separately
+            } else if (receivedData.type === "welcome") {
+              console.log("Welcome message received from sports server");
+              // Send initial filter request after welcome
+              if (hasActiveSportsToggles) {
+                setTimeout(() => {
+                  sendSportsFilterRequest(debouncedSportsToggles);
+                }, 100);
+              }
+            } else if (receivedData.type === "connection_confirmed") {
+              console.log("Connection confirmed by sports server");
             }
           } catch (error) {
             debugLogger.error(
@@ -181,6 +218,7 @@ export default function useSportsData() {
           setConnectionStatus("Connection Error");
         };
       } catch (error) {
+        isConnectingRef.current = false;
         if (!isComponentMounted) return;
         debugLogger.error(
           DEBUG_CATEGORIES.WEBSOCKET,
@@ -202,6 +240,15 @@ export default function useSportsData() {
     };
 
     setConnectionStatus("Connecting");
+    // Check if already connected or connecting
+    if (wsRef.current && wsRef.current.readyState <= 1) {
+      // 0 = CONNECTING, 1 = OPEN
+      console.log(
+        "WebSocket already connected or connecting, skipping new connection"
+      );
+      return;
+    }
+
     // Small delay before initial connection to let the page settle
     const initialDelay = setTimeout(() => {
       if (isComponentMounted && hasActiveSportsToggles) {
@@ -224,25 +271,31 @@ export default function useSportsData() {
     };
   }, [hasActiveSportsToggles, throttledSendMessage]);
 
-  // Handle sports toggles change
+  // Handle sports toggles change - removed duplicate effect
   useEffect(() => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+    if (
+      wsRef.current &&
+      wsRef.current.readyState === WebSocket.OPEN &&
+      hasActiveSportsToggles
+    ) {
       sendSportsFilterRequest(debouncedSportsToggles);
-      //console.log('Sports toggles changed, sent new filter request:', debouncedSportsToggles);
+      console.log(
+        "Sports toggles changed, sent new filter request:",
+        debouncedSportsToggles
+      );
     }
-  }, [debouncedSportsToggles, sendSportsFilterRequest]);
+  }, [debouncedSportsToggles, sendSportsFilterRequest, hasActiveSportsToggles]);
 
-  // Load initial data when connected
+  // Debug logging
   useEffect(() => {
-    if (connectionStatus === "Connected" && hasActiveSportsToggles) {
-      sendSportsFilterRequest(debouncedSportsToggles);
-    }
-  }, [
-    connectionStatus,
-    hasActiveSportsToggles,
-    debouncedSportsToggles,
-    sendSportsFilterRequest,
-  ]);
+    console.log("Sports WebSocket Debug:", {
+      hasToggles: hasActiveSportsToggles,
+      connectionStatus,
+      wsState: wsRef.current?.readyState,
+      isConnecting: isConnectingRef.current,
+      dataCount: sportsData?.length || 0,
+    });
+  }, [hasActiveSportsToggles, connectionStatus]);
 
   return {
     sportsData,
