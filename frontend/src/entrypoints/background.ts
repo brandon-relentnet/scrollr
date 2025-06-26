@@ -4,7 +4,7 @@ import rootReducer from '@/entrypoints/store/rootReducer.js';
 // @ts-ignore
 import { browser } from 'wxt/browser';
 // Import actions statically for better performance
-import { setLayout, setSpeed, setPosition } from '@/entrypoints/store/layoutSlice.js';
+import { setLayout, setSpeed, setPosition, setOpacity } from '@/entrypoints/store/layoutSlice.js';
 import { setPower } from '@/entrypoints/store/powerSlice.js';
 import debugLogger, { DEBUG_CATEGORIES } from '@/entrypoints/utils/debugLogger.js';
 
@@ -18,11 +18,12 @@ export default defineBackground(() => {
 
   void initializeStore();
 
-  browser.runtime.onMessage.addListener((message: { type: string; action: any; layout?: string; power?: boolean; speed?: string; position?: string; }, sender: any, sendResponse: (arg0: {
+  browser.runtime.onMessage.addListener((message: { type: string; action: any; layout?: string; power?: boolean; speed?: string; position?: string; opacity?: number; }, sender: any, sendResponse: (arg0: {
     layout: any;
     power: boolean;
     speed?: string;
     position?: string;
+    opacity?: number;
     error?: string;
     state?: any;
     success?: boolean;
@@ -54,12 +55,17 @@ export default defineBackground(() => {
       store.dispatch(setPosition(message.position));
       sendResponse({ layout: 'success', power: true, success: true });
       notifyContentScripts();
+    } else if (message.type === 'OPACITY_CHANGED') {
+      store.dispatch(setOpacity(message.opacity));
+      sendResponse({ layout: 'success', power: true, success: true });
+      notifyContentScripts();
     } else if (message.type === 'GET_IFRAME_STATE') {
       const state = store.getState();
       sendResponse({
         layout: state.layout?.mode || 'compact',
         speed: state.layout?.speed || 'classic',
         position: state.layout?.position || 'top',
+        opacity: state.layout?.opacity ?? 1.0,
         power: state.power?.mode !== false
       });
     } else if (message.type === 'LOGOUT_REFRESH') {
@@ -79,6 +85,7 @@ export default defineBackground(() => {
       layout: state.layout?.mode || 'compact',
       speed: state.layout?.speed || 'classic',
       position: state.layout?.position || 'top',
+      opacity: state.layout?.opacity ?? 1.0,
       power: state.power?.mode !== false
     };
 

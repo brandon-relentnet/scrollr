@@ -24,7 +24,7 @@ export default function App() {
   }, [currentTheme]);
 
   return (
-    <div className="bg-base-100 w-full px-2 h-full absolute bottom-0 left-0 flex items-center">
+    <div className="!bg-transparent w-full px-2 h-full absolute bottom-0 left-0 flex items-center">
       <PinnedOverlay />
       <Carousel />
     </div>

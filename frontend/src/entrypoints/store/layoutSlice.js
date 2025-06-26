@@ -6,6 +6,7 @@ const layoutSlice = createSlice({
         mode: 'compact',
         speed: 'classic', // slow, classic, fast
         position: 'bottom', // top, bottom
+        opacity: 1.0, // 0.0 to 1.0
     },
     reducers: {
         setLayout: (state, action) => {
@@ -26,9 +27,12 @@ const layoutSlice = createSlice({
         togglePosition: (state) => {
             state.position = state.position === 'top' ? 'bottom' : 'top';
         },
+        setOpacity: (state, action) => {
+            state.opacity = Math.max(0, Math.min(1, action.payload));
+        },
         setState: (state, action) => action.payload,
     },
 });
 
-export const { setLayout, setSpeed, toggleSpeed, setPosition, togglePosition, setState } = layoutSlice.actions;
+export const { setLayout, setSpeed, toggleSpeed, setPosition, togglePosition, setOpacity, setState } = layoutSlice.actions;
 export default layoutSlice.reducer;

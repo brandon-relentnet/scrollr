@@ -6,6 +6,7 @@ export default defineContentScript({
     let isVisible = true;
     let currentLayout = "compact";
     let currentPosition = "bottom";
+    let currentOpacity = 1.0;
 
     // Height configurations based on layout mode
     const heightConfig: { [key: string]: string } = {
@@ -29,6 +30,7 @@ export default defineContentScript({
           if (response && !response.error) {
             currentLayout = response.layout;
             currentPosition = response.position || "bottom";
+            currentOpacity = response.opacity ?? 1.0;
             isVisible = response.power;
           }
         } catch (error) {
@@ -43,7 +45,7 @@ export default defineContentScript({
         iframe.style.left = "0";
         iframe.style.zIndex = "2147483647";
         iframe.style.transition = "all 0.3s ease-out";
-        iframe.style.opacity = isVisible ? "1" : "0";
+        iframe.style.opacity = isVisible ? currentOpacity.toString() : "0";
         iframe.style.pointerEvents = isVisible ? "auto" : "none";
 
         // Set initial position
@@ -91,13 +93,22 @@ export default defineContentScript({
       }
     };
 
+    // Function to update iframe opacity
+    const updateIframeOpacity = (opacity: number) => {
+      if (iframeElement && isVisible) {
+        currentOpacity = Math.max(0, Math.min(1, opacity));
+        iframeElement.style.opacity = currentOpacity.toString();
+        console.log(`Iframe opacity updated to: ${currentOpacity}`);
+      }
+    };
+
     // Function to toggle iframe visibility
     const toggleIframeVisibility = (visible: boolean) => {
       if (iframeElement) {
         isVisible = visible;
 
         if (visible) {
-          iframeElement.style.opacity = "1";
+          iframeElement.style.opacity = currentOpacity.toString();
           iframeElement.style.pointerEvents = "auto";
           iframeElement.style.height = heightConfig[currentLayout];
         } else {
@@ -119,6 +130,7 @@ export default defineContentScript({
         layout?: string;
         power?: boolean;
         position?: string;
+        opacity?: number;
       }) => {
         if (message.type === "IFRAME_STATE_UPDATE") {
           if (message.layout && message.layout !== currentLayout) {
@@ -127,6 +139,9 @@ export default defineContentScript({
           if (message.position && message.position !== currentPosition) {
             updateIframePosition(message.position);
             updateIframeTransform(isVisible, message.position);
+          }
+          if (message.opacity !== undefined && message.opacity !== currentOpacity) {
+            updateIframeOpacity(message.opacity);
           }
           if (message.power !== undefined && message.power !== isVisible) {
             toggleIframeVisibility(message.power);
