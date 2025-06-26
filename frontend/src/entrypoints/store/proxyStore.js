@@ -1,4 +1,5 @@
 import {storage} from '#imports';
+import debugLogger, { DEBUG_CATEGORIES } from '../utils/debugLogger.js';
 
 let currentState = null;
 let listeners = [];
@@ -19,7 +20,7 @@ async function safeGetItem(key) {
         }
         return null;
     } catch (error) {
-        console.error('Storage getItem failed:', error);
+        debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Storage getItem failed', error);
         return null;
     }
 }
@@ -33,7 +34,7 @@ async function safeSendMessage(message) {
         }
         return null;
     } catch (error) {
-        console.error('Browser message failed:', error);
+        debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Browser message failed', error);
         return null;
     }
 }
@@ -51,7 +52,7 @@ async function loadInitialState() {
             }
         }
     } catch (error) {
-        console.error('Failed to load initial state:', error);
+        debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Failed to load initial state', error);
     }
 }
 
@@ -67,7 +68,7 @@ function initializeStorageWatcher() {
             });
         }
     } catch (error) {
-        console.error('Failed to initialize storage watcher:', error);
+        debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Failed to initialize storage watcher', error);
     }
 }
 
@@ -79,7 +80,7 @@ function notifyListeners() {
                 listener();
             }
         } catch (error) {
-            console.error('Error calling listener:', error);
+            debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Error calling listener', error);
         }
     }
 }
@@ -103,14 +104,14 @@ async function dispatch(action) {
         }
         return currentState;
     } catch (error) {
-        console.error('Dispatch failed:', error);
+        debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Dispatch failed', error);
         return currentState;
     }
 }
 
 function subscribe(listener) {
     if (typeof listener !== 'function') {
-        console.warn('Subscribe called with non-function listener');
+        debugLogger.warn(DEBUG_CATEGORIES.STORAGE, 'Subscribe called with non-function listener');
         return () => {}; // Return no-op unsubscribe function
     }
 
@@ -137,7 +138,7 @@ export async function initializeProxyStore() {
             replaceReducer
         };
     } catch (error) {
-        console.error('Failed to initialize proxy store:', error);
+        debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Failed to initialize proxy store', error);
         // Return a fallback store
         return {
             getState: () => null,

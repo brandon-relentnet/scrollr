@@ -1,3 +1,5 @@
+import debugLogger, { DEBUG_CATEGORIES } from "./utils/debugLogger.js";
+
 export default defineContentScript({
   matches: ["<all_urls>"],
 
@@ -34,7 +36,7 @@ export default defineContentScript({
             isVisible = response.power;
           }
         } catch (error) {
-          console.error("Failed to get initial state:", error);
+          debugLogger.error(DEBUG_CATEGORIES.UI, "Failed to get initial state", error);
         }
 
         // Apply initial styles
@@ -65,7 +67,7 @@ export default defineContentScript({
           iframeElement.style.top = "";
         }
         currentPosition = position;
-        console.log(`Iframe position updated to: ${position}`);
+        debugLogger.uiEvent(`Iframe position updated to ${position}`);
       }
     };
 
@@ -87,9 +89,7 @@ export default defineContentScript({
         currentLayout = layoutMode;
         const newHeight = heightConfig[layoutMode] || heightConfig.compact;
         iframeElement.style.height = newHeight;
-        console.log(
-          `Iframe height updated to: ${newHeight} for layout: ${layoutMode}`
-        );
+        debugLogger.uiEvent(`Iframe height updated to ${newHeight} for layout ${layoutMode}`);
       }
     };
 
@@ -98,7 +98,7 @@ export default defineContentScript({
       if (iframeElement && isVisible) {
         currentOpacity = Math.max(0, Math.min(1, opacity));
         iframeElement.style.opacity = currentOpacity.toString();
-        console.log(`Iframe opacity updated to: ${currentOpacity}`);
+        debugLogger.uiEvent(`Iframe opacity updated to ${currentOpacity}`);
       }
     };
 
@@ -117,9 +117,7 @@ export default defineContentScript({
         }
 
         updateIframeTransform(visible, currentPosition);
-        console.log(
-          `Iframe visibility toggled: ${visible ? "visible" : "hidden"}`
-        );
+        debugLogger.uiEvent(`Iframe visibility toggled: ${visible ? "visible" : "hidden"}`);
       }
     };
 
@@ -149,7 +147,7 @@ export default defineContentScript({
         } else if (message.type === "LOGOUT_REFRESH") {
           // Refresh the iframe when user logs out
           if (iframeElement) {
-            console.log("Refreshing iframe due to logout");
+            debugLogger.uiEvent("Refreshing iframe due to logout");
             // Force reload the iframe
             const currentSrc = iframeElement.src;
             iframeElement.src = "";

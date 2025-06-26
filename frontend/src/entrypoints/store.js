@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import loadState, { saveState } from './extensionStorage.js';
 import rootReducer from '@/entrypoints/store/rootReducer.js';
+import debugLogger, { DEBUG_CATEGORIES } from './utils/debugLogger.js';
 
 // Create store with all reducers
 const store = configureStore({
@@ -18,14 +19,14 @@ const initializePersistedState = async () => {
             store.dispatch({ type: 'LOAD_PERSISTED_STATE', payload: persistedState });
         }
     } catch (error) {
-        console.error('Failed to load persisted state:', error);
+        debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Failed to load persisted state', error);
     }
 };
 
 // Initialize persisted state
 // Note: In WXT extensions, window is always available, so the check is optional
 initializePersistedState().catch(error => {
-    console.error('Failed to initialize persisted state:', error);
+    debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Failed to initialize persisted state', error);
 });
 
 // Save state to extension storage whenever the store updates
@@ -37,7 +38,7 @@ store.subscribe(() => {
         try {
             await saveState(store.getState());
         } catch (error) {
-            console.error('Failed to save state:', error);
+            debugLogger.error(DEBUG_CATEGORIES.STORAGE, 'Failed to save state', error);
         }
     }, 500); // Save 500ms after last change
 });

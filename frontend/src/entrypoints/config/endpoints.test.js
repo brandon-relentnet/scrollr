@@ -10,52 +10,47 @@ import {
   buildUrl,
   buildWsUrl,
 } from "./endpoints.js";
+import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
 
 // Test function to log all configurations
 export function testEndpointsConfiguration() {
-  console.group("🔧 Testing Endpoints Configuration");
+  debugLogger.group("Testing Endpoints Configuration", DEBUG_CATEGORIES.CONFIG);
 
   // Test API endpoints
-  console.group("📡 API Endpoints:");
-  console.log("Accounts Base:", API_ENDPOINTS.accounts.base);
-  console.log("Accounts Auth Login:", API_ENDPOINTS.accounts.auth.login);
-  console.log("Finance Base:", API_ENDPOINTS.finance.base);
-  console.log("Sports Base:", API_ENDPOINTS.sports.base);
-  console.groupEnd();
+  debugLogger.info(DEBUG_CATEGORIES.CONFIG, "API Endpoints", {
+    accountsBase: API_ENDPOINTS.accounts.base,
+    accountsAuthLogin: API_ENDPOINTS.accounts.auth.login,
+    financeBase: API_ENDPOINTS.finance.base,
+    sportsBase: API_ENDPOINTS.sports.base
+  });
 
   // Test WebSocket endpoints
-  console.group("🔌 WebSocket Endpoints:");
-  console.log("Finance WS:", WS_ENDPOINTS.finance);
-  console.log("Sports WS:", WS_ENDPOINTS.sports);
-  console.groupEnd();
+  debugLogger.info(DEBUG_CATEGORIES.CONFIG, "WebSocket Endpoints", {
+    financeWS: WS_ENDPOINTS.finance,
+    sportsWS: WS_ENDPOINTS.sports
+  });
 
   // Test service configuration
-  console.group("⚙️ Service Configuration:");
-  console.log("Accounts:", SERVICE_CONFIG.accounts);
-  console.log("Finance:", SERVICE_CONFIG.finance);
-  console.log("Sports:", SERVICE_CONFIG.sports);
-  console.groupEnd();
+  debugLogger.info(DEBUG_CATEGORIES.CONFIG, "Service Configuration", {
+    accounts: SERVICE_CONFIG.accounts,
+    finance: SERVICE_CONFIG.finance,
+    sports: SERVICE_CONFIG.sports
+  });
 
   // Test helper functions
-  console.group("🛠️ Helper Functions:");
   try {
-    console.log(
-      "buildUrl(accounts, /health):",
-      buildUrl("accounts", "/health")
-    );
-    console.log(
-      "buildUrl(finance, /api/trades):",
-      buildUrl("finance", "/api/trades")
-    );
-    console.log("buildWsUrl(finance):", buildWsUrl("finance"));
-    console.log("buildWsUrl(sports):", buildWsUrl("sports"));
+    debugLogger.info(DEBUG_CATEGORIES.CONFIG, "Helper Functions", {
+      buildUrlAccounts: buildUrl("accounts", "/health"),
+      buildUrlFinance: buildUrl("finance", "/api/trades"),
+      buildWsUrlFinance: buildWsUrl("finance"),
+      buildWsUrlSports: buildWsUrl("sports")
+    });
   } catch (error) {
-    console.error("Helper function error:", error);
+    debugLogger.error(DEBUG_CATEGORIES.CONFIG, "Helper function error", error);
   }
-  console.groupEnd();
 
   // Test validation
-  console.group("✅ Validation:");
+  // Validation logic
   const expectedPorts = { accounts: 5000, finance: 4001, sports: 4000 };
   let allValid = true;
 
@@ -63,11 +58,11 @@ export function testEndpointsConfiguration() {
     const actualPort = SERVICE_CONFIG[service]?.port;
     const isValid = actualPort === expectedPort;
     allValid = allValid && isValid;
-    console.log(
-      `${service} port: ${actualPort} (expected: ${expectedPort}) ${
-        isValid ? "✅" : "❌"
-      }`
-    );
+    debugLogger.info(DEBUG_CATEGORIES.CONFIG, `${service} port validation`, {
+      actualPort,
+      expectedPort,
+      isValid
+    });
   });
 
   // Check URL formats
@@ -77,16 +72,14 @@ export function testEndpointsConfiguration() {
   const apiUrlValid = urlPattern.test(API_ENDPOINTS.accounts.base);
   const wsUrlValid = wsPattern.test(WS_ENDPOINTS.finance);
 
-  console.log(`API URL format: ${apiUrlValid ? "✅" : "❌"}`);
-  console.log(`WebSocket URL format: ${wsUrlValid ? "✅" : "❌"}`);
-  console.log(
-    `Overall configuration: ${
-      allValid && apiUrlValid && wsUrlValid ? "✅ VALID" : "❌ INVALID"
-    }`
-  );
-  console.groupEnd();
-
-  console.groupEnd();
+  debugLogger.info(DEBUG_CATEGORIES.CONFIG, "API URL format validation", { valid: apiUrlValid });
+  debugLogger.info(DEBUG_CATEGORIES.CONFIG, "WebSocket URL format validation", { valid: wsUrlValid });
+  const overallValid = allValid && apiUrlValid && wsUrlValid;
+  debugLogger.info(DEBUG_CATEGORIES.CONFIG, "Overall configuration validation", {
+    valid: overallValid,
+    status: overallValid ? "VALID" : "INVALID"
+  });
+  debugLogger.groupEnd(DEBUG_CATEGORIES.CONFIG);
 
   return allValid && apiUrlValid && wsUrlValid;
 }

@@ -11,6 +11,7 @@ import {
   removePinnedItem,
   selectIsItemPinned,
 } from "../store/pinnedSlice.js";
+import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
 
 const TradeCard = memo(
   ({ trade }) => {
@@ -24,7 +25,7 @@ const TradeCard = memo(
 
     // Debug logging for trade updates
     useEffect(() => {
-      console.log(`🏷️  TradeCard ${trade.symbol} updated:`, {
+      debugLogger.stateChange(`TradeCard ${trade.symbol} updated`, {
         price: trade.price,
         change: trade.price_change,
         percentage: trade.percentage_change,
@@ -245,7 +246,7 @@ const TradeCard = memo(
 
     // Debug logging for memoization decisions
     if (!areEqual) {
-      console.log(`🔄 TradeCard ${prev.symbol} will re-render:`, {
+      debugLogger.debug(DEBUG_CATEGORIES.STATE, `TradeCard ${prev.symbol} will re-render`, {
         priceChanged: prevPrice !== nextPrice,
         changeChanged: prevChange !== nextChange,
         percentageChanged: prevPercentage !== nextPercentage,

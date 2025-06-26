@@ -1,4 +1,5 @@
 import { buildUrl, buildWsUrl, SERVICE_CONFIG } from "../config/endpoints.js";
+import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
 
 /**
  * Check if a server is ready by hitting its health endpoint
@@ -26,7 +27,7 @@ async function checkServerHealth(service, timeout = 5000) {
     return false;
   } catch (error) {
     clearTimeout(timeoutId);
-    console.log(`Health check failed for ${service}:`, error.message);
+    debugLogger.networkEvent(`Health check failed for ${service}`, { error: error.message });
     return false;
   }
 }
@@ -36,26 +37,29 @@ async function checkServerHealth(service, timeout = 5000) {
  */
 async function waitForServerReady(service, maxAttempts = 10) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    console.log(
-      `Checking server health (${service}), attempt ${attempt}/${maxAttempts}`
+    debugLogger.networkEvent(
+      `Checking server health (${service})`,
+      { attempt, maxAttempts }
     );
 
     const isReady = await checkServerHealth(service);
     if (isReady) {
-      console.log(`${service} service is ready!`);
+      debugLogger.networkEvent(`${service} service is ready`);
       return true;
     }
 
     if (attempt < maxAttempts) {
       // Exponential backoff: 1s, 2s, 4s, 8s, etc.
       const delay = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
-      console.log(`Server not ready, waiting ${delay}ms before retry...`);
+      debugLogger.networkEvent(`Server not ready, waiting before retry`, { delay, service });
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
-  console.error(
-    `${service} service failed to become ready after ${maxAttempts} attempts`
+  debugLogger.error(
+    DEBUG_CATEGORIES.NETWORK,
+    `${service} service failed to become ready`,
+    { maxAttempts }
   );
   return false;
 }
@@ -64,7 +68,7 @@ async function waitForServerReady(service, maxAttempts = 10) {
  * Create WebSocket connection with server readiness check
  */
 async function createWebSocketConnection(service, path = "/ws") {
-  console.log(`Waiting for ${service} service to be ready...`);
+  debugLogger.networkEvent(`Waiting for ${service} service to be ready`);
 
   const isReady = await waitForServerReady(service);
   if (!isReady) {
@@ -73,7 +77,7 @@ async function createWebSocketConnection(service, path = "/ws") {
 
   const wsUrl = buildWsUrl(service, path);
 
-  console.log(`Creating WebSocket connection to ${wsUrl}`);
+  debugLogger.websocketEvent(`Creating WebSocket connection`, { wsUrl });
   return new WebSocket(wsUrl);
 }
 

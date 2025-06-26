@@ -74,7 +74,7 @@ export default function useSportsData() {
       // Skip if we already sent this exact filter set
       const filterKey = activeFilters.sort().join(",");
       if (wsRef.current._lastFilterKey === filterKey) {
-        console.log("Skipping duplicate filter request:", filterKey);
+        debugLogger.websocketEvent("Skipping duplicate filter request", { filterKey });
         return;
       }
       wsRef.current._lastFilterKey = filterKey;
@@ -86,7 +86,7 @@ export default function useSportsData() {
       };
 
       throttledSendMessage(filterData);
-      console.log("Sent sports filter request:", filterData);
+      debugLogger.websocketEvent("Sent sports filter request", filterData);
     },
     [hasActiveSportsToggles, throttledSendMessage]
   );
@@ -183,13 +183,11 @@ export default function useSportsData() {
               setSportsData(receivedData.data || []);
             } else if (receivedData.type === "games_updated") {
               // Handle real-time updates
-              console.log(
-                `Sports data updated for league: ${receivedData.league}`
-              );
+              debugLogger.websocketEvent("Sports data updated", { league: receivedData.league });
               // Don't request fresh data here - the server already sent the update notification
               // The server will send the actual data separately
             } else if (receivedData.type === "welcome") {
-              console.log("Welcome message received from sports server");
+              debugLogger.websocketEvent("Welcome message received from sports server");
               // Send initial filter request after welcome
               if (hasActiveSportsToggles) {
                 setTimeout(() => {
@@ -197,7 +195,7 @@ export default function useSportsData() {
                 }, 100);
               }
             } else if (receivedData.type === "connection_confirmed") {
-              console.log("Connection confirmed by sports server");
+              debugLogger.websocketEvent("Connection confirmed by sports server");
             }
           } catch (error) {
             debugLogger.error(
@@ -243,8 +241,9 @@ export default function useSportsData() {
     // Check if already connected or connecting
     if (wsRef.current && wsRef.current.readyState <= 1) {
       // 0 = CONNECTING, 1 = OPEN
-      console.log(
-        "WebSocket already connected or connecting, skipping new connection"
+      debugLogger.websocketEvent(
+        "WebSocket already connected or connecting, skipping new connection",
+        { readyState: wsRef.current.readyState }
       );
       return;
     }
@@ -279,8 +278,8 @@ export default function useSportsData() {
       hasActiveSportsToggles
     ) {
       sendSportsFilterRequest(debouncedSportsToggles);
-      console.log(
-        "Sports toggles changed, sent new filter request:",
+      debugLogger.websocketEvent(
+        "Sports toggles changed, sent new filter request",
         debouncedSportsToggles
       );
     }
@@ -288,7 +287,7 @@ export default function useSportsData() {
 
   // Debug logging
   useEffect(() => {
-    console.log("Sports WebSocket Debug:", {
+    debugLogger.debug(DEBUG_CATEGORIES.WEBSOCKET, "Sports WebSocket Debug", {
       hasToggles: hasActiveSportsToggles,
       connectionStatus,
       wsState: wsRef.current?.readyState,

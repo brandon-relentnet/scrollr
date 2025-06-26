@@ -8,6 +8,7 @@ import {
 } from "@/entrypoints/store/rssSlice.js";
 import { useAuth } from "./useAuth.tsx";
 import { API_ENDPOINTS } from "../../config/endpoints.js";
+import debugLogger, { DEBUG_CATEGORIES } from "../../utils/debugLogger.js";
 
 interface RssFeed {
   id: number;
@@ -58,7 +59,7 @@ export function useRssFeeds() {
         setError(errorMessage || "Failed to load RSS feeds");
       }
     } catch (err) {
-      console.error("Error loading RSS feeds:", err);
+      debugLogger.error(DEBUG_CATEGORIES.RSS, "Error loading RSS feeds", err);
       setError("Network error loading RSS feeds");
     } finally {
       setIsLoading(false);
@@ -99,7 +100,7 @@ export function useRssFeeds() {
           };
         }
       } catch (err) {
-        console.error("Error adding RSS feed:", err);
+        debugLogger.error(DEBUG_CATEGORIES.RSS, "Error adding RSS feed", err);
         const errorMessage = "Network error adding RSS feed";
         setError(errorMessage);
         return { success: false, error: errorMessage };
@@ -146,7 +147,7 @@ export function useRssFeeds() {
           };
         }
       } catch (err) {
-        console.error("Error updating RSS feed:", err);
+        debugLogger.error(DEBUG_CATEGORIES.RSS, "Error updating RSS feed", err);
         const errorMessage = "Network error updating RSS feed";
         setError(errorMessage);
         return { success: false, error: errorMessage };
@@ -189,7 +190,7 @@ export function useRssFeeds() {
           };
         }
       } catch (err) {
-        console.error("Error deleting RSS feed:", err);
+        debugLogger.error(DEBUG_CATEGORIES.RSS, "Error deleting RSS feed", err);
         const errorMessage = "Network error deleting RSS feed";
         setError(errorMessage);
         return { success: false, error: errorMessage };

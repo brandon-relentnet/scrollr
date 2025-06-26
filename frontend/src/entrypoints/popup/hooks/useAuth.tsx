@@ -136,9 +136,7 @@ export function useAuth() {
           } else {
             // If no server settings exist, save current local settings to server
             await saveSettingsToServer(token);
-            console.log(
-              "No server settings found, saved current local settings"
-            );
+            debugLogger.authEvent("No server settings found, saved current local settings");
           }
         }
       } catch (error) {
@@ -333,9 +331,9 @@ export function useAuth() {
             }),
             keepalive: true, // Keep request alive during page unload
           });
-          console.log("Emergency save triggered on unload");
+          debugLogger.authEvent("Emergency save triggered on unload");
         } catch (error) {
-          console.error("Emergency save on unload failed:", error);
+          debugLogger.error(DEBUG_CATEGORIES.AUTH, "Emergency save on unload failed", error);
         }
       }
     };
@@ -375,10 +373,7 @@ export function useAuth() {
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          console.log(
-            `Login attempt ${attempt}/${maxRetries} to:`,
-            API_ENDPOINTS.accounts.auth.login
-          );
+          debugLogger.authEvent(`Login attempt ${attempt}/${maxRetries} to ${API_ENDPOINTS.accounts.auth.login}`);
 
           const response = await fetch(API_ENDPOINTS.accounts.auth.login, {
             method: "POST",
@@ -388,12 +383,14 @@ export function useAuth() {
             body: JSON.stringify(credentials),
           });
 
-          console.log(`Login response status: ${response.status}`);
+          debugLogger.authEvent(`Login response status: ${response.status}`);
 
           // Handle 502/503 errors with retry
           if (response.status >= 502 && response.status <= 504) {
-            console.warn(
-              `Server error ${response.status} on attempt ${attempt}, retrying...`
+            debugLogger.warn(
+              DEBUG_CATEGORIES.AUTH,
+              `Server error on attempt ${attempt}, retrying`,
+              { status: response.status }
             );
             if (attempt < maxRetries) {
               await new Promise((resolve) =>
@@ -411,13 +408,14 @@ export function useAuth() {
           try {
             data = await response.json();
           } catch (parseError) {
-            console.error("Failed to parse response as JSON:", parseError);
+            debugLogger.error(DEBUG_CATEGORIES.AUTH, "Failed to parse response as JSON", parseError);
             const text = await response.text();
-            console.error("Response text:", text.substring(0, 200));
+            debugLogger.error(DEBUG_CATEGORIES.AUTH, "Response text", { text: text.substring(0, 200) });
 
             if (attempt < maxRetries) {
-              console.warn(
-                `JSON parse error on attempt ${attempt}, retrying...`
+              debugLogger.warn(
+                DEBUG_CATEGORIES.AUTH,
+                `JSON parse error on attempt ${attempt}, retrying`
               );
               await new Promise((resolve) =>
                 setTimeout(resolve, 1000 * attempt)
@@ -452,11 +450,11 @@ export function useAuth() {
             return { success: false, error: data.error || "Login failed" };
           }
         } catch (error) {
-          console.error(`Login error on attempt ${attempt}:`, error);
+          debugLogger.error(DEBUG_CATEGORIES.AUTH, `Login error on attempt ${attempt}`, error);
           lastError = error;
 
           if (attempt < maxRetries) {
-            console.warn(`Network error on attempt ${attempt}, retrying...`);
+            debugLogger.warn(DEBUG_CATEGORIES.AUTH, `Network error on attempt ${attempt}, retrying`);
             await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
             continue;
           }
@@ -509,7 +507,7 @@ export function useAuth() {
           return { success: false, error: data.error || "Registration failed" };
         }
       } catch (error) {
-        console.error("Registration error:", error);
+        debugLogger.error(DEBUG_CATEGORIES.AUTH, "Registration error", error);
         return { success: false, error: "Network error during registration" };
       }
     },
@@ -533,7 +531,7 @@ export function useAuth() {
         await browser.storage.sync?.clear();
       }
     } catch (error) {
-      console.error("Failed to clear browser storage:", error);
+      debugLogger.error(DEBUG_CATEGORIES.STORAGE, "Failed to clear browser storage", error);
     }
 
     // Update auth state
@@ -551,7 +549,7 @@ export function useAuth() {
         try {
           browser.runtime.sendMessage({ type: "LOGOUT_REFRESH" });
         } catch (error) {
-          console.error("Failed to send logout message:", error);
+          debugLogger.error(DEBUG_CATEGORIES.AUTH, "Failed to send logout message", error);
         }
       }
 
@@ -595,7 +593,7 @@ export function useAuth() {
           };
         }
       } catch (error) {
-        console.error("Profile update error:", error);
+        debugLogger.error(DEBUG_CATEGORIES.AUTH, "Profile update error", error);
         return { success: false, error: "Network error during profile update" };
       }
     },
@@ -631,7 +629,7 @@ export function useAuth() {
           };
         }
       } catch (error) {
-        console.error("Password change error:", error);
+        debugLogger.error(DEBUG_CATEGORIES.AUTH, "Password change error", error);
         return {
           success: false,
           error: "Network error during password change",

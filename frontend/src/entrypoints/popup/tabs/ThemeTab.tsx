@@ -2,6 +2,7 @@ import { SwatchIcon } from "@heroicons/react/24/solid";
 import { useDispatch, useSelector } from "react-redux";
 import { setTheme } from "@/entrypoints/store/themeSlice";
 import { useAuth } from "@/entrypoints/popup/hooks/useAuth";
+import debugLogger, { DEBUG_CATEGORIES } from "@/entrypoints/utils/debugLogger.js";
 
 export default function ThemeTab() {
   const dispatch = useDispatch();
@@ -56,7 +57,7 @@ export default function ThemeTab() {
   };
 
   function themeChange(theme: string) {
-    console.log("Selected theme:", theme);
+    debugLogger.uiEvent(`Theme changed to ${theme}`);
     dispatch(setTheme(theme));
     // Also apply immediately to DOM
     document.documentElement.setAttribute("data-theme", theme);

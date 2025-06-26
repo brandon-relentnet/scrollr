@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
+import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
 
 // Debounce utility for RSS feed updates
 function useDebounce(value, delay) {
@@ -44,8 +45,9 @@ async function fetchRssFeed(feed) {
   for (let i = 0; i < CORS_PROXIES.length; i++) {
     try {
       const proxyUrl = CORS_PROXIES[i](feed.url);
-      console.log(
-        `Attempting to fetch RSS feed "${feed.name}" via proxy ${i + 1}`
+      debugLogger.rssEvent(
+        `Attempting to fetch RSS feed via proxy ${i + 1}`,
+        { feedName: feed.name, proxyIndex: i + 1 }
       );
 
       // Create timeout controller for better browser compatibility
@@ -134,17 +136,17 @@ async function fetchRssFeed(feed) {
         };
       });
 
-      console.log(
-        `Successfully fetched ${parsedItems.length} items from RSS feed "${
-          feed.name
-        }" via proxy ${i + 1}`
+      debugLogger.rssEvent(
+        `Successfully fetched RSS feed via proxy ${i + 1}`,
+        { feedName: feed.name, itemCount: parsedItems.length, proxyIndex: i + 1 }
       );
       return parsedItems;
     } catch (error) {
       lastError = error;
-      console.warn(
-        `Proxy ${i + 1} failed for RSS feed "${feed.name}":`,
-        error.message
+      debugLogger.warn(
+        DEBUG_CATEGORIES.RSS,
+        `Proxy ${i + 1} failed for RSS feed`,
+        { feedName: feed.name, error: error.message }
       );
 
       // If this was the last proxy, we'll throw the error below
@@ -158,9 +160,10 @@ async function fetchRssFeed(feed) {
   }
 
   // If we get here, all proxies failed
-  console.error(
-    `All CORS proxies failed for RSS feed "${feed.name}":`,
-    lastError
+  debugLogger.error(
+    DEBUG_CATEGORIES.RSS,
+    `All CORS proxies failed for RSS feed`,
+    { feedName: feed.name, error: lastError }
   );
   return [];
 }
@@ -229,7 +232,7 @@ export default function useRssData() {
       setConnectionStatus(`Connected - ${sortedItems.length} articles`);
       lastFetchRef.current = Date.now();
     } catch (error) {
-      console.error("Error fetching RSS data:", error);
+      debugLogger.error(DEBUG_CATEGORIES.RSS, "Error fetching RSS data", error);
       setConnectionStatus("Error Fetching RSS");
       setRssItems([]);
     } finally {
@@ -286,7 +289,7 @@ export default function useRssData() {
     }
 
     const refreshInterval = setInterval(() => {
-      console.log("Auto-refreshing RSS feeds");
+      debugLogger.rssEvent("Auto-refreshing RSS feeds");
       fetchRssData(selectedFeeds);
     }, 5 * 60 * 1000); // 5 minutes
 
@@ -295,7 +298,7 @@ export default function useRssData() {
 
   // Debug logging
   useEffect(() => {
-    console.log("useRssData state:", {
+    debugLogger.debug(DEBUG_CATEGORIES.RSS, "useRssData state", {
       hasActiveFeeds: hasActiveRssFeeds,
       selectedFeedsCount: selectedFeeds.length,
       itemsCount: rssItems.length,
