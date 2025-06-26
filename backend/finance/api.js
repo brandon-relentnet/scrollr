@@ -119,8 +119,11 @@ async function getFilteredTrades(filters) {
  */
 function clearCaches() {
     filterCache.clear()
-    tradesCache.data = null
-    tradesCache.timestamp = 0
+    // Only clear trades cache if it's older than 30 seconds
+    if (tradesCache.timestamp && (Date.now() - tradesCache.timestamp) > 30000) {
+        tradesCache.data = null
+        tradesCache.timestamp = 0
+    }
 }
 
 /**
@@ -159,7 +162,7 @@ async function broadcastUpdatedTrades() {
 
     if (!wss || clients.size === 0) return
 
-    clearCaches() // Clear caches for fresh data
+    filterCache.clear() // Only clear filter cache, not trades cache
 
     console.log('Broadcasting to', clients.size, 'clients')
 
@@ -181,20 +184,24 @@ async function broadcastUpdatedTrades() {
     const promises = Array.from(filterGroups.values()).map(async ({ filters, clients }) => {
         try {
             const data = await getFilteredTrades(filters)
-            const message = {
-                type: 'financial_update',
-                data,
-                filters,
-                count: data.length,
-                message: filters.length === 0
-                    ? 'No filters selected'
-                    : `${data.length} trades match filters`,
-                is_refresh: true,
-                timestamp
-            }
+            
+            // Only send updates if we actually have data or if it's an explicit empty filter
+            if (data.length > 0 || filters.length === 0) {
+                const message = {
+                    type: 'financial_update',
+                    data,
+                    filters,
+                    count: data.length,
+                    message: filters.length === 0
+                        ? 'No filters selected'
+                        : `${data.length} trades match filters`,
+                    is_refresh: true,
+                    timestamp
+                }
 
-            // Send to all clients in this group
-            clients.forEach(client => sendToClient(client, message))
+                // Send to all clients in this group
+                clients.forEach(client => sendToClient(client, message))
+            }
         } catch (error) {
             console.error('Error processing filter group:', error)
         }
@@ -252,25 +259,43 @@ function handleClientMessage(ws, data) {
 }
 
 async function handleFilterRequest(ws, filters) {
-    console.log('Filter request:', filters)
+    console.log('🔍 Filter request received:', filters)
     clientFilters.set(ws, filters || [])
 
     try {
+        // Get all available trades first to debug
+        const allTrades = await getCachedTrades()
+        console.log('📊 Total trades in database:', allTrades.length)
+        
+        // Log first few trades for debugging
+        if (allTrades.length > 0) {
+            console.log('📋 Sample trades:', allTrades.slice(0, 3).map(t => ({ symbol: t.symbol, price: t.price })))
+        }
+        
         const filteredTrades = await getFilteredTrades(filters)
+        console.log('✅ Filtered trades result:', filteredTrades.length, 'matches')
+        
+        if (filteredTrades.length > 0) {
+            console.log('📋 First 3 filtered trades:', filteredTrades.slice(0, 3).map(t => ({ symbol: t.symbol, price: t.price })))
+        }
+        
         const message = filters?.length === 0
             ? 'No filters selected'
             : `${filteredTrades.length} trades found`
 
-        sendToClient(ws, {
+        const response = {
             type: 'filtered_data',
             data: filteredTrades,
             filters: filters || [],
             count: filteredTrades.length,
             message,
             timestamp: Date.now()
-        })
+        }
+        
+        console.log('📤 Sending response:', { type: response.type, count: response.count, message: response.message })
+        sendToClient(ws, response)
     } catch (error) {
-        console.error('Error handling filter request:', error)
+        console.error('❌ Error handling filter request:', error)
         sendToClient(ws, {
             type: 'error',
             message: 'Failed to process filters',

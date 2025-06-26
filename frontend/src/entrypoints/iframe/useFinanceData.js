@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { STOCK_PRESETS, CRYPTO_PRESETS } from "@/entrypoints/popup/tabs/data";
 import { createWebSocketConnection } from "./connectionUtils";
-import { SERVICE_CONFIG } from '../config/endpoints.js';
+import { SERVICE_CONFIG } from "../config/endpoints.js";
 import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
 
 // OPTIMIZATION: Debounce utility
@@ -93,7 +93,6 @@ function calculateFinanceFilters(financeState) {
 // FIX: Stable filter hook with immediate calculation
 function useStableFinanceFilters(financeState) {
   const [stableFilters, setStableFilters] = useState([]);
-  const lastStateRef = useRef(null);
 
   // Calculate filters immediately when state changes
   const currentFilters = useMemo(
@@ -108,7 +107,7 @@ function useStableFinanceFilters(financeState) {
     ]
   );
 
-  // Optimized filter comparison - avoid JSON.stringify in hot path
+  // Update stable filters immediately when current filters change
   useEffect(() => {
     // Fast array comparison - much faster than JSON.stringify
     const filtersChanged =
@@ -116,7 +115,7 @@ function useStableFinanceFilters(financeState) {
       currentFilters.some((filter, index) => filter !== stableFilters[index]);
 
     if (filtersChanged) {
-      debugLogger.stateChange('Finance filters', {
+      debugLogger.stateChange("Finance filters changed", {
         from: stableFilters.length,
         to: currentFilters.length,
         new: currentFilters.slice(0, 3), // First 3 for debugging
@@ -140,19 +139,20 @@ export default function useFinanceData() {
   const wsRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   const lastSentFiltersRef = useRef("");
+  const pendingFiltersRef = useRef(null);
 
   // Get Redux state
   const financeState = useSelector((state) => state.finance);
 
-  // FIX: Use stable filters without debouncing for immediate response
+  // Get stable filters without debouncing for immediate response
   const financeFilters = useStableFinanceFilters(financeState);
 
-  // FIX: Still debounce for network requests, but not for filter calculation
-  const debouncedFinanceFilters = useDebounce(financeFilters, 150); // Reduced debounce time
+  // Still debounce for some network requests, but with reduced time
+  const debouncedFinanceFilters = useDebounce(financeFilters, 100);
 
   // Check if we have active finance filters
   const hasFinanceFilters = useMemo(() => {
-    return financeFilters.length > 0; // Use immediate filters, not debounced
+    return financeFilters.length > 0;
   }, [financeFilters.length]);
 
   // OPTIMIZATION: Throttled WebSocket send function
@@ -162,15 +162,19 @@ export default function useFinanceData() {
     }
   }, 100);
 
-  // FIX: Stable sendFilterRequest function
+  // FIX: Enhanced sendFilterRequest function
   const sendFilterRequest = useCallback(
-    (filters) => {
+    (filters, force = false) => {
       if (
         !filters ||
         !wsRef.current ||
         wsRef.current.readyState !== WebSocket.OPEN
       ) {
-        return;
+        // Store pending filters to send when connection is ready
+        if (filters && filters.length > 0) {
+          pendingFiltersRef.current = filters;
+        }
+        return false;
       }
 
       const financeOnlyFilters = filters.filter(
@@ -181,18 +185,24 @@ export default function useFinanceData() {
           f.startsWith("price_")
       );
 
-      // Optimized filter comparison - avoid JSON.stringify overhead
+      // Optimized filter comparison
       const sortedFilters = financeOnlyFilters.sort();
       const filtersString = sortedFilters.join(",");
-      if (filtersString === lastSentFiltersRef.current) {
-        //console.log('Skipping duplicate filter request');
-        return;
+
+      if (!force && filtersString === lastSentFiltersRef.current) {
+        debugLogger.websocketEvent("Skipping duplicate filter request", {
+          filtersString: filtersString.substring(0, 50) + "...",
+        });
+        return false;
       }
 
       lastSentFiltersRef.current = filtersString;
-      debugLogger.websocketEvent('Sending filter request', {
+      pendingFiltersRef.current = null; // Clear pending filters
+
+      debugLogger.websocketEvent("Sending filter request", {
         count: financeOnlyFilters.length,
         first3: financeOnlyFilters.slice(0, 3),
+        force,
       });
 
       throttledSendMessage({
@@ -200,20 +210,20 @@ export default function useFinanceData() {
         filters: financeOnlyFilters,
         timestamp: Date.now(),
       });
+
+      return true;
     },
     [throttledSendMessage]
   );
 
-  // FIX: Separate effect for sending filters to avoid connection recreation
+  // FIX: Send filters when they change and connection is ready
   useEffect(() => {
-    if (
-      wsRef.current &&
-      wsRef.current.readyState === WebSocket.OPEN &&
-      debouncedFinanceFilters
-    ) {
-      sendFilterRequest(debouncedFinanceFilters);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      if (financeFilters.length > 0) {
+        sendFilterRequest(financeFilters);
+      }
     }
-  }, [debouncedFinanceFilters, sendFilterRequest]);
+  }, [financeFilters, sendFilterRequest]);
 
   // FIX: Initialization effect - show empty state immediately if no filters
   useEffect(() => {
@@ -243,6 +253,7 @@ export default function useFinanceData() {
         wsRef.current = null;
       }
       lastSentFiltersRef.current = "";
+      pendingFiltersRef.current = null;
       setConnectionStatus("No Finance Filters");
       setTradesData({
         data: [],
@@ -265,7 +276,7 @@ export default function useFinanceData() {
       try {
         setConnectionStatus("Connecting");
 
-        const ws = await createWebSocketConnection('finance');
+        const ws = await createWebSocketConnection("finance");
         if (!isComponentMounted) {
           ws.close();
           return;
@@ -275,13 +286,30 @@ export default function useFinanceData() {
 
         ws.onopen = () => {
           if (!isComponentMounted) return;
-          debugLogger.websocketEvent('Connected, sending initial request');
+          debugLogger.websocketEvent("WebSocket opened");
           setConnectionStatus("Connected");
           reconnectTimeoutRef.attempts = 0;
           lastSentFiltersRef.current = "";
 
           // Send connection message
           throttledSendMessage({ type: "connection", timestamp: Date.now() });
+
+          // FIX: Immediately try to send any pending or current filters
+          const filtersToSend = pendingFiltersRef.current || financeFilters;
+          if (filtersToSend && filtersToSend.length > 0) {
+            debugLogger.websocketEvent(
+              "Sending filters immediately on connection",
+              {
+                count: filtersToSend.length,
+              }
+            );
+            // Use a small delay to ensure server is ready to receive
+            setTimeout(() => {
+              if (isComponentMounted && wsRef.current) {
+                sendFilterRequest(filtersToSend, true);
+              }
+            }, 100);
+          }
         };
 
         ws.onclose = (event) => {
@@ -308,10 +336,9 @@ export default function useFinanceData() {
 
           try {
             const receivedData = JSON.parse(event.data);
-            debugLogger.websocketEvent('Received data', {
+            debugLogger.websocketEvent("Received message", {
               type: receivedData.type,
               count: receivedData.data?.length || receivedData.count,
-              dataPreview: receivedData.data?.slice(0, 2),
             });
 
             switch (receivedData.type) {
@@ -319,33 +346,60 @@ export default function useFinanceData() {
               case "filtered_data":
               case "financial_update":
               case "all_trades_data":
-                debugLogger.stateChange('Updating tradesData', {
+                debugLogger.stateChange("Updating tradesData", {
                   type: receivedData.type,
-                  itemCount: receivedData.data?.length
+                  itemCount: receivedData.data?.length,
                 });
                 setTradesData(receivedData);
                 break;
               case "connection_confirmed":
-                debugLogger.websocketEvent('Connection confirmed, sending current filters');
-                // FIX: Send current filters immediately, not debounced ones
-                if (financeFilters.length > 0) {
-                  sendFilterRequest(financeFilters);
+                debugLogger.websocketEvent("Connection confirmed");
+                // FIX: Send current filters immediately upon confirmation
+                const currentFilters =
+                  pendingFiltersRef.current || financeFilters;
+                if (currentFilters && currentFilters.length > 0) {
+                  debugLogger.websocketEvent(
+                    "Sending filters on connection confirmation",
+                    {
+                      count: currentFilters.length,
+                    }
+                  );
+                  sendFilterRequest(currentFilters, true);
                 }
+                break;
+              case "error":
+                debugLogger.error(
+                  DEBUG_CATEGORIES.WEBSOCKET,
+                  "Server error",
+                  receivedData.message
+                );
                 break;
             }
           } catch (err) {
-            debugLogger.error(DEBUG_CATEGORIES.WEBSOCKET, 'Message parse error', err);
+            debugLogger.error(
+              DEBUG_CATEGORIES.WEBSOCKET,
+              "Message parse error",
+              err
+            );
           }
         };
 
         ws.onerror = (error) => {
           if (!isComponentMounted) return;
-          debugLogger.error(DEBUG_CATEGORIES.WEBSOCKET, 'WebSocket error', error);
+          debugLogger.error(
+            DEBUG_CATEGORIES.WEBSOCKET,
+            "WebSocket error",
+            error
+          );
           setConnectionStatus("Connection Error");
         };
       } catch (error) {
         if (!isComponentMounted) return;
-        debugLogger.error(DEBUG_CATEGORIES.WEBSOCKET, 'Failed to create WebSocket connection', error);
+        debugLogger.error(
+          DEBUG_CATEGORIES.WEBSOCKET,
+          "Failed to create WebSocket connection",
+          error
+        );
         setConnectionStatus("Server Not Ready");
 
         const attempt = (reconnectTimeoutRef.attempts || 0) + 1;
@@ -365,6 +419,7 @@ export default function useFinanceData() {
     return () => {
       isComponentMounted = false;
       lastSentFiltersRef.current = "";
+      pendingFiltersRef.current = null;
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
@@ -376,18 +431,17 @@ export default function useFinanceData() {
 
   // FIX: Add debug logging for state changes
   useEffect(() => {
-    debugLogger.stateChange('useFinanceData', {
+    debugLogger.stateChange("useFinanceData state", {
       hasFilters: hasFinanceFilters,
       filterCount: financeFilters.length,
-      debouncedCount: debouncedFinanceFilters.length,
       connectionStatus,
       dataCount: tradesData?.count || 0,
       isInitialized,
+      pendingFilters: pendingFiltersRef.current?.length || 0,
     });
   }, [
     hasFinanceFilters,
     financeFilters.length,
-    debouncedFinanceFilters.length,
     connectionStatus,
     tradesData?.count,
     isInitialized,
