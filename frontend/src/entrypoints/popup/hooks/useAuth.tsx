@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 // @ts-ignore
-import { browser } from 'wxt/browser';
-import { API_ENDPOINTS } from '../../config/endpoints.js';
+import { browser } from "wxt/browser";
+import { API_ENDPOINTS } from "../../config/endpoints.js";
 import debugLogger, { DEBUG_CATEGORIES } from "../../utils/debugLogger.js";
 
 interface User {
@@ -69,7 +69,9 @@ export function useAuth() {
 
   // Create a stable reference to prevent unnecessary effect triggers
   const settingsRef = useRef(currentSettings);
-  const [lastSavedSettings, setLastSavedSettings] = useState<typeof currentSettings | null>(null);
+  const [lastSavedSettings, setLastSavedSettings] = useState<
+    typeof currentSettings | null
+  >(null);
 
   // Save current settings to server
   const saveSettingsToServer = useCallback(
@@ -89,10 +91,17 @@ export function useAuth() {
         });
 
         if (!response.ok) {
-          debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Failed to save settings to server');
+          debugLogger.error(
+            DEBUG_CATEGORIES.AUTH,
+            "Failed to save settings to server"
+          );
         }
       } catch (error) {
-        debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Error saving settings to server', error);
+        debugLogger.error(
+          DEBUG_CATEGORIES.AUTH,
+          "Error saving settings to server",
+          error
+        );
       }
     },
     [currentSettings]
@@ -123,7 +132,7 @@ export function useAuth() {
               }
             });
 
-            debugLogger.authEvent('Settings loaded from server and applied');
+            debugLogger.authEvent("Settings loaded from server and applied");
           } else {
             // If no server settings exist, save current local settings to server
             await saveSettingsToServer(token);
@@ -133,7 +142,11 @@ export function useAuth() {
           }
         }
       } catch (error) {
-        debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Error loading settings from server', error);
+        debugLogger.error(
+          DEBUG_CATEGORIES.AUTH,
+          "Error loading settings from server",
+          error
+        );
         // If there's an error loading settings, save current local settings as backup
         await saveSettingsToServer(token);
       } finally {
@@ -191,7 +204,11 @@ export function useAuth() {
           }));
         }
       } catch (error) {
-        debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Auth initialization error', error);
+        debugLogger.error(
+          DEBUG_CATEGORIES.AUTH,
+          "Auth initialization error",
+          error
+        );
         setAuthState({
           user: null,
           token: null,
@@ -233,11 +250,11 @@ export function useAuth() {
     }
 
     try {
-      debugLogger.authEvent('Immediately saving settings to server');
+      debugLogger.authEvent("Immediately saving settings to server");
       await saveSettingsToServer(authState.token!);
       setLastSavedSettings(settingsRef.current);
     } catch (error) {
-      debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Immediate save failed', error);
+      debugLogger.error(DEBUG_CATEGORIES.AUTH, "Immediate save failed", error);
     }
   }, [
     currentSettings,
@@ -272,11 +289,11 @@ export function useAuth() {
     // Debounce auto-save to prevent excessive API calls
     const timeoutId = setTimeout(async () => {
       try {
-        debugLogger.authEvent('Auto-saving settings to server');
+        debugLogger.authEvent("Auto-saving settings to server");
         await saveSettingsToServer(authState.token!);
         setLastSavedSettings(settingsRef.current);
       } catch (error) {
-        debugLogger.error(DEBUG_CATEGORIES.AUTH, 'Auto-save failed', error);
+        debugLogger.error(DEBUG_CATEGORIES.AUTH, "Auto-save failed", error);
       }
     }, 500); // Reduced from 2000ms to 500ms for better responsiveness
 
@@ -329,7 +346,7 @@ export function useAuth() {
 
     // Also handle visibility change (when user switches tabs or minimizes)
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
+      if (document.visibilityState === "hidden") {
         handleBeforeUnload();
       }
     };
@@ -358,8 +375,11 @@ export function useAuth() {
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          console.log(`Login attempt ${attempt}/${maxRetries} to:`, API_ENDPOINTS.accounts.auth.login);
-          
+          console.log(
+            `Login attempt ${attempt}/${maxRetries} to:`,
+            API_ENDPOINTS.accounts.auth.login
+          );
+
           const response = await fetch(API_ENDPOINTS.accounts.auth.login, {
             method: "POST",
             headers: {
@@ -372,12 +392,19 @@ export function useAuth() {
 
           // Handle 502/503 errors with retry
           if (response.status >= 502 && response.status <= 504) {
-            console.warn(`Server error ${response.status} on attempt ${attempt}, retrying...`);
+            console.warn(
+              `Server error ${response.status} on attempt ${attempt}, retrying...`
+            );
             if (attempt < maxRetries) {
-              await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // exponential backoff
+              await new Promise((resolve) =>
+                setTimeout(resolve, 1000 * attempt)
+              ); // exponential backoff
               continue;
             }
-            return { success: false, error: `Server temporarily unavailable (${response.status}). Please try again.` };
+            return {
+              success: false,
+              error: `Server temporarily unavailable (${response.status}). Please try again.`,
+            };
           }
 
           let data;
@@ -387,13 +414,20 @@ export function useAuth() {
             console.error("Failed to parse response as JSON:", parseError);
             const text = await response.text();
             console.error("Response text:", text.substring(0, 200));
-            
+
             if (attempt < maxRetries) {
-              console.warn(`JSON parse error on attempt ${attempt}, retrying...`);
-              await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+              console.warn(
+                `JSON parse error on attempt ${attempt}, retrying...`
+              );
+              await new Promise((resolve) =>
+                setTimeout(resolve, 1000 * attempt)
+              );
               continue;
             }
-            return { success: false, error: "Server returned invalid response. Please try again." };
+            return {
+              success: false,
+              error: "Server returned invalid response. Please try again.",
+            };
           }
 
           if (response.ok) {
@@ -420,16 +454,20 @@ export function useAuth() {
         } catch (error) {
           console.error(`Login error on attempt ${attempt}:`, error);
           lastError = error;
-          
+
           if (attempt < maxRetries) {
             console.warn(`Network error on attempt ${attempt}, retrying...`);
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+            await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
             continue;
           }
         }
       }
 
-      return { success: false, error: "Network error during login. Please check your connection and try again." };
+      return {
+        success: false,
+        error:
+          "Network error during login. Please check your connection and try again.",
+      };
     },
     [loadSettingsFromServer]
   );
@@ -487,15 +525,15 @@ export function useAuth() {
     // Clear authentication data
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
-    
+
     // Clear extension storage
     try {
-      if (typeof browser !== 'undefined' && browser.storage) {
+      if (typeof browser !== "undefined" && browser.storage) {
         await browser.storage.local.clear();
         await browser.storage.sync?.clear();
       }
     } catch (error) {
-      console.error('Failed to clear browser storage:', error);
+      console.error("Failed to clear browser storage:", error);
     }
 
     // Update auth state
@@ -509,14 +547,14 @@ export function useAuth() {
     // Refresh the entire extension to reset all state
     setTimeout(() => {
       // Send message to background script to notify all contexts
-      if (typeof browser !== 'undefined' && browser.runtime) {
+      if (typeof browser !== "undefined" && browser.runtime) {
         try {
-          browser.runtime.sendMessage({ type: 'LOGOUT_REFRESH' });
+          browser.runtime.sendMessage({ type: "LOGOUT_REFRESH" });
         } catch (error) {
-          console.error('Failed to send logout message:', error);
+          console.error("Failed to send logout message:", error);
         }
       }
-      
+
       // Force refresh of current context (popup)
       window.location.reload();
     }, 100);
@@ -570,14 +608,17 @@ export function useAuth() {
       newPassword: string
     ): Promise<{ success: boolean; error?: string }> => {
       try {
-        const response = await fetch(API_ENDPOINTS.accounts.auth.changePassword, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${authState.token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ currentPassword, newPassword }),
-        });
+        const response = await fetch(
+          API_ENDPOINTS.accounts.auth.changePassword,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${authState.token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ currentPassword, newPassword }),
+          }
+        );
 
         const data = await response.json();
 

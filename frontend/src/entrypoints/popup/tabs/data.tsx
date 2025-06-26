@@ -1,134 +1,248 @@
 export const SPORTS_OPTIONS = [
-    { key: 'NFL' as const, label: 'NFL', icon: "🏈" },
-    { key: 'NBA' as const, label: 'NBA', icon: "🏀" },
-    { key: 'MLB' as const, label: 'MLB', icon: "⚾" },
-    { key: 'NHL' as const, label: 'NHL', icon: "🏒" }
+  { key: "NFL" as const, label: "NFL", icon: "🏈" },
+  { key: "NBA" as const, label: "NBA", icon: "🏀" },
+  { key: "MLB" as const, label: "MLB", icon: "⚾" },
+  { key: "NHL" as const, label: "NHL", icon: "🏒" },
 ];
 
 // Available symbols from your subscriptions.json
 export const AVAILABLE_SYMBOLS = [
-    "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "BRK.B", "TSM", "AVGO",
-    "LLY", "WMT", "JPM", "V", "UNH", "XOM", "ORCL", "MA", "COST", "PG", "HD", "NFLX",
-    "JNJ", "BAC", "NVO", "CRM", "ABBV", "CVX", "SAP", "TMUS", "KO", "ASML", "MRK",
-    "WFC", "ACN", "CSCO", "TM", "BX", "AMD", "ADBE", "PEP", "LIN", "MS", "NOW",
-    "MCD", "DIS", "NVS", "PM", "AXP", "BINANCE:BTCUSDT", "ETH"
+  "AAPL",
+  "MSFT",
+  "NVDA",
+  "GOOGL",
+  "AMZN",
+  "META",
+  "TSLA",
+  "BRK.B",
+  "TSM",
+  "AVGO",
+  "LLY",
+  "WMT",
+  "JPM",
+  "V",
+  "UNH",
+  "XOM",
+  "ORCL",
+  "MA",
+  "COST",
+  "PG",
+  "HD",
+  "NFLX",
+  "JNJ",
+  "BAC",
+  "NVO",
+  "CRM",
+  "ABBV",
+  "CVX",
+  "SAP",
+  "TMUS",
+  "KO",
+  "ASML",
+  "MRK",
+  "WFC",
+  "ACN",
+  "CSCO",
+  "TM",
+  "BX",
+  "AMD",
+  "ADBE",
+  "PEP",
+  "LIN",
+  "MS",
+  "NOW",
+  "MCD",
+  "DIS",
+  "NVS",
+  "PM",
+  "AXP",
+  "BINANCE:BTCUSDT",
+  "ETH",
 ];
 
 // Filter out crypto symbols for stock presets
-export const STOCK_SYMBOLS = AVAILABLE_SYMBOLS.filter(symbol =>
-    !symbol.includes('BINANCE:') && !['ETH', 'BTC'].includes(symbol)
+export const STOCK_SYMBOLS = AVAILABLE_SYMBOLS.filter(
+  (symbol) => !symbol.includes("BINANCE:") && !["ETH", "BTC"].includes(symbol)
 );
 
 // Crypto symbols available
-export const CRYPTO_SYMBOLS = AVAILABLE_SYMBOLS.filter(symbol =>
-    symbol.includes('BINANCE:') || ['ETH', 'BTC'].includes(symbol)
+export const CRYPTO_SYMBOLS = AVAILABLE_SYMBOLS.filter(
+  (symbol) => symbol.includes("BINANCE:") || ["ETH", "BTC"].includes(symbol)
 );
 
 export const STOCK_PRESETS = [
-    {
-        key: 'sp500',
-        label: 'S&P 500',
-        symbols: [
-            'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'META', 'TSLA', 'BRK.B', 'TSM', 'AVGO',
-            'LLY', 'WMT', 'JPM', 'V', 'UNH', 'XOM', 'ORCL', 'MA', 'COST', 'PG', 'HD', 'NFLX',
-            'JNJ', 'BAC', 'CRM', 'ABBV', 'CVX', 'TMUS', 'KO', 'MRK', 'WFC', 'ACN', 'CSCO',
-            'AMD', 'ADBE', 'PEP', 'LIN', 'MS', 'NOW', 'MCD', 'DIS', 'PM', 'AXP'
-        ]
-    },
-    {
-        key: 'nasdaq',
-        label: 'NASDAQ',
-        symbols: [
-            'AAPL', 'MSFT', 'NVDA', 'GOOGL', 'AMZN', 'META', 'TSLA', 'AVGO', 'COST', 'NFLX',
-            'AMD', 'ADBE', 'CRM', 'CSCO', 'PEP'
-        ]
-    },
-    {
-        key: 'dow',
-        label: 'Dow Jones',
-        symbols: [
-            'AAPL', 'MSFT', 'AMZN', 'UNH', 'HD', 'JPM', 'V', 'PG', 'JNJ', 'WMT',
-            'MA', 'CVX', 'MRK', 'KO', 'CSCO', 'MCD', 'DIS', 'AXP'
-        ]
-    }
+  {
+    key: "sp500",
+    label: "S&P 500",
+    symbols: [
+      "AAPL",
+      "MSFT",
+      "NVDA",
+      "GOOGL",
+      "AMZN",
+      "META",
+      "TSLA",
+      "BRK.B",
+      "TSM",
+      "AVGO",
+      "LLY",
+      "WMT",
+      "JPM",
+      "V",
+      "UNH",
+      "XOM",
+      "ORCL",
+      "MA",
+      "COST",
+      "PG",
+      "HD",
+      "NFLX",
+      "JNJ",
+      "BAC",
+      "CRM",
+      "ABBV",
+      "CVX",
+      "TMUS",
+      "KO",
+      "MRK",
+      "WFC",
+      "ACN",
+      "CSCO",
+      "AMD",
+      "ADBE",
+      "PEP",
+      "LIN",
+      "MS",
+      "NOW",
+      "MCD",
+      "DIS",
+      "PM",
+      "AXP",
+    ],
+  },
+  {
+    key: "nasdaq",
+    label: "NASDAQ",
+    symbols: [
+      "AAPL",
+      "MSFT",
+      "NVDA",
+      "GOOGL",
+      "AMZN",
+      "META",
+      "TSLA",
+      "AVGO",
+      "COST",
+      "NFLX",
+      "AMD",
+      "ADBE",
+      "CRM",
+      "CSCO",
+      "PEP",
+    ],
+  },
+  {
+    key: "dow",
+    label: "Dow Jones",
+    symbols: [
+      "AAPL",
+      "MSFT",
+      "AMZN",
+      "UNH",
+      "HD",
+      "JPM",
+      "V",
+      "PG",
+      "JNJ",
+      "WMT",
+      "MA",
+      "CVX",
+      "MRK",
+      "KO",
+      "CSCO",
+      "MCD",
+      "DIS",
+      "AXP",
+    ],
+  },
 ];
 
 export const CRYPTO_PRESETS = [
-    {
-        key: 'top10',
-        label: 'Top 10',
-        symbols: ['BINANCE:BTCUSDT', 'ETH'] // Only available crypto symbols
-    },
-    {
-        key: 'defi',
-        label: 'DeFi Coins',
-        symbols: ['ETH'] // Only ETH available from your subscriptions
-    },
-    {
-        key: 'meme',
-        label: 'Meme Coins',
-        symbols: [] // No meme coins in your current subscriptions
-    }
+  {
+    key: "top10",
+    label: "Top 10",
+    symbols: ["BINANCE:BTCUSDT", "ETH"], // Only available crypto symbols
+  },
+  {
+    key: "defi",
+    label: "DeFi Coins",
+    symbols: ["ETH"], // Only ETH available from your subscriptions
+  },
+  {
+    key: "meme",
+    label: "Meme Coins",
+    symbols: [], // No meme coins in your current subscriptions
+  },
 ];
 
 // Updated STOCK_OPTIONS to only include symbols from subscriptions.json
 export const STOCK_OPTIONS = [
-    { key: 'AAPL', label: 'Apple Inc.', enabled: true },
-    { key: 'MSFT', label: 'Microsoft Corporation', enabled: true },
-    { key: 'GOOGL', label: 'Alphabet Inc.', enabled: true },
-    { key: 'AMZN', label: 'Amazon.com Inc.', enabled: false },
-    { key: 'TSLA', label: 'Tesla Inc.', enabled: true },
-    { key: 'META', label: 'Meta Platforms Inc.', enabled: false },
-    { key: 'NVDA', label: 'NVIDIA Corporation', enabled: true },
-    { key: 'NFLX', label: 'Netflix Inc.', enabled: false },
-    { key: 'JPM', label: 'JPMorgan Chase & Co.', enabled: true },
-    { key: 'JNJ', label: 'Johnson & Johnson', enabled: false },
-    { key: 'V', label: 'Visa Inc.', enabled: true },
-    { key: 'PG', label: 'Procter & Gamble Co.', enabled: false },
-    { key: 'UNH', label: 'UnitedHealth Group Inc.', enabled: true },
-    { key: 'HD', label: 'The Home Depot Inc.', enabled: false },
-    { key: 'MA', label: 'Mastercard Inc.', enabled: true },
-    { key: 'DIS', label: 'The Walt Disney Company', enabled: true },
-    { key: 'ADBE', label: 'Adobe Inc.', enabled: false },
-    { key: 'CRM', label: 'Salesforce Inc.', enabled: true },
-    { key: 'AMD', label: 'Advanced Micro Devices Inc.', enabled: true },
-    { key: 'CSCO', label: 'Cisco Systems Inc.', enabled: false },
-    { key: 'KO', label: 'The Coca-Cola Company', enabled: false },
-    { key: 'WMT', label: 'Walmart Inc.', enabled: true },
-    // Additional symbols from your subscriptions
-    { key: 'BRK.B', label: 'Berkshire Hathaway Inc.', enabled: true },
-    { key: 'TSM', label: 'Taiwan Semiconductor', enabled: true },
-    { key: 'AVGO', label: 'Broadcom Inc.', enabled: true },
-    { key: 'LLY', label: 'Eli Lilly and Company', enabled: true },
-    { key: 'XOM', label: 'Exxon Mobil Corporation', enabled: false },
-    { key: 'ORCL', label: 'Oracle Corporation', enabled: true },
-    { key: 'COST', label: 'Costco Wholesale Corporation', enabled: false },
-    { key: 'BAC', label: 'Bank of America Corporation', enabled: true },
-    { key: 'NVO', label: 'Novo Nordisk A/S', enabled: false },
-    { key: 'ABBV', label: 'AbbVie Inc.', enabled: true },
-    { key: 'CVX', label: 'Chevron Corporation', enabled: false },
-    { key: 'SAP', label: 'SAP SE', enabled: false },
-    { key: 'TMUS', label: 'T-Mobile US Inc.', enabled: true },
-    { key: 'ASML', label: 'ASML Holding N.V.', enabled: true },
-    { key: 'MRK', label: 'Merck & Co. Inc.', enabled: false },
-    { key: 'WFC', label: 'Wells Fargo & Company', enabled: true },
-    { key: 'ACN', label: 'Accenture plc', enabled: false },
-    { key: 'TM', label: 'Toyota Motor Corporation', enabled: false },
-    { key: 'BX', label: 'Blackstone Inc.', enabled: true },
-    { key: 'PEP', label: 'PepsiCo Inc.', enabled: false },
-    { key: 'LIN', label: 'Linde plc', enabled: true },
-    { key: 'MS', label: 'Morgan Stanley', enabled: true },
-    { key: 'NOW', label: 'ServiceNow Inc.', enabled: false },
-    { key: 'MCD', label: 'McDonald\'s Corporation', enabled: false },
-    { key: 'NVS', label: 'Novartis AG', enabled: false },
-    { key: 'PM', label: 'Philip Morris International', enabled: false },
-    { key: 'AXP', label: 'American Express Company', enabled: true }
+  { key: "AAPL", label: "Apple Inc.", enabled: true },
+  { key: "MSFT", label: "Microsoft Corporation", enabled: true },
+  { key: "GOOGL", label: "Alphabet Inc.", enabled: true },
+  { key: "AMZN", label: "Amazon.com Inc.", enabled: false },
+  { key: "TSLA", label: "Tesla Inc.", enabled: true },
+  { key: "META", label: "Meta Platforms Inc.", enabled: false },
+  { key: "NVDA", label: "NVIDIA Corporation", enabled: true },
+  { key: "NFLX", label: "Netflix Inc.", enabled: false },
+  { key: "JPM", label: "JPMorgan Chase & Co.", enabled: true },
+  { key: "JNJ", label: "Johnson & Johnson", enabled: false },
+  { key: "V", label: "Visa Inc.", enabled: true },
+  { key: "PG", label: "Procter & Gamble Co.", enabled: false },
+  { key: "UNH", label: "UnitedHealth Group Inc.", enabled: true },
+  { key: "HD", label: "The Home Depot Inc.", enabled: false },
+  { key: "MA", label: "Mastercard Inc.", enabled: true },
+  { key: "DIS", label: "The Walt Disney Company", enabled: true },
+  { key: "ADBE", label: "Adobe Inc.", enabled: false },
+  { key: "CRM", label: "Salesforce Inc.", enabled: true },
+  { key: "AMD", label: "Advanced Micro Devices Inc.", enabled: true },
+  { key: "CSCO", label: "Cisco Systems Inc.", enabled: false },
+  { key: "KO", label: "The Coca-Cola Company", enabled: false },
+  { key: "WMT", label: "Walmart Inc.", enabled: true },
+  // Additional symbols from your subscriptions
+  { key: "BRK.B", label: "Berkshire Hathaway Inc.", enabled: true },
+  { key: "TSM", label: "Taiwan Semiconductor", enabled: true },
+  { key: "AVGO", label: "Broadcom Inc.", enabled: true },
+  { key: "LLY", label: "Eli Lilly and Company", enabled: true },
+  { key: "XOM", label: "Exxon Mobil Corporation", enabled: false },
+  { key: "ORCL", label: "Oracle Corporation", enabled: true },
+  { key: "COST", label: "Costco Wholesale Corporation", enabled: false },
+  { key: "BAC", label: "Bank of America Corporation", enabled: true },
+  { key: "NVO", label: "Novo Nordisk A/S", enabled: false },
+  { key: "ABBV", label: "AbbVie Inc.", enabled: true },
+  { key: "CVX", label: "Chevron Corporation", enabled: false },
+  { key: "SAP", label: "SAP SE", enabled: false },
+  { key: "TMUS", label: "T-Mobile US Inc.", enabled: true },
+  { key: "ASML", label: "ASML Holding N.V.", enabled: true },
+  { key: "MRK", label: "Merck & Co. Inc.", enabled: false },
+  { key: "WFC", label: "Wells Fargo & Company", enabled: true },
+  { key: "ACN", label: "Accenture plc", enabled: false },
+  { key: "TM", label: "Toyota Motor Corporation", enabled: false },
+  { key: "BX", label: "Blackstone Inc.", enabled: true },
+  { key: "PEP", label: "PepsiCo Inc.", enabled: false },
+  { key: "LIN", label: "Linde plc", enabled: true },
+  { key: "MS", label: "Morgan Stanley", enabled: true },
+  { key: "NOW", label: "ServiceNow Inc.", enabled: false },
+  { key: "MCD", label: "McDonald's Corporation", enabled: false },
+  { key: "NVS", label: "Novartis AG", enabled: false },
+  { key: "PM", label: "Philip Morris International", enabled: false },
+  { key: "AXP", label: "American Express Company", enabled: true },
 ];
 
 // Updated CRYPTO_OPTIONS to only include what's available
 export const CRYPTO_OPTIONS = [
-    { key: 'BINANCE:BTCUSDT', label: 'Bitcoin (BTCUSDT)', enabled: true },
-    { key: 'ETH', label: 'Ethereum', enabled: true }
-    // Note: Only these 2 crypto symbols are available in your subscriptions.json
-    // You can add more by updating your subscriptions.json file
+  { key: "BINANCE:BTCUSDT", label: "Bitcoin (BTCUSDT)", enabled: true },
+  { key: "ETH", label: "Ethereum", enabled: true },
+  // Note: Only these 2 crypto symbols are available in your subscriptions.json
+  // You can add more by updating your subscriptions.json file
 ];

@@ -5,21 +5,8 @@
 
 // Environment detection
 const isDevelopment = () => {
-  // Check if we're in development by looking for localhost or dev environment
-  if (typeof window !== "undefined") {
-    return (
-      window.location?.hostname === "localhost" ||
-      window.location?.hostname === "127.0.0.1"
-    );
-  }
-
-  // For build-time/extension context, check environment variables
-  const apiUrl = import.meta.env.VITE_API_URL;
-
-  // If API_URL contains localhost or is not set, assume development
-  return (
-    !apiUrl || apiUrl.includes("localhost") || apiUrl.includes("127.0.0.1")
-  );
+  // Manually set to true for development, false for production
+  return true;
 };
 
 // Base configuration

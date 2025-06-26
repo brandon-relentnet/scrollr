@@ -86,7 +86,7 @@ const TradeCard = memo(
     // Handle card click to open Yahoo Finance
     const handleCardClick = () => {
       const yahooUrl = `https://finance.yahoo.com/quote/${trade.symbol}/`;
-      window.open(yahooUrl, '_blank');
+      window.open(yahooUrl, "_blank");
     };
 
     const DirectionIcon = () => (
@@ -119,7 +119,7 @@ const TradeCard = memo(
 
     if (isCompact) {
       return (
-        <div 
+        <div
           className="card bg-base-200 group cursor-pointer border border-base-300 transition duration-150 h-14 relative"
           onClick={handleCardClick}
         >
@@ -159,7 +159,7 @@ const TradeCard = memo(
 
     // Comfort Mode
     return (
-      <div 
+      <div
         className="card bg-base-200 group cursor-pointer border border-base-300 hover:border-base-content/20 transition-all duration-150 h-40 shadow-sm hover:shadow-md relative"
         onClick={handleCardClick}
       >

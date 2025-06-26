@@ -10,7 +10,6 @@ html {
   --scrollbar-width: thin;
   --scrollbar-width-legacy: 10px;
   overflow: hidden;
-  background-color: var(--color-base-200);
 }
 
 /* Modern browsers with `scrollbar-*` support */
@@ -42,5 +41,3 @@ html {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
-
