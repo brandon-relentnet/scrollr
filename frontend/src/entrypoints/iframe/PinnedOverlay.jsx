@@ -22,7 +22,7 @@ const PinnedOverlay = memo(function PinnedOverlay() {
         const key = item.type === "finance" ? item.data.symbol : item.data.id;
 
         return (
-          <div key={`${item.type}-${key}`}>
+          <div key={`${item.type}-${key}`} className="w-80 flex-shrink-0">
             {item.type === "finance" && <TradeCard trade={item.data} />}
             {item.type === "sports" && <GameCard game={item.data} />}
             {item.type === "rss" && <RssCard rssItem={item.data} />}

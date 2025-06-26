@@ -7,8 +7,9 @@ import RssCard from './RssCard';
 import useSportsData from './useSportsData';
 import useFinanceData from './useFinanceData';
 import useRssData from './useRssData';
-import { memo, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { memo, useMemo, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { updatePinnedFinanceData } from '../store/pinnedSlice.js';
 
 // Pre-computed breakpoints - moved outside component to prevent recreation
 const BREAKPOINTS = (() => {
@@ -36,6 +37,16 @@ export const Carousel = memo(function Carousel() {
     
     // Get speed setting from Redux
     const speed = useSelector((state) => state.layout?.speed || 'classic');
+    
+    // Get dispatch function to update pinned items
+    const dispatch = useDispatch();
+    
+    // Update pinned finance items whenever fresh data arrives
+    useEffect(() => {
+        if (tradesData?.data?.length > 0) {
+            dispatch(updatePinnedFinanceData(tradesData.data));
+        }
+    }, [tradesData?.data, dispatch]);
 
     // Memoize expensive computations
     const hasData = useMemo(() => {
