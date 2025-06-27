@@ -10,6 +10,11 @@
 
 Scrollr is a blazing-fast browser extension that brings live financial markets, sports scores, and RSS feeds directly to your browser tabs. Built with enterprise-grade microservices architecture, modular React components, and a buttery-smooth developer experience.
 
+<div align="center">
+  <img src="images/scrollr_ss_stocks_comfort.png" alt="Scrollr Financial Data in Comfort Mode" width="45%" />
+  <img src="images/scrollr_ss_sports_compact.png" alt="Scrollr Sports Scores in Compact Mode" width="45%" />
+</div>
+
 [🎯 Features](#-why-scrollr) • [⚡ Quick Start](#-quick-start) • [🛠️ Developer Heaven](#%EF%B8%8F-developer-heaven) • [🐳 Production Ready](#-production-deployment) • [🤝 Join Us](#-contributing)
 
 <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react" alt="React 19" />
@@ -50,6 +55,11 @@ Professional-grade market data that rivals trading platforms:
 - **WebSocket Streaming**: Direct Finnhub connection for institutional-speed data
 - **Portfolio Tracking**: Monitor your investments with accurate change calculations
 
+<div align="center">
+  <img src="images/scrollr_ss_displaytab.png" alt="Scrollr Display Tab - Financial Data Configuration" width="400px" />
+  <p><em>Configure your financial data sources with smart presets and custom selections</em></p>
+</div>
+
 ### 🏆 **Sports Scores**
 Never miss a moment of the action:
 - **Live Game Updates**: Real-time scores as they happen across all major leagues
@@ -66,6 +76,11 @@ Your personalized news command center:
 - **Category Organization**: Tech, News, Sports, Entertainment, Custom categories
 - **Secure Cloud Storage**: Feeds sync with your account across devices
 
+<div align="center">
+  <img src="images/scrollr_ss_rss_comfort.png" alt="Scrollr RSS Feeds in Comfort Mode" width="600px" />
+  <p><em>RSS feeds displayed beautifully in comfort mode with full article previews</em></p>
+</div>
+
 ### 📌 **Revolutionary Pin System**
 Our game-changing pinning feature:
 - **Persistent Pins**: Important items stay visible on the left side always
@@ -81,6 +96,12 @@ Make Scrollr truly yours:
 - **Theme Universe**: 30+ beautiful themes from minimalist to vibrant
 - **Settings Sync**: Export/import/cloud sync for all your preferences
 - **Debug Powerhouse**: 8-category logging system for developers and power users
+
+<div align="center">
+  <img src="images/scrollr_ss_themetab_themes.png" alt="Scrollr Theme Selection" width="45%" />
+  <img src="images/scrollr_ss_themetab_prefs.png" alt="Scrollr Theme Preferences" width="45%" />
+  <p><em>Choose from 30+ stunning themes and customize every aspect of your experience</em></p>
+</div>
 
 ---
 
@@ -121,6 +142,11 @@ make dev-up && cd frontend && npm run dev
 ```
 
 **That's it!** Scrollr is now live in your browser! 🎊
+
+<div align="center">
+  <img src="images/scrollr_ss_accountstab_signin.png" alt="Scrollr Account Management" width="400px" />
+  <p><em>Sign in to sync your settings across devices and unlock cloud features</em></p>
+</div>
 
 ---
 
@@ -193,6 +219,11 @@ scrollr/
 - **Custom Hooks**: Separated business logic into focused, reusable hooks
 - **TypeScript Interfaces**: Comprehensive type safety for all component props
 
+<div align="center">
+  <img src="images/scrollr_ss_settingstab.png" alt="Scrollr Settings & Configuration" width="400px" />
+  <p><em>Comprehensive settings panel with modular components and clean organization</em></p>
+</div>
+
 ### 🧪 Advanced Features for Power Users
 
 1. **WebSocket Testing Interface**
@@ -229,6 +260,11 @@ scrollr/
    # Direct database access
    psql -d extension_accounts
    ```
+
+<div align="center">
+  <img src="images/scrollr_ss_powertab.png" alt="Scrollr Power Settings & Controls" width="400px" />
+  <p><em>Advanced power user controls for fine-tuning your Scrollr experience</em></p>
+</div>
 
 ---
 
