@@ -34,7 +34,7 @@ export default function LayoutToggle({
         checked={layout === "compact"}
       />
       <div
-        className={`flex items-center gap-2 hover:scale-115 active:scale-85 transition-all duration-150 ${className}`}
+        className={`flex items-center gap-2 hover:scale-115 active:scale-95 transition-all duration-150 ${className}`}
         data-tip={`Layout: ${layout.charAt(0).toUpperCase() + layout.slice(1)}`}
       >
         {showLabel && (
@@ -43,11 +43,11 @@ export default function LayoutToggle({
           </span>
         )}
         <div
-          className={`flex  flex-col ${
+          className={`flex flex-col ${
             sizeClasses[size]
-          } card size-14 overflow-hidden bg-base-300  ${
+          } card size-14 overflow-hidden bg-base-300 ${
             position === "top" ? "rotate-180" : "rotate-360"
-          }`}
+          } transition-transform duration-150`}
         >
           <div className="h-full flex items-center justify-center transition-all duration-150">
             {layout === "compact" ? (

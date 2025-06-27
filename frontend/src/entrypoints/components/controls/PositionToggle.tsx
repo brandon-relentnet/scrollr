@@ -35,7 +35,7 @@ export default function PositionToggle({
         checked={position === "bottom"}
       />
       <div
-        className={`flex items-center gap-2 hover:scale-115 active:scale-85 transition-all duration-150 ${className}`}
+        className={`flex items-center gap-2 hover:scale-115 active:scale-95 transition-all duration-150 ${className}`}
         data-tip={`Position: ${
           position.charAt(0).toUpperCase() + position.slice(1)
         }`}
@@ -50,7 +50,7 @@ export default function PositionToggle({
             sizeClasses[size]
           } card bg-base-300 card size-14 overflow-hidden ${
             position === "top" ? "rotate-180" : "rotate-360"
-          }`}
+          } transition-transform duration-150`}
         >
           <div className="h-full transition-colors duration-150 flex items-center justify-center">
             <ArrowDownIcon className="size-6 text-primary" />
