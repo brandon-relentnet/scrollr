@@ -1,6 +1,10 @@
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../components/hooks/useAuth";
+import { LoginView } from "../../components/auth/LoginView";
+import { RegisterView } from "../../components/auth/RegisterView";
+import { ProfileView } from "../../components/auth/ProfileView";
+import { SettingsView } from "../../components/auth/SettingsView";
 
 type View = "login" | "register" | "profile" | "settings";
 
@@ -310,140 +314,40 @@ export default function AccountsTab() {
               </div>
 
               {/* Content based on current view */}
-              {currentView === "profile" && (
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Update Profile</h4>
-
-                  {error && (
-                    <div className="alert alert-error">
-                      <span>{error}</span>
-                    </div>
-                  )}
-
-                  {success && (
-                    <div className="alert alert-success">
-                      <span>{success}</span>
-                    </div>
-                  )}
-
-                  <form onSubmit={handleUpdateProfile} className="space-y-4">
-                    <label className="floating-label">
-                      <span>Email Address</span>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="input input-md w-full"
-                        placeholder="mail@site.com"
-                      />
-                    </label>
-
-                    <label className="floating-label">
-                      <span>Phone Number</span>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="input input-md w-full"
-                        placeholder="+1 (555) 123-4567"
-                      />
-                    </label>
-
-                    <button
-                      type="submit"
-                      className="btn btn-primary w-full"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <span className="loading loading-spinner loading-xs"></span>
-                      ) : (
-                        "Update Profile"
-                      )}
-                    </button>
-                  </form>
-                </div>
+              {currentView === "profile" && user && (
+                <ProfileView
+                  user={user}
+                  formData={{
+                    email: formData.email,
+                    phone: formData.phone,
+                  }}
+                  onInputChange={(field, value) =>
+                    setFormData((prev) => ({ ...prev, [field]: value }))
+                  }
+                  onSubmit={handleUpdateProfile}
+                  onLogout={handleLogout}
+                  isSubmitting={isSubmitting}
+                  error={error}
+                  success={success}
+                />
               )}
 
               {currentView === "settings" && (
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Change Password</h4>
-
-                  {error && (
-                    <div className="alert alert-error">
-                      <span>{error}</span>
-                    </div>
-                  )}
-
-                  {success && (
-                    <div className="alert alert-success">
-                      <span>{success}</span>
-                    </div>
-                  )}
-
-                  <form onSubmit={handleChangePassword} className="space-y-4">
-                    <label className="floating-label">
-                      <span>Current Password</span>
-                      <input
-                        type="password"
-                        name="currentPassword"
-                        value={formData.currentPassword}
-                        onChange={handleInputChange}
-                        className="input input-md w-full"
-                        placeholder="Enter current password"
-                        required
-                      />
-                    </label>
-
-                    <label className="floating-label">
-                      <span>New Password</span>
-                      <input
-                        type="password"
-                        name="newPassword"
-                        value={formData.newPassword}
-                        onChange={handleInputChange}
-                        className="input input-md w-full"
-                        placeholder="Create new password"
-                        required
-                      />
-                    </label>
-
-                    <label className="floating-label">
-                      <span>Confirm New Password</span>
-                      <input
-                        type="password"
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleInputChange}
-                        className="input input-md w-full"
-                        placeholder="Confirm new password"
-                        required
-                      />
-                    </label>
-
-                    <button
-                      type="submit"
-                      className="btn btn-primary w-full"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <span className="loading loading-spinner loading-xs"></span>
-                      ) : (
-                        "Change Password"
-                      )}
-                    </button>
-                  </form>
-
-                  <div className="divider my-6"></div>
-
-                  <button
-                    onClick={handleLogout}
-                    className="btn btn-error w-full"
-                  >
-                    Sign Out
-                  </button>
-                </div>
+                <SettingsView
+                  formData={{
+                    currentPassword: formData.currentPassword,
+                    newPassword: formData.newPassword,
+                    confirmPassword: formData.confirmPassword,
+                  }}
+                  onInputChange={(field, value) =>
+                    setFormData((prev) => ({ ...prev, [field]: value }))
+                  }
+                  onSubmit={handleChangePassword}
+                  onSyncSettings={() => syncSettings()}
+                  isSubmitting={isSubmitting}
+                  error={error}
+                  success={success}
+                />
               )}
             </div>
           ) : (
@@ -488,132 +392,37 @@ export default function AccountsTab() {
                 </button>
               </div>
 
-              {error && (
-                <div className="alert alert-error">
-                  <span>{error}</span>
-                </div>
-              )}
-
               {currentView === "login" && (
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <label className="floating-label">
-                    <span>Email or Username</span>
-                    <input
-                      type="text"
-                      name="identifier"
-                      value={formData.identifier}
-                      onChange={handleInputChange}
-                      className="input input-md w-full"
-                      placeholder="user@example.com"
-                      required
-                    />
-                  </label>
-
-                  <label className="floating-label">
-                    <span>Password</span>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="input input-md w-full"
-                      placeholder="Enter your password"
-                      required
-                    />
-                  </label>
-
-                  <button
-                    type="submit"
-                    className="btn btn-primary w-full"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <span className="loading loading-spinner loading-xs"></span>
-                    ) : (
-                      "Sign In"
-                    )}
-                  </button>
-                </form>
+                <LoginView
+                  formData={{
+                    identifier: formData.identifier,
+                    password: formData.password,
+                  }}
+                  onInputChange={(field, value) =>
+                    setFormData((prev) => ({ ...prev, [field]: value }))
+                  }
+                  onSubmit={handleLogin}
+                  isSubmitting={isSubmitting}
+                  error={error}
+                />
               )}
 
               {currentView === "register" && (
-                <form onSubmit={handleRegister} className="space-y-4">
-                  <label className="floating-label">
-                    <span>Username</span>
-                    <input
-                      type="text"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      className="input input-md w-full"
-                      placeholder="Choose a username"
-                      required
-                    />
-                  </label>
-
-                  <label className="floating-label">
-                    <span>Email Address</span>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="input input-md w-full"
-                      placeholder="mail@site.com"
-                      required
-                    />
-                  </label>
-
-                  <label className="floating-label">
-                    <span>Phone Number</span>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="input input-md w-full"
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </label>
-
-                  <label className="floating-label">
-                    <span>Password</span>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className="input input-md w-full"
-                      placeholder="Create a password"
-                      required
-                    />
-                  </label>
-
-                  <label className="floating-label">
-                    <span>Confirm Password</span>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className="input input-md w-full"
-                      placeholder="Confirm your password"
-                      required
-                    />
-                  </label>
-
-                  <button
-                    type="submit"
-                    className="btn btn-primary w-full"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <span className="loading loading-spinner loading-xs"></span>
-                    ) : (
-                      "Create Account"
-                    )}
-                  </button>
-                </form>
+                <RegisterView
+                  formData={{
+                    username: formData.username,
+                    email: formData.email,
+                    password: formData.password,
+                    confirmPassword: formData.confirmPassword,
+                    phone: formData.phone,
+                  }}
+                  onInputChange={(field, value) =>
+                    setFormData((prev) => ({ ...prev, [field]: value }))
+                  }
+                  onSubmit={handleRegister}
+                  isSubmitting={isSubmitting}
+                  error={error}
+                />
               )}
             </div>
           )}
