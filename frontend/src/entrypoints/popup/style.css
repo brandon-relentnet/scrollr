@@ -6,13 +6,59 @@
   exclude: rootscrollgutter;
 }
 
-body {
-  min-width: 420px;
-  overflow: hidden;
-}
+@plugin "daisyui/theme" {
+  name: "scrollr";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: oklch(98% 0.008 220); /* Very light with subtle blue tint */
+  --color-base-200: oklch(95% 0.01 220); /* Slightly darker with blue tint */
+  --color-base-300: oklch(90% 0.015 220); /* Even darker for borders */
+  --color-base-content: oklch(20% 0.02 220); /* Dark blue-tinted text */
 
-#root {
-  overflow: hidden;
+  --color-primary: rgba(
+    39,
+    170,
+    226,
+    255
+  ); /* Your bright blue - keeping as is */
+  --color-primary-content: oklch(98% 0.008 220); /* Light text on primary */
+
+  --color-secondary: oklch(55% 0.18 280); /* Purple that complements blue */
+  --color-secondary-content: oklch(95% 0.01 280); /* Light text on secondary */
+
+  --color-accent: rgba(
+    253,
+    213,
+    83,
+    255
+  ); /* Your golden yellow - keeping as is */
+  --color-accent-content: oklch(20% 0.08 85); /* Dark text on accent */
+
+  --color-neutral: oklch(25% 0.015 220); /* Dark with blue undertone */
+  --color-neutral-content: oklch(92% 0.008 220); /* Light text on neutral */
+
+  --color-info: oklch(
+    68% 0.15 195
+  ); /* Cyan/teal to differentiate from primary */
+  --color-info-content: oklch(20% 0.05 195); /* Dark text on info */
+
+  --color-success: oklch(70% 0.17 145); /* Green that works with blue/yellow */
+  --color-success-content: oklch(20% 0.06 145); /* Dark text on success */
+
+  --color-warning: oklch(75% 0.17 65); /* Orange bridging yellow and red */
+  --color-warning-content: oklch(20% 0.08 65); /* Dark text on warning */
+
+  --color-error: oklch(65% 0.21 25); /* Coral red for errors */
+  --color-error-content: oklch(95% 0.02 25); /* Light text on error */
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
 }
 
 html {
@@ -20,6 +66,15 @@ html {
   --scrollbar-width-legacy: 10px;
   overflow: hidden;
   background-color: var(--color-base-200);
+}
+
+body {
+  min-width: 420px;
+  overflow: hidden;
+}
+
+#root {
+  overflow: hidden;
 }
 
 /* Modern browsers with `scrollbar-*` support */

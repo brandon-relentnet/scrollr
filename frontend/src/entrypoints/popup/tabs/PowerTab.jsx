@@ -68,26 +68,35 @@ export default function PowerTab() {
       </label>
       <div className="tab-content bg-base-100 border-base-300 p-6">
         <div className="flex flex-col items-center justify-center">
-          <button
-            onClick={handlePowerToggle}
-            className={`btn btn-ghost btn-circle p-6 size-50 ${
-              !power ? "text-error" : "text-success"
+          <label
+            className={`swap swap-rotate btn btn-ghost btn-circle p-6 size-50 transition-colors duration-150 ${
+              !power
+                ? "text-base-content/30 hover:text-base-content/70"
+                : "text-primary"
             }`}
           >
-            {power ? <BoltIcon /> : <BoltSlashIcon />}
-          </button>
-          <ul className="flex items-center justify-center gap-6 px-5 p-3 bg-base-200 rounded-box mt-6">
+            <input
+              type="checkbox"
+              onChange={handlePowerToggle}
+              checked={!power}
+            />
+            <BoltSlashIcon className="swap-on size-full transition-colors duration-150" />
+            <BoltIcon className="swap-off size-full transition-colors duration-150" />
+          </label>
+          <ul className="flex items-center justify-center shadow-sm hover:shadow-md transition duration-150 gap-6 px-5 p-3 bg-base-200 rounded-box mt-6">
             <li>
               <PositionToggle
                 position={position}
                 layout={layout}
                 onChange={handlePositionToggle}
                 showLabel={false}
+                className="tooltip"
               />
             </li>
             <AnimatedSpeedToggle
               speed={speed}
               onSpeedToggle={handleSpeedToggle}
+              className="tooltip"
             />
             <li>
               <LayoutToggle
@@ -95,6 +104,7 @@ export default function PowerTab() {
                 position={position}
                 onChange={() => handleLayoutChange()}
                 showLabel={false}
+                className="tooltip"
               />
             </li>
           </ul>

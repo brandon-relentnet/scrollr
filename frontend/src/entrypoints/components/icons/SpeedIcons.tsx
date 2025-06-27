@@ -1,7 +1,7 @@
 export const TurtleIcon = ({ className = "size-12" }) => (
   <svg
-    height="46"
-    width="46"
+    height="42"
+    width="42"
     viewBox="0 0 512 512"
     aria-hidden="true"
     focusable="false"
@@ -52,8 +52,8 @@ export const TurtleIcon = ({ className = "size-12" }) => (
 
 export const WalkingIcon = ({ className = "size-12" }) => (
   <svg
-    height="46"
-    width="46"
+    height="42"
+    width="42"
     version="1.1"
     id="_x32_"
     xmlns="http://www.w3.org/2000/svg"
@@ -77,8 +77,8 @@ export const WalkingIcon = ({ className = "size-12" }) => (
 
 export const RunningIcon = ({ className = "size-12" }) => (
   <svg
-    height="46"
-    width="46"
+    height="42"
+    width="42"
     version="1.1"
     id="_x32_"
     xmlns="http://www.w3.org/2000/svg"

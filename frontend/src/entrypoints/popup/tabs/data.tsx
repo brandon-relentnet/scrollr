@@ -248,6 +248,11 @@ export const CRYPTO_OPTIONS = [
 ];
 
 export const THEMES = [
+  {
+    label: "Scrollr",
+    value: "scrollr",
+    colors: ["#f5f9fc", "#27aae2", "#fdd553"],
+  },
   { label: "Light", value: "light", colors: ["#ffffff", "#833ef6", "#ff369a"] },
   { label: "Dark", value: "dark", colors: ["#2a303c", "#793ef9", "#ff0080"] },
   {

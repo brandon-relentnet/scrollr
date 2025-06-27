@@ -94,7 +94,7 @@ export default function ThemeTab() {
   const getCurrentTheme = () => {
     if (typeof currentTheme === "string") return currentTheme;
     if (currentTheme?.mode) return currentTheme.mode;
-    return "dark";
+    return "scrollr";
   };
 
   const themeChange = (theme: string) => {
@@ -186,7 +186,7 @@ export default function ThemeTab() {
                   <div className="w-full bg-base-200 p-4 card">
                     <label className="label text-base-content font-semibold text-lg mb-3 flex justify-between items-center">
                       <span className="label-text">Opacity</span>
-                      <span className="bg-neutral/10 card h-1 flex-1 mx-2"></span>
+                      <span className="bg-base-300 card h-1 flex-1 mx-2"></span>
                       <span className="label-text-alt italic">
                         {Math.round(localOpacity * 100)}%
                       </span>
@@ -201,7 +201,7 @@ export default function ThemeTab() {
                       onTouchStart={() => setIsDragging(true)}
                       onMouseUp={handleOpacityEnd}
                       onTouchEnd={handleOpacityEnd}
-                      className="range"
+                      className="range range-primary"
                     />
                   </div>
 
@@ -209,7 +209,7 @@ export default function ThemeTab() {
                   <div className="w-full bg-base-200 p-4 card">
                     <label className="label text-base-content font-semibold text-lg mb-2 flex justify-between items-center">
                       <span className="label-text">Position</span>
-                      <span className="bg-neutral/10 card h-1 flex-1 ml-2"></span>
+                      <span className="bg-base-300 card h-1 flex-1 ml-2"></span>
                       <PositionToggle
                         position={position}
                         layout={layout}
@@ -224,7 +224,7 @@ export default function ThemeTab() {
                   <div className="w-full bg-base-200 p-4 card">
                     <label className="label text-base-content font-semibold text-lg mb-2 flex justify-between items-center">
                       <span className="label-text">Layout</span>
-                      <span className="bg-neutral/10 card h-1 flex-1 ml-2"></span>
+                      <span className="bg-base-300 card h-1 flex-1 ml-2"></span>
                       <LayoutToggle
                         layout={layout}
                         position={position}
@@ -239,7 +239,7 @@ export default function ThemeTab() {
                   <div className="w-full bg-base-200 p-4 card">
                     <label className="label text-base-content font-semibold text-lg mb-2 flex justify-between items-center">
                       <span className="label-text">Speed</span>
-                      <span className="bg-neutral/10 card h-1 flex-1 mx-2"></span>
+                      <span className="bg-base-300 card h-1 flex-1 mx-2"></span>
                       <span className="label-text-alt italic">
                         {speed.charAt(0).toUpperCase() + speed.slice(1)}
                       </span>

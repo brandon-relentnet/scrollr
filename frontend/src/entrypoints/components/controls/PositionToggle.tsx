@@ -6,12 +6,14 @@ interface PositionToggleProps {
   onChange: (position: "top" | "bottom") => void;
   showLabel?: boolean;
   size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
 export default function PositionToggle({
   position,
   layout,
   onChange,
+  className = "",
   showLabel = true,
   size = "md",
 }: PositionToggleProps) {
@@ -26,18 +28,18 @@ export default function PositionToggle({
   };
 
   return (
-    <label
-      className="swap tooltip"
-      data-tip={`Position: ${
-        position.charAt(0).toUpperCase() + position.slice(1)
-      }`}
-    >
+    <label className="swap">
       <input
         type="checkbox"
         onChange={handleChange}
         checked={position === "bottom"}
       />
-      <div className="flex items-center gap-2 group">
+      <div
+        className={`flex items-center gap-2 hover:scale-115 active:scale-85 transition-all duration-150 ${className}`}
+        data-tip={`Position: ${
+          position.charAt(0).toUpperCase() + position.slice(1)
+        }`}
+      >
         {showLabel && (
           <span className="label-text-alt text-lg italic">
             {position.charAt(0).toUpperCase() + position.slice(1)}
@@ -46,17 +48,18 @@ export default function PositionToggle({
         <div
           className={`flex flex-col ${
             sizeClasses[size]
-          } card group-hover:shadow-lg shadow-md overflow-hidden group-hover:scale-115 group-active:scale-85 transition-all duration-150 ${
+          } card bg-base-300 card size-14 overflow-hidden ${
             position === "top" ? "rotate-180" : "rotate-360"
           }`}
         >
-          <div className="h-full bg-base-content flex items-center justify-center">
-            <ArrowDownIcon className="size-6 text-neutral-content" />
+          <div className="h-full transition-colors duration-150 flex items-center justify-center">
+            <ArrowDownIcon className="size-6 text-primary" />
           </div>
           <div
-            className={`bg-primary transition-all duration-150 ${
-              layout === "compact" ? "h-1" : "h-1/3"
-            }`}
+            className="bg-primary origin-bottom transition-transform duration-300 ease-in-out h-4"
+            style={{
+              transform: layout === "compact" ? "scaleY(0.25)" : "scaleY(1)",
+            }}
           />
         </div>
       </div>

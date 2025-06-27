@@ -18,7 +18,7 @@ export default function SpeedControl({ speed, onChange }: SpeedControlProps) {
         <label
           key={value}
           className={`cursor-pointer flex items-center flex-col flex-1 btn btn-ghost py-12 ${
-            speed === value ? "text-base-content" : "text-base-content/70"
+            speed === value ? "text-primary" : "text-base-content/30"
           }`}
         >
           <span className="label-text">
