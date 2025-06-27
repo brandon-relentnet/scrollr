@@ -10,12 +10,10 @@ import {
   ArrowDownIcon,
 } from "@heroicons/react/24/solid";
 import { useSelector, useDispatch } from "react-redux";
-import { useState, useEffect } from "react";
 import {
   setLayout,
   toggleSpeed,
   togglePosition,
-  setOpacity,
 } from "@/entrypoints/store/layoutSlice";
 import { togglePower } from "@/entrypoints/store/powerSlice";
 
@@ -33,20 +31,6 @@ export default function PowerTab() {
   const power = useSelector((state) => {
     return state.power?.mode !== false;
   });
-  const opacity = useSelector((state) => {
-    return state.layout?.opacity ?? 1.0;
-  });
-
-  // Local state for smooth slider interaction
-  const [localOpacity, setLocalOpacity] = useState(opacity);
-  const [isDragging, setIsDragging] = useState(false);
-
-  // Sync local state with Redux when opacity changes from other sources
-  useEffect(() => {
-    if (!isDragging) {
-      setLocalOpacity(opacity);
-    }
-  }, [opacity, isDragging]);
 
   const handleLayoutChange = () => {
     const newLayout = layout === "compact" ? "comfort" : "compact";
@@ -87,30 +71,6 @@ export default function PowerTab() {
     browser.runtime.sendMessage({
       type: "POSITION_CHANGED",
       position: position === "top" ? "bottom" : "top",
-    });
-  };
-
-  // Only update local state during dragging - no Redux or background messages
-  const handleOpacityChange = (event) => {
-    const newOpacity = parseFloat(event.target.value) / 100;
-    setLocalOpacity(newOpacity);
-  };
-
-  // Start dragging
-  const handleOpacityStart = () => {
-    setIsDragging(true);
-  };
-
-  // Commit changes when dragging ends
-  const handleOpacityEnd = (event) => {
-    const newOpacity = parseFloat(event.target.value) / 100;
-    setIsDragging(false);
-
-    // Only now dispatch to Redux and notify background script
-    dispatch(setOpacity(newOpacity));
-    browser.runtime.sendMessage({
-      type: "OPACITY_CHANGED",
-      opacity: newOpacity,
     });
   };
 
@@ -178,33 +138,6 @@ export default function PowerTab() {
               </button>
             </li>
           </ul>
-
-          {/* Opacity Slider */}
-          <div className="mt-6 w-full max-w-xs">
-            <label className="label">
-              <span className="label-text">Opacity</span>
-              <span className="label-text-alt">
-                {Math.round(localOpacity * 100)}%
-              </span>
-            </label>
-            <input
-              type="range"
-              min={0}
-              max="100"
-              value={Math.round(localOpacity * 100)}
-              onChange={handleOpacityChange}
-              onMouseDown={handleOpacityStart}
-              onMouseUp={handleOpacityEnd}
-              onTouchStart={handleOpacityStart}
-              onTouchEnd={handleOpacityEnd}
-              className="range"
-            />
-            <div className="w-full flex justify-between text-xs px-2 mt-1">
-              <span>0%</span>
-              <span>50%</span>
-              <span>100%</span>
-            </div>
-          </div>
         </div>
       </div>
     </>

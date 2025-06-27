@@ -1,19 +1,64 @@
 import { SwatchIcon } from "@heroicons/react/24/solid";
 import { useDispatch, useSelector } from "react-redux";
 import { setTheme } from "@/entrypoints/store/themeSlice";
+import { setOpacity } from "@/entrypoints/store/layoutSlice";
 import { useAuth } from "@/entrypoints/popup/hooks/useAuth";
-import debugLogger, {
-  DEBUG_CATEGORIES,
-} from "@/entrypoints/utils/debugLogger.js";
-import { useState } from "react";
+import debugLogger from "@/entrypoints/utils/debugLogger.js";
+import { useState, useEffect, useRef } from "react";
 
 type ThemeView = "themes" | "preferences";
 
 export default function ThemeTab() {
   const dispatch = useDispatch();
   const currentTheme = useSelector((state: any) => state.theme);
+  const opacity = useSelector((state: any) => state.layout?.opacity ?? 1.0);
   const { saveSettingsImmediately } = useAuth();
   const [currentView, setCurrentView] = useState<ThemeView>("themes");
+
+  // Local state for smooth slider interaction
+  const [localOpacity, setLocalOpacity] = useState(opacity);
+  const [isDragging, setIsDragging] = useState(false);
+  const isSliderUpdate = useRef(false);
+
+  // Sync local state with Redux when opacity changes from other sources
+  useEffect(() => {
+    // Skip sync if this update came from the slider
+    if (isSliderUpdate.current) {
+      isSliderUpdate.current = false;
+      return;
+    }
+
+    // Only sync if not dragging
+    if (!isDragging) {
+      setLocalOpacity(opacity);
+    }
+  }, [opacity, isDragging]);
+
+  // Opacity handlers
+  const handleOpacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newOpacity = parseFloat(event.target.value) / 100;
+    setLocalOpacity(newOpacity);
+  };
+
+  const handleOpacityStart = () => {
+    setIsDragging(true);
+  };
+
+  const handleOpacityEnd = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newOpacity = parseFloat(event.target.value) / 100;
+
+    // Mark that this update is from the slider
+    isSliderUpdate.current = true;
+
+    // Dispatch to Redux and notify background script
+    dispatch(setOpacity(newOpacity));
+    browser.runtime.sendMessage({
+      type: "OPACITY_CHANGED",
+      opacity: newOpacity,
+    });
+
+    setIsDragging(false);
+  };
 
   // Updated themes with accurate colors based on CSS variables
   const themes = [
@@ -291,7 +336,26 @@ export default function ThemeTab() {
 
               {currentView === "preferences" && (
                 <div className="flex-none w-full p-4">
-                  <div className="p-4">this is a test component</div>
+                  {/* Opacity Slider */}
+                  <div className="w-full max-w-xs mx-auto ">
+                    <label className="label text-base-content font-semibold text-lg mb-2 flex justify-between items-center">
+                      <span className="label-text">Opacity</span>
+                      <span className="bg-base-200 h-1 flex-1 mx-2"></span>
+                      <span className="label-text-alt italic">
+                        {Math.round(localOpacity * 100)}%
+                      </span>
+                    </label>
+                    <input
+                      type="range"
+                      min={0}
+                      max="100"
+                      value={Math.round(localOpacity * 100)}
+                      onChange={handleOpacityChange}
+                      onMouseDown={handleOpacityStart}
+                      onTouchStart={handleOpacityStart}
+                      className="range"
+                    />
+                  </div>
                 </div>
               )}
             </div>
