@@ -389,9 +389,9 @@ export default function ThemeTab() {
               )}
 
               {currentView === "preferences" && (
-                <div className="flex flex-col w-full p-4 gap-6 overflow-y-auto h-110">
+                <div className="flex flex-col w-full pr-2 gap-4 overflow-y-auto h-110">
                   {/* Opacity Slider */}
-                  <div className="w-full max-w-xs mx-auto bg-base-200 p-4 card">
+                  <div className="w-full bg-base-200 p-4 card">
                     <label className="label text-base-content font-semibold text-lg mb-3 flex justify-between items-center">
                       <span className="label-text">Opacity</span>
                       <span className="bg-neutral/10 card h-1 flex-1 mx-2"></span>
@@ -414,7 +414,7 @@ export default function ThemeTab() {
                   </div>
 
                   {/* Position Control */}
-                  <div className="w-full max-w-xs mx-auto bg-base-200 p-4 card">
+                  <div className="w-full bg-base-200 p-4 card">
                     <label className="label text-base-content font-semibold text-lg mb-2 flex justify-between items-center">
                       <span className="label-text">Position</span>
                       <span className="bg-neutral/10 card h-1 flex-1 ml-2"></span>
@@ -451,7 +451,7 @@ export default function ThemeTab() {
                   </div>
 
                   {/* Layout Control */}
-                  <div className="w-full max-w-xs mx-auto bg-base-200 p-4 card">
+                  <div className="w-full bg-base-200 p-4 card">
                     <label className="label text-base-content font-semibold text-lg mb-2 flex justify-between items-center">
                       <span className="label-text">Layout</span>
                       <span className="bg-neutral/10 card h-1 flex-1 ml-2"></span>
@@ -487,7 +487,7 @@ export default function ThemeTab() {
                   </div>
 
                   {/* Speed Control */}
-                  <div className="w-full max-w-xs mx-auto bg-base-200 p-4 card">
+                  <div className="w-full bg-base-200 p-4 card">
                     <label className="label text-base-content font-semibold text-lg mb-2 flex justify-between items-center">
                       <span className="label-text">Speed</span>
                       <span className="bg-neutral/10 card h-1 flex-1 mx-2"></span>

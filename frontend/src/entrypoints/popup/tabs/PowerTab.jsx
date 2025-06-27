@@ -16,6 +16,7 @@ import {
   togglePosition,
 } from "@/entrypoints/store/layoutSlice";
 import { togglePower } from "@/entrypoints/store/powerSlice";
+import AnimatedSpeedToggle from "./AnimatedSpeedToggle";
 
 export default function PowerTab() {
   const dispatch = useDispatch();
@@ -96,46 +97,76 @@ export default function PowerTab() {
           >
             {power ? <BoltIcon /> : <BoltSlashIcon />}
           </button>
-          <ul className="menu menu-horizontal bg-base-200 rounded-box mt-6">
+          <ul
+            className={`flex items-center justify-center gap-6 px-5 p-3 bg-base-200 rounded-box mt-6`}
+          >
             <li>
-              <button
-                onClick={handleSpeedToggle}
-                className="tooltip"
-                data-tip={`Speed: ${
-                  speed.charAt(0).toUpperCase() + speed.slice(1)
+              <label
+                className="swap tooltip"
+                data-tip={`Position: ${
+                  position.charAt(0).toUpperCase() + position.slice(1)
                 }`}
               >
-                <ClockIcon className="size-8" />
-                <span className="text-xs absolute -bottom-1 bg-base-300 px-1 rounded">
-                  {speed === "slow" ? "S" : speed === "classic" ? "C" : "F"}
-                </span>
-              </button>
+                <input
+                  type="checkbox"
+                  onChange={handlePositionToggle}
+                  checked={position === "bottom"}
+                />
+                <div
+                  className={`flex flex-col size-12 relative card hover:shadow-lg shadow-md overflow-hidden hover:scale-115 active:scale-85 transition-all duration-150 ${
+                    position === "top" ? "rotate-180" : "rotate-360"
+                  }`}
+                >
+                  <div className="h-full bg-base-content flex items-center justify-center">
+                    <ArrowDownIcon className="size-6 text-neutral-content" />
+                  </div>
+                  <div
+                    className={`bg-primary transition-all duration-150 ${
+                      layout === "compact" ? "h-1" : "h-1/3"
+                    }`}
+                  ></div>
+                </div>
+              </label>
             </li>
+            <AnimatedSpeedToggle
+              speed={speed}
+              onSpeedToggle={handleSpeedToggle}
+            />
             <li>
-              <button
-                onClick={handlePositionToggle}
-                className="tooltip"
-                data-tip={`Position: ${position === "top" ? "Top" : "Bottom"}`}
+              <label
+                className="swap tooltip"
+                data-tip={`Layout: ${
+                  layout.charAt(0).toUpperCase() + layout.slice(1)
+                }`}
               >
-                {position === "top" ? (
-                  <ArrowUpIcon className="size-8" />
-                ) : (
-                  <ArrowDownIcon className="size-8" />
-                )}
-              </button>
-            </li>
-            <li>
-              <button
-                onClick={handleLayoutChange}
-                className="tooltip"
-                data-tip={layout === "compact" ? "Comfort" : "Compact"}
-              >
-                {layout === "compact" ? (
-                  <ArrowsPointingOutIcon className="size-8" />
-                ) : (
-                  <ArrowsPointingInIcon className="size-8" />
-                )}
-              </button>
+                <input
+                  type="checkbox"
+                  onChange={(e) =>
+                    handleLayoutChange(e.target.checked ? "compact" : "comfort")
+                  }
+                  checked={layout === "compact"}
+                />
+                <div className="flex items-center gap-2 group">
+                  <div
+                    className={`flex flex-col size-12 card group-hover:shadow-lg shadow-md overflow-hidden group-hover:scale-115 group-active:scale-85 transition-all duration-150 ${
+                      position === "top" ? "rotate-180" : "rotate-360"
+                    }`}
+                  >
+                    <div className="h-full bg-base-content flex items-center justify-center">
+                      {layout === "compact" ? (
+                        <ArrowsPointingOutIcon className="size-6 text-neutral-content" />
+                      ) : (
+                        <ArrowsPointingInIcon className="size-6 text-neutral-content" />
+                      )}
+                    </div>
+                    <div
+                      className={`bg-primary transition-all duration-150 ${
+                        layout === "compact" ? "h-1" : "h-1/3"
+                      }`}
+                    ></div>
+                  </div>
+                </div>
+              </label>
             </li>
           </ul>
         </div>
