@@ -1,6 +1,6 @@
 import { UserCircleIcon } from "@heroicons/react/24/solid";
 import { useState, useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../../components/hooks/useAuth";
 
 type View = "login" | "register" | "profile" | "settings";
 

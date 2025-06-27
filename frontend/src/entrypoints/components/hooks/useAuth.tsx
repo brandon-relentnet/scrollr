@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 // @ts-ignore
 import { browser } from "wxt/browser";
-import { API_ENDPOINTS } from "../../config/endpoints.js";
-import debugLogger, { DEBUG_CATEGORIES } from "../../utils/debugLogger.js";
+import { API_ENDPOINTS } from "@/entrypoints/config/endpoints.js";
+import debugLogger, {
+  DEBUG_CATEGORIES,
+} from "@/entrypoints/utils/debugLogger.js";
 
 interface User {
   id: number;
@@ -136,7 +138,9 @@ export function useAuth() {
           } else {
             // If no server settings exist, save current local settings to server
             await saveSettingsToServer(token);
-            debugLogger.authEvent("No server settings found, saved current local settings");
+            debugLogger.authEvent(
+              "No server settings found, saved current local settings"
+            );
           }
         }
       } catch (error) {
@@ -333,7 +337,11 @@ export function useAuth() {
           });
           debugLogger.authEvent("Emergency save triggered on unload");
         } catch (error) {
-          debugLogger.error(DEBUG_CATEGORIES.AUTH, "Emergency save on unload failed", error);
+          debugLogger.error(
+            DEBUG_CATEGORIES.AUTH,
+            "Emergency save on unload failed",
+            error
+          );
         }
       }
     };
@@ -373,7 +381,9 @@ export function useAuth() {
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          debugLogger.authEvent(`Login attempt ${attempt}/${maxRetries} to ${API_ENDPOINTS.accounts.auth.login}`);
+          debugLogger.authEvent(
+            `Login attempt ${attempt}/${maxRetries} to ${API_ENDPOINTS.accounts.auth.login}`
+          );
 
           const response = await fetch(API_ENDPOINTS.accounts.auth.login, {
             method: "POST",
@@ -408,9 +418,15 @@ export function useAuth() {
           try {
             data = await response.json();
           } catch (parseError) {
-            debugLogger.error(DEBUG_CATEGORIES.AUTH, "Failed to parse response as JSON", parseError);
+            debugLogger.error(
+              DEBUG_CATEGORIES.AUTH,
+              "Failed to parse response as JSON",
+              parseError
+            );
             const text = await response.text();
-            debugLogger.error(DEBUG_CATEGORIES.AUTH, "Response text", { text: text.substring(0, 200) });
+            debugLogger.error(DEBUG_CATEGORIES.AUTH, "Response text", {
+              text: text.substring(0, 200),
+            });
 
             if (attempt < maxRetries) {
               debugLogger.warn(
@@ -450,11 +466,18 @@ export function useAuth() {
             return { success: false, error: data.error || "Login failed" };
           }
         } catch (error) {
-          debugLogger.error(DEBUG_CATEGORIES.AUTH, `Login error on attempt ${attempt}`, error);
+          debugLogger.error(
+            DEBUG_CATEGORIES.AUTH,
+            `Login error on attempt ${attempt}`,
+            error
+          );
           lastError = error;
 
           if (attempt < maxRetries) {
-            debugLogger.warn(DEBUG_CATEGORIES.AUTH, `Network error on attempt ${attempt}, retrying`);
+            debugLogger.warn(
+              DEBUG_CATEGORIES.AUTH,
+              `Network error on attempt ${attempt}, retrying`
+            );
             await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
             continue;
           }
@@ -531,7 +554,11 @@ export function useAuth() {
         await browser.storage.sync?.clear();
       }
     } catch (error) {
-      debugLogger.error(DEBUG_CATEGORIES.STORAGE, "Failed to clear browser storage", error);
+      debugLogger.error(
+        DEBUG_CATEGORIES.STORAGE,
+        "Failed to clear browser storage",
+        error
+      );
     }
 
     // Update auth state
@@ -549,7 +576,11 @@ export function useAuth() {
         try {
           browser.runtime.sendMessage({ type: "LOGOUT_REFRESH" });
         } catch (error) {
-          debugLogger.error(DEBUG_CATEGORIES.AUTH, "Failed to send logout message", error);
+          debugLogger.error(
+            DEBUG_CATEGORIES.AUTH,
+            "Failed to send logout message",
+            error
+          );
         }
       }
 
@@ -629,7 +660,11 @@ export function useAuth() {
           };
         }
       } catch (error) {
-        debugLogger.error(DEBUG_CATEGORIES.AUTH, "Password change error", error);
+        debugLogger.error(
+          DEBUG_CATEGORIES.AUTH,
+          "Password change error",
+          error
+        );
         return {
           success: false,
           error: "Network error during password change",

@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
-import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
+import debugLogger, {
+  DEBUG_CATEGORIES,
+} from "@/entrypoints/utils/debugLogger.js";
 
 // Debounce utility for RSS feed updates
 function useDebounce(value, delay) {
@@ -45,10 +47,10 @@ async function fetchRssFeed(feed) {
   for (let i = 0; i < CORS_PROXIES.length; i++) {
     try {
       const proxyUrl = CORS_PROXIES[i](feed.url);
-      debugLogger.rssEvent(
-        `Attempting to fetch RSS feed via proxy ${i + 1}`,
-        { feedName: feed.name, proxyIndex: i + 1 }
-      );
+      debugLogger.rssEvent(`Attempting to fetch RSS feed via proxy ${i + 1}`, {
+        feedName: feed.name,
+        proxyIndex: i + 1,
+      });
 
       // Create timeout controller for better browser compatibility
       const controller = new AbortController();
@@ -136,10 +138,11 @@ async function fetchRssFeed(feed) {
         };
       });
 
-      debugLogger.rssEvent(
-        `Successfully fetched RSS feed via proxy ${i + 1}`,
-        { feedName: feed.name, itemCount: parsedItems.length, proxyIndex: i + 1 }
-      );
+      debugLogger.rssEvent(`Successfully fetched RSS feed via proxy ${i + 1}`, {
+        feedName: feed.name,
+        itemCount: parsedItems.length,
+        proxyIndex: i + 1,
+      });
       return parsedItems;
     } catch (error) {
       lastError = error;

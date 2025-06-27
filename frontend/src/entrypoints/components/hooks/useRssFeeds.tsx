@@ -7,8 +7,10 @@ import {
   updateRssFeed,
 } from "@/entrypoints/store/rssSlice.js";
 import { useAuth } from "./useAuth.tsx";
-import { API_ENDPOINTS } from "../../config/endpoints.js";
-import debugLogger, { DEBUG_CATEGORIES } from "../../utils/debugLogger.js";
+import { API_ENDPOINTS } from "@/entrypoints/config/endpoints.js";
+import debugLogger, {
+  DEBUG_CATEGORIES,
+} from "@/entrypoints/utils/debugLogger.js";
 
 interface RssFeed {
   id: number;

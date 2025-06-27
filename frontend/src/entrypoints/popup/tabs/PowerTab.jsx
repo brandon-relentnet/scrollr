@@ -1,14 +1,4 @@
-import {
-  ArrowsPointingInIcon,
-  ArrowsPointingOutIcon,
-  BoltIcon,
-  BoltSlashIcon,
-  ClockIcon,
-  PowerIcon,
-  ViewColumnsIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-} from "@heroicons/react/24/solid";
+import { BoltIcon, BoltSlashIcon, PowerIcon } from "@heroicons/react/24/solid";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setLayout,
@@ -16,28 +6,21 @@ import {
   togglePosition,
 } from "@/entrypoints/store/layoutSlice";
 import { togglePower } from "@/entrypoints/store/powerSlice";
-import AnimatedSpeedToggle from "./AnimatedSpeedToggle";
+import AnimatedSpeedToggle from "@/entrypoints/components/controls/AnimatedSpeedToggle";
+import PositionToggle from "@/entrypoints/components/controls/PositionToggle";
+import LayoutToggle from "@/entrypoints/components/controls/LayoutToggle";
 
 export default function PowerTab() {
   const dispatch = useDispatch();
-  const layout = useSelector((state) => {
-    return state.layout?.mode || "compact";
-  });
-  const speed = useSelector((state) => {
-    return state.layout?.speed || "classic";
-  });
-  const position = useSelector((state) => {
-    return state.layout?.position || "top";
-  });
-  const power = useSelector((state) => {
-    return state.power?.mode !== false;
-  });
+
+  const layout = useSelector((state) => state.layout?.mode || "compact");
+  const speed = useSelector((state) => state.layout?.speed || "classic");
+  const position = useSelector((state) => state.layout?.position || "top");
+  const power = useSelector((state) => state.power?.mode !== false);
 
   const handleLayoutChange = () => {
     const newLayout = layout === "compact" ? "comfort" : "compact";
     dispatch(setLayout(newLayout));
-
-    // Also notify background script directly for immediate update
     browser.runtime.sendMessage({
       type: "LAYOUT_CHANGED",
       layout: newLayout,
@@ -46,8 +29,6 @@ export default function PowerTab() {
 
   const handlePowerToggle = () => {
     dispatch(togglePower());
-
-    // Also notify background script directly for immediate update
     browser.runtime.sendMessage({
       type: "POWER_TOGGLED",
       power: !power,
@@ -56,22 +37,20 @@ export default function PowerTab() {
 
   const handleSpeedToggle = () => {
     dispatch(toggleSpeed());
-
-    // Also notify background script directly for immediate update
+    const newSpeed =
+      speed === "slow" ? "classic" : speed === "classic" ? "fast" : "slow";
     browser.runtime.sendMessage({
       type: "SPEED_CHANGED",
-      speed:
-        speed === "slow" ? "classic" : speed === "classic" ? "fast" : "slow",
+      speed: newSpeed,
     });
   };
 
   const handlePositionToggle = () => {
     dispatch(togglePosition());
-
-    // Also notify background script directly for immediate update
+    const newPosition = position === "top" ? "bottom" : "top";
     browser.runtime.sendMessage({
       type: "POSITION_CHANGED",
-      position: position === "top" ? "bottom" : "top",
+      position: newPosition,
     });
   };
 
@@ -97,76 +76,26 @@ export default function PowerTab() {
           >
             {power ? <BoltIcon /> : <BoltSlashIcon />}
           </button>
-          <ul
-            className={`flex items-center justify-center gap-6 px-5 p-3 bg-base-200 rounded-box mt-6`}
-          >
+          <ul className="flex items-center justify-center gap-6 px-5 p-3 bg-base-200 rounded-box mt-6">
             <li>
-              <label
-                className="swap tooltip"
-                data-tip={`Position: ${
-                  position.charAt(0).toUpperCase() + position.slice(1)
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  onChange={handlePositionToggle}
-                  checked={position === "bottom"}
-                />
-                <div
-                  className={`flex flex-col size-12 relative card hover:shadow-lg shadow-md overflow-hidden hover:scale-115 active:scale-85 transition-all duration-150 ${
-                    position === "top" ? "rotate-180" : "rotate-360"
-                  }`}
-                >
-                  <div className="h-full bg-base-content flex items-center justify-center">
-                    <ArrowDownIcon className="size-6 text-neutral-content" />
-                  </div>
-                  <div
-                    className={`bg-primary transition-all duration-150 ${
-                      layout === "compact" ? "h-1" : "h-1/3"
-                    }`}
-                  ></div>
-                </div>
-              </label>
+              <PositionToggle
+                position={position}
+                layout={layout}
+                onChange={handlePositionToggle}
+                showLabel={false}
+              />
             </li>
             <AnimatedSpeedToggle
               speed={speed}
               onSpeedToggle={handleSpeedToggle}
             />
             <li>
-              <label
-                className="swap tooltip"
-                data-tip={`Layout: ${
-                  layout.charAt(0).toUpperCase() + layout.slice(1)
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  onChange={(e) =>
-                    handleLayoutChange(e.target.checked ? "compact" : "comfort")
-                  }
-                  checked={layout === "compact"}
-                />
-                <div className="flex items-center gap-2 group">
-                  <div
-                    className={`flex flex-col size-12 card group-hover:shadow-lg shadow-md overflow-hidden group-hover:scale-115 group-active:scale-85 transition-all duration-150 ${
-                      position === "top" ? "rotate-180" : "rotate-360"
-                    }`}
-                  >
-                    <div className="h-full bg-base-content flex items-center justify-center">
-                      {layout === "compact" ? (
-                        <ArrowsPointingOutIcon className="size-6 text-neutral-content" />
-                      ) : (
-                        <ArrowsPointingInIcon className="size-6 text-neutral-content" />
-                      )}
-                    </div>
-                    <div
-                      className={`bg-primary transition-all duration-150 ${
-                        layout === "compact" ? "h-1" : "h-1/3"
-                      }`}
-                    ></div>
-                  </div>
-                </div>
-              </label>
+              <LayoutToggle
+                layout={layout}
+                position={position}
+                onChange={() => handleLayoutChange()}
+                showLabel={false}
+              />
             </li>
           </ul>
         </div>

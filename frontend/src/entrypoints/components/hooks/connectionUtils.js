@@ -1,5 +1,11 @@
-import { buildUrl, buildWsUrl, SERVICE_CONFIG } from "../config/endpoints.js";
-import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
+import {
+  buildUrl,
+  buildWsUrl,
+  SERVICE_CONFIG,
+} from "@/entrypoints/config/endpoints.js";
+import debugLogger, {
+  DEBUG_CATEGORIES,
+} from "@/entrypoints/utils/debugLogger.js";
 
 /**
  * Check if a server is ready by hitting its health endpoint
@@ -27,7 +33,9 @@ async function checkServerHealth(service, timeout = 5000) {
     return false;
   } catch (error) {
     clearTimeout(timeoutId);
-    debugLogger.networkEvent(`Health check failed for ${service}`, { error: error.message });
+    debugLogger.networkEvent(`Health check failed for ${service}`, {
+      error: error.message,
+    });
     return false;
   }
 }
@@ -37,10 +45,10 @@ async function checkServerHealth(service, timeout = 5000) {
  */
 async function waitForServerReady(service, maxAttempts = 10) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    debugLogger.networkEvent(
-      `Checking server health (${service})`,
-      { attempt, maxAttempts }
-    );
+    debugLogger.networkEvent(`Checking server health (${service})`, {
+      attempt,
+      maxAttempts,
+    });
 
     const isReady = await checkServerHealth(service);
     if (isReady) {
@@ -51,7 +59,10 @@ async function waitForServerReady(service, maxAttempts = 10) {
     if (attempt < maxAttempts) {
       // Exponential backoff: 1s, 2s, 4s, 8s, etc.
       const delay = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
-      debugLogger.networkEvent(`Server not ready, waiting before retry`, { delay, service });
+      debugLogger.networkEvent(`Server not ready, waiting before retry`, {
+        delay,
+        service,
+      });
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }

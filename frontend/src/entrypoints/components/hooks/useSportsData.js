@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { createWebSocketConnection } from "./connectionUtils";
-import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
+import debugLogger, {
+  DEBUG_CATEGORIES,
+} from "@/entrypoints/utils/debugLogger.js";
 
 // Custom hook to handle sports data and WebSocket connection
 export default function useSportsData() {
@@ -74,7 +76,9 @@ export default function useSportsData() {
       // Skip if we already sent this exact filter set
       const filterKey = activeFilters.sort().join(",");
       if (wsRef.current._lastFilterKey === filterKey) {
-        debugLogger.websocketEvent("Skipping duplicate filter request", { filterKey });
+        debugLogger.websocketEvent("Skipping duplicate filter request", {
+          filterKey,
+        });
         return;
       }
       wsRef.current._lastFilterKey = filterKey;
@@ -183,11 +187,15 @@ export default function useSportsData() {
               setSportsData(receivedData.data || []);
             } else if (receivedData.type === "games_updated") {
               // Handle real-time updates
-              debugLogger.websocketEvent("Sports data updated", { league: receivedData.league });
+              debugLogger.websocketEvent("Sports data updated", {
+                league: receivedData.league,
+              });
               // Don't request fresh data here - the server already sent the update notification
               // The server will send the actual data separately
             } else if (receivedData.type === "welcome") {
-              debugLogger.websocketEvent("Welcome message received from sports server");
+              debugLogger.websocketEvent(
+                "Welcome message received from sports server"
+              );
               // Send initial filter request after welcome
               if (hasActiveSportsToggles) {
                 setTimeout(() => {
@@ -195,7 +203,9 @@ export default function useSportsData() {
                 }, 100);
               }
             } else if (receivedData.type === "connection_confirmed") {
-              debugLogger.websocketEvent("Connection confirmed by sports server");
+              debugLogger.websocketEvent(
+                "Connection confirmed by sports server"
+              );
             }
           } catch (error) {
             debugLogger.error(

@@ -9,7 +9,7 @@ import {
   CRYPTO_PRESETS,
   STOCK_OPTIONS,
   CRYPTO_OPTIONS,
-} from "./data.jsx";
+} from "./data.js";
 import { useDispatch, useSelector } from "react-redux";
 import { setToggles } from "@/entrypoints/store/togglesSlice";
 import {
@@ -27,8 +27,8 @@ import {
   resetRssSelections,
   toggleAllRssSelections,
 } from "@/entrypoints/store/rssSlice.js";
-import { useAuth } from "../hooks/useAuth.tsx";
-import { useRssFeeds } from "../hooks/useRssFeeds.tsx";
+import { useAuth } from "../../components/hooks/useAuth.tsx";
+import { useRssFeeds } from "../../components/hooks/useRssFeeds.tsx";
 
 const getDefaultSportsState = () => ({
   NFL: false,

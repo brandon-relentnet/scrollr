@@ -2,8 +2,10 @@ import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { STOCK_PRESETS, CRYPTO_PRESETS } from "@/entrypoints/popup/tabs/data";
 import { createWebSocketConnection } from "./connectionUtils";
-import { SERVICE_CONFIG } from "../config/endpoints.js";
-import debugLogger, { DEBUG_CATEGORIES } from "../utils/debugLogger.js";
+import { SERVICE_CONFIG } from "@/entrypoints/config/endpoints.js";
+import debugLogger, {
+  DEBUG_CATEGORIES,
+} from "@/entrypoints/utils/debugLogger.js";
 
 // OPTIMIZATION: Debounce utility
 function useDebounce(value, delay) {
