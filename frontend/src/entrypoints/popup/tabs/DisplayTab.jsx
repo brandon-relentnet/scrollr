@@ -1,4 +1,7 @@
-import { ComputerDesktopIcon } from "@heroicons/react/24/solid";
+import {
+  ComputerDesktopIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/solid";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   SPORTS_OPTIONS,
@@ -382,8 +385,16 @@ export default function DisplayTab() {
   // Memoized sports section
   const sportsSection = useMemo(
     () => (
-      <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-full border p-4">
-        <legend className="fieldset-legend text-lg">Sports</legend>
+      <fieldset className="fieldset group bg-base-100 border-base-300 rounded-box w-full border p-4">
+        <legend className="fieldset-legend text-center text-lg py-0">
+          <div className="tooltip tooltip-bottom card card-border border-base-300 flex-row items-center justify-center gap-1 px-4 py-1 group-hover:bg-base-200 transition-all duration-150">
+            <div className="tooltip-content w-60 px-4 py-3">
+              Toggle which sports you want to display on Scrollr.
+            </div>
+            <InformationCircleIcon className="size-5 text-base-content/30 group-hover:text-base-content/70 transition-all duration-150" />
+            Sports
+          </div>
+        </legend>
         <div className="grid grid-cols-2 gap-4">
           {SPORTS_OPTIONS.map((sport) => (
             <label
@@ -421,21 +432,42 @@ export default function DisplayTab() {
         <ComputerDesktopIcon className="size-8" />
       </label>
       <div className="tab-content bg-base-100 border-base-300 p-2 space-y-6 overflow-hidden max-h-120">
-        <div className="overflow-y-auto p-2 h-110">
+        <div className="overflow-y-auto p-2 h-110 flex flex-col gap-4">
           {/* Sports Section */}
           {sportsSection}
 
           {/* Finance Section */}
-          <fieldset className="fieldset bg-base-100 border-base-300 rounded-box w-full border p-4">
-            <legend className="fieldset-legend text-lg">Finance</legend>
+          <fieldset className="fieldset group bg-base-100 border-base-300 rounded-box w-full border p-4">
+            <legend className="fieldset-legend text-center text-lg py-0">
+              <div className="tooltip tooltip-bottom card card-border border-base-300 flex-row items-center justify-center gap-1 px-4 py-1 group-hover:bg-base-200 transition-all duration-150">
+                <div className="tooltip-content w-60 px-4 py-3">
+                  Select your preferred trades to display on Scrollr. You can
+                  also add custom selections.
+                </div>
+                <InformationCircleIcon className="size-5 text-base-content/30 group-hover:text-base-content/70 transition-all duration-150" />
+                Finance
+              </div>
+            </legend>
             <div className="grid grid-cols-2 gap-4 mb-4">
               {renderPresetOptions("stocks")}
               {renderPresetOptions("crypto")}
             </div>
           </fieldset>
 
-          <fieldset className="fieldset bg-base-100 border-base-300 space-y-2 rounded-box w-full border p-4">
-            <legend className="fieldset-legend text-lg">RSS</legend>
+          <fieldset className="fieldset group bg-base-100 border-base-300 space-y-2 rounded-box w-full border p-4">
+            <legend className="fieldset-legend text-center text-lg py-0">
+              <div className="tooltip tooltip-bottom card card-border border-base-300 flex-row items-center justify-center gap-1 px-4 py-1 group-hover:bg-base-200 transition-all duration-150">
+                <div className="tooltip-content w-60 px-4 py-3">
+                  Add and manage your RSS feeds to stay updated with your
+                  favorite websites and blogs.
+                </div>
+                <InformationCircleIcon className="size-5 text-base-content/30 group-hover:text-base-content/70 transition-all duration-150" />
+                RSS{" "}
+                <span className="text-base-content/50 text-sm italic">
+                  (Custom Feeds)
+                </span>
+              </div>
+            </legend>
             {!isAuthenticated ? (
               <div className="text-center py-4">
                 <p className="text-base-content/70 mb-3">
@@ -564,12 +596,19 @@ export default function DisplayTab() {
             )}
           </fieldset>
 
-          <fieldset className="fieldset bg-base-100 border-base-300 space-y-2 rounded-box w-full border p-4">
-            <legend className="fieldset-legend text-lg">
-              Fantasy{" "}
-              <span className="text-base-content/50 text-sm italic">
-                *coming soon*
-              </span>
+          <fieldset className="fieldset group bg-base-100 border-base-300 space-y-2 rounded-box w-full border p-4">
+            <legend className="fieldset-legend text-center text-lg py-0">
+              <div className="tooltip tooltip-bottom card card-border border-base-300 flex-row items-center justify-center gap-1 px-4 py-1 group-hover:bg-base-200 transition-all duration-150">
+                <div className="tooltip-content w-60 px-4 py-3">
+                  Coming soon: The ability to view your fantasy teams within
+                  Scrollr!
+                </div>
+                <InformationCircleIcon className="size-5 text-base-content/30 group-hover:text-base-content/70 transition-all duration-150" />
+                Fantasy{" "}
+                <span className="text-base-content/50 text-sm italic">
+                  *coming soon*
+                </span>
+              </div>
             </legend>
             {!isAuthenticated ? (
               <div className="text-center py-4">
