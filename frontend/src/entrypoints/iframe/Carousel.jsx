@@ -1,6 +1,7 @@
-import { Autoplay } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
+"use client";
+
+import { Ticker } from "motion-plus/react";
+import { motion, useMotionValue } from "motion/react";
 import GameCard from "./GameCard";
 import TradeCard from "./TradeCard";
 import RssCard from "./RssCard";
@@ -11,36 +12,42 @@ import { memo, useMemo, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updatePinnedFinanceData } from "../store/pinnedSlice.js";
 
-// Pre-computed breakpoints - moved outside component to prevent recreation
-const BREAKPOINTS = (() => {
-  const breakpoints = {};
-  for (let i = 0; i <= 8000; i += 320) {
-    breakpoints[i] = {
-      slidesPerView: Math.max(1, Math.floor(i / 320)),
-    };
-  }
-  return breakpoints;
-})();
-
-// Speed configurations
+// Speed configurations mapped to Ticker speeds
 const SPEED_CONFIG = {
-  slow: { delay: 5000, speed: 1000 },
-  classic: { delay: 3000, speed: 600 },
-  fast: { delay: 1500, speed: 300 },
+  slow: { speed: 50, hoverFactor: 0 },
+  classic: { speed: 100, hoverFactor: 0.25 },
+  fast: { speed: 150, hoverFactor: 0.5 },
 };
 
+// Wrapper component for consistent card styling
+const CardWrapper = ({ children, index }) => (
+  <motion.div
+    className="h-full py-2 px-1 flex-shrink-0"
+    style={{ width: "320px" }}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: index * 0.1, duration: 0.5 }}
+  >
+    {children}
+  </motion.div>
+);
+
 export const Carousel = memo(function Carousel() {
+  const offset = useMotionValue(0);
+
   // Use all custom hooks to get data
   const {
     sportsData,
     connectionStatus: sportsConnectionStatus,
     hasActiveSportsToggles,
   } = useSportsData();
+
   const {
     tradesData,
     connectionStatus: financeConnectionStatus,
     hasFinanceFilters,
   } = useFinanceData();
+
   const {
     rssItems,
     connectionStatus: rssConnectionStatus,
@@ -78,39 +85,65 @@ export const Carousel = memo(function Carousel() {
     return SPEED_CONFIG[speed] || SPEED_CONFIG.classic;
   }, [speed]);
 
+  // Combine all items into a single array for the ticker
+  const tickerItems = useMemo(() => {
+    const items = [];
+    let index = 0;
+
+    // Add trade cards
+    if (tradesData?.data?.length > 0) {
+      tradesData.data.forEach((trade) => {
+        items.push(
+          <CardWrapper key={`trade-${trade.symbol}`} index={index++}>
+            <TradeCard trade={trade} />
+          </CardWrapper>
+        );
+      });
+    }
+
+    // Add sports cards
+    if (sportsData?.length > 0) {
+      sportsData.forEach((game) => {
+        items.push(
+          <CardWrapper key={`game-${game.id}`} index={index++}>
+            <GameCard game={game} />
+          </CardWrapper>
+        );
+      });
+    }
+
+    // Add RSS cards
+    if (rssItems?.length > 0) {
+      rssItems.forEach((rssItem) => {
+        items.push(
+          <CardWrapper key={`rss-${rssItem.id}`} index={index++}>
+            <RssCard rssItem={rssItem} />
+          </CardWrapper>
+        );
+      });
+    }
+
+    return items;
+  }, [tradesData?.data, sportsData, rssItems]);
+
   return (
     <div className="flex-grow overflow-hidden">
-      {hasData && (
-        <Swiper
-          modules={[Autoplay]}
-          autoplay={{ delay: speedConfig.delay, disableOnInteraction: false }}
-          breakpointsBase={"container"}
-          loop={true}
-          speed={speedConfig.speed}
-          spaceBetween={8}
-          breakpoints={BREAKPOINTS}
-          watchSlidesProgress={true}
-        >
-          {tradesData?.data?.length > 0 &&
-            tradesData.data.map((trade) => (
-              <SwiperSlide key={trade.symbol} className="h-full py-2">
-                <TradeCard trade={trade} />
-              </SwiperSlide>
-            ))}
-          {sportsData?.length > 0 &&
-            sportsData.map((game) => (
-              <SwiperSlide key={game.id} className="h-full py-2">
-                <GameCard game={game} />
-              </SwiperSlide>
-            ))}
-          {rssItems?.length > 0 &&
-            rssItems.map((rssItem) => (
-              <SwiperSlide key={rssItem.id} className="h-full py-2">
-                <RssCard rssItem={rssItem} />
-              </SwiperSlide>
-            ))}
-        </Swiper>
+      {hasData && tickerItems.length > 0 && (
+        <div className="relative">
+          <Ticker
+            items={tickerItems}
+            velocity={speedConfig.speed}
+            hoverFactor={speedConfig.hoverFactor}
+            style={{
+              maskImage:
+                "linear-gradient(to right, transparent 1%, black 8%, black 92%, transparent 99%)",
+              WebkitMaskImage:
+                "linear-gradient(to right, transparent 1%, black 8%, black 92%, transparent 99%)",
+            }}
+          />
+        </div>
       )}
+
       {/* Show message when no filters are selected */}
       {showEmptyMessage && (
         <div className="mt-4">

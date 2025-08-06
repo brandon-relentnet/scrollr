@@ -6,6 +6,11 @@ const togglesSlice = createSlice({
         mode: "", // Default theme mode
         debugMode: false, // Debug logging enabled/disabled
         debugCategories: [], // Specific debug categories to show
+        // Sports toggles
+        NFL: false,
+        NBA: false,
+        MLB: false,
+        NHL: false,
     },
     reducers: {
         setToggles: (state, action) => action.payload,
